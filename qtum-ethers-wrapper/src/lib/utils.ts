@@ -132,7 +132,7 @@ export function txToBuffer(tx: any) {
         // Issue with using 4, needed 5
         cursor.writeUInt32LE(vin.vout);
         if (vin.scriptSig !== null) {
-            cursor.writeBytes(encodeVaruint(Buffer.from("473044022046e6b30dacf4b447692996c029c24fca5833fb44e48e652b4e3a9b83a31a5c5402202ad2b8876910be2bf6c0fa84cd89dfefdc843601458a4da2576ac5c4ba49444d0141040674a4bcaba69378609e31faab1475bae52775da9ffc152e3008f7db2baa69abc1e8c4dcb46083ad56b73614d3eb01f717499c19510544a214f4db4a7c2ea503", "hex").length));
+            cursor.writeBytes(encodeVaruint(vin.scriptSig.length));
             console.log(vin.scriptSig, 'vinScriptSig')
             cursor.writeBytes(vin.scriptSig);
         } else {
