@@ -5,9 +5,8 @@ import {
 } from "ethers/lib/utils";
 import { TransactionRequest } from "@ethersproject/abstract-provider";
 import { BigNumber } from "bignumber.js"
-import { Buffer } from "buffer"
 import { sha256, ripemd160 } from "hash.js"
-import { Tx, contractTxScript, txToBuffer, reverse, generateContractAddress, p2pkhScriptSig, signp2pkh, addVins, p2pkhScript, addVouts } from './utils'
+import { Tx, txToBuffer, p2pkhScriptSig, signp2pkh, addVins, addVouts } from './utils'
 
 const logger = new Logger("QtumWallet");
 
@@ -16,10 +15,6 @@ const forwardErrors = [
 ];
 
 
-export interface TxInput {
-    hash: string,
-    vout: number
-}
 export class QtumWallet extends Wallet {
 
     // Get the public key, sha256 hash the pubkey, then run ripemd160 on the sha256 hash, append 0x prefix and return the address
