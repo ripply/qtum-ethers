@@ -34,7 +34,6 @@ const ABI = [
 ];
 
 async function main() {
-  console.log(provider);
   const simpleStore = new ethers.ContractFactory(ABI, BYTECODE, signer);
   const deployment = await simpleStore.deploy({
     gasLimit: "0x2dc6c0",

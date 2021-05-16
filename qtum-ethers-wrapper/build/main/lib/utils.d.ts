@@ -1,4 +1,17 @@
 /// <reference types="node" />
+export interface ListUTXOs {
+    address: string;
+    txid: string;
+    vout: number;
+    amount: string;
+    safe: boolean;
+    spendable: boolean;
+    solvable: boolean;
+    label: string;
+    confirmations: number;
+    scriptPubKey: string;
+    redeemScript: string;
+}
 export interface TxVinWithNullScriptSig {
     txid: Buffer;
     hash: Buffer;
@@ -43,9 +56,10 @@ export declare function calcTxBytes(vins: Array<TxVinWithoutNullScriptSig | TxVi
 export declare function txToBuffer(tx: any): Buffer;
 export declare function toDER(x: Buffer): Buffer;
 export declare function encodeSig(signature: Uint8Array, hashType: number): Buffer;
-export declare function signp2pkh(tx: any, vindex: number, privKey: string, hashType?: number): Buffer | number[];
+export declare function signp2pkh(tx: any, vindex: number, privKey: string, hashType?: number): Buffer;
 export declare function p2pkhScriptSig(sig: any, pubkey: any): Buffer;
 export declare function p2pkhScript(hash160PubKey: Buffer): Buffer;
 export declare function contractTxScript(contractAddress: string, gasLimit: number, gasPrice: number, encodedData: string): Buffer;
 export declare function reverse(src: Buffer): Buffer;
-export declare function generateContractAddress(): string;
+export declare function generateContractAddress(): Buffer;
+export declare function addVins(utxos: Array<ListUTXOs>, neededAmount: number | string): (Array<any>);
