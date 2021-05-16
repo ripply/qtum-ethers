@@ -63,3 +63,4 @@ export declare function contractTxScript(contractAddress: string, gasLimit: numb
 export declare function reverse(src: Buffer): Buffer;
 export declare function generateContractAddress(): Buffer;
 export declare function addVins(utxos: Array<ListUTXOs>, neededAmount: number | string): (Array<any>);
+export declare function addVouts(gasPrice: number, gasLimit: number, data: string, address: string, amounts: Array<any>, neededAmount: string, hash160PubKey: string): (Array<any>);

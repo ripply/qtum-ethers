@@ -751,6 +751,11 @@
         "signature": "d6068e4b05f9fd73c11ffead8f51eedb4a6dcee816e845d80b192f60fa0d5ccc",
         "affectsGlobalScope": false
       },
+      "../src/lib/qtumcontractfactory.ts": {
+        "version": "3969c19341b301f9a4ce13e1a9e2c3917ef1f115b954865c09a85f13b1b21d84",
+        "signature": "ffd777bcd3dd580b9b20f4a09a678155709f441eca94514e305a35b4e5e0931e",
+        "affectsGlobalScope": false
+      },
       "../src/lib/qtumprovider.ts": {
         "version": "6188ad046ab857722390753c2d27a2853f5e32a835b4cced8f4fcdd1eaff94a3",
         "signature": "b3423d8eac445975f3b46dc7983ea94a8f3a85fc2b092aed86d93bf5e8be7595",
@@ -912,13 +917,13 @@
         "affectsGlobalScope": false
       },
       "../src/lib/utils.ts": {
-        "version": "851166500cdb66f3e22d6dced43f8a5f3f28d79e4bbc181f0e5acdd83f20baee",
-        "signature": "9897799bd37d153f9b8e82096b484407b1c4571fe22dbf048517944f486ec7d4",
+        "version": "8985e769e9883318a43ad3d22b5792d434eec829cf5f9e13d5bcd7f7d95eed8f",
+        "signature": "ed6f8ce1502edb50d0b8e8e187950164a457da5bdfcf0aff3792c23aa6e91a03",
         "affectsGlobalScope": false
       },
       "../src/lib/qtumwallet.ts": {
-        "version": "3f332aa26f55108bbfc091ee852fceda301e1739c6c3710cede97a9f350c10df",
-        "signature": "295735f1a01d2275c28641a59f3e319e3f2d404184950555596ac261d3674919",
+        "version": "89514725b065e11b99ef1f9a9f8a4508bb3e3e1424bc9ff95a3111fb3bc46cc0",
+        "signature": "23170fea83331ebe2ff13e1a5484b482cae952ab052d889e83ba55fe13bbc2a6",
         "affectsGlobalScope": false
       },
       "../src/lib/bip66.d.ts": {
@@ -1617,6 +1622,9 @@
       "../src/lib/helpers/buffer-cursor.ts": [
         "../node_modules/@types/bn.js/index.d.ts"
       ],
+      "../src/lib/qtumcontractfactory.ts": [
+        "../node_modules/ethers/lib/index.d.ts"
+      ],
       "../src/lib/qtumprovider.ts": [
         "../node_modules/ethers/lib/index.d.ts",
         "../node_modules/ethers/lib/utils.d.ts"
@@ -1632,6 +1640,7 @@
       ],
       "../src/lib/utils.ts": [
         "../node_modules/@types/secp256k1/index.d.ts",
+        "../node_modules/bignumber.js/bignumber.d.ts",
         "../node_modules/bitcoinjs-lib/types/index.d.ts",
         "../node_modules/ethers/lib/utils.d.ts",
         "../node_modules/hash.js/lib/hash.d.ts",
@@ -2234,6 +2243,9 @@
       "../node_modules/pretty-format/build/index.d.ts": [
         "../node_modules/pretty-format/build/types.d.ts"
       ],
+      "../src/lib/qtumcontractfactory.ts": [
+        "../node_modules/ethers/lib/index.d.ts"
+      ],
       "../src/lib/qtumprovider.ts": [
         "../node_modules/ethers/lib/index.d.ts",
         "../node_modules/ethers/lib/utils.d.ts"
@@ -2435,6 +2447,7 @@
       "../src/lib/bitcoinjs-lib.d.ts",
       "../src/lib/helpers/buffer-cursor.ts",
       "../src/lib/helpers/opcodes.ts",
+      "../src/lib/qtumcontractfactory.ts",
       "../src/lib/qtumprovider.ts",
       [
         "../src/lib/qtumwallet.ts",
@@ -2450,6 +2463,15 @@
           },
           {
             "file": "../src/lib/qtumwallet.ts",
+            "start": 335,
+            "length": 16,
+            "messageText": "'contractTxScript' is declared but its value is never read.",
+            "category": 1,
+            "code": 6133,
+            "reportsUnnecessary": true
+          },
+          {
+            "file": "../src/lib/qtumwallet.ts",
             "start": 365,
             "length": 7,
             "messageText": "'reverse' is declared but its value is never read.",
@@ -2459,79 +2481,25 @@
           },
           {
             "file": "../src/lib/qtumwallet.ts",
-            "start": 1181,
-            "length": 12,
-            "messageText": "'neededAmount' is declared but its value is never read.",
+            "start": 374,
+            "length": 23,
+            "messageText": "'generateContractAddress' is declared but its value is never read.",
             "category": 1,
             "code": 6133,
             "reportsUnnecessary": true
           },
           {
             "file": "../src/lib/qtumwallet.ts",
-            "start": 1258,
-            "length": 10,
-            "messageText": "'networkFee' is declared but its value is never read.",
+            "start": 435,
+            "length": 11,
+            "messageText": "'p2pkhScript' is declared but its value is never read.",
             "category": 1,
             "code": 6133,
             "reportsUnnecessary": true
           },
           {
             "file": "../src/lib/qtumwallet.ts",
-            "start": 1291,
-            "length": 12,
-            "messageText": "'returnAmount' is declared but its value is never read.",
-            "category": 1,
-            "code": 6133,
-            "reportsUnnecessary": true
-          },
-          {
-            "file": "../src/lib/qtumwallet.ts",
-            "start": 1434,
-            "length": 13,
-            "messageText": "'hash160PubKey' is declared but its value is never read.",
-            "category": 1,
-            "code": 6133,
-            "reportsUnnecessary": true
-          },
-          {
-            "file": "../src/lib/qtumwallet.ts",
-            "start": 2020,
-            "length": 5,
-            "messageText": "'value' is declared but its value is never read.",
-            "category": 1,
-            "code": 6133,
-            "reportsUnnecessary": true
-          },
-          {
-            "file": "../src/lib/qtumwallet.ts",
-            "start": 2090,
-            "length": 10,
-            "messageText": "'networkFee' is declared but its value is never read.",
-            "category": 1,
-            "code": 6133,
-            "reportsUnnecessary": true
-          },
-          {
-            "file": "../src/lib/qtumwallet.ts",
-            "start": 2123,
-            "length": 12,
-            "messageText": "'returnAmount' is declared but its value is never read.",
-            "category": 1,
-            "code": 6133,
-            "reportsUnnecessary": true
-          },
-          {
-            "file": "../src/lib/qtumwallet.ts",
-            "start": 2266,
-            "length": 13,
-            "messageText": "'hash160PubKey' is declared but its value is never read.",
-            "category": 1,
-            "code": 6133,
-            "reportsUnnecessary": true
-          },
-          {
-            "file": "../src/lib/qtumwallet.ts",
-            "start": 3114,
+            "start": 1476,
             "length": 11,
             "messageText": "Object is possibly 'undefined'.",
             "category": 1,
@@ -2539,16 +2507,26 @@
           },
           {
             "file": "../src/lib/qtumwallet.ts",
-            "start": 4484,
-            "length": 12,
-            "messageText": "'contractAddy' is declared but its value is never read.",
+            "start": 3154,
+            "length": 7,
+            "code": 2345,
             "category": 1,
-            "code": 6133,
-            "reportsUnnecessary": true
+            "messageText": {
+              "messageText": "Argument of type 'string | Bytes | undefined' is not assignable to parameter of type 'string'.",
+              "category": 1,
+              "code": 2345,
+              "next": [
+                {
+                  "messageText": "Type 'undefined' is not assignable to type 'string'.",
+                  "category": 1,
+                  "code": 2322
+                }
+              ]
+            }
           },
           {
             "file": "../src/lib/qtumwallet.ts",
-            "start": 4677,
+            "start": 3840,
             "length": 7,
             "code": 2345,
             "category": 1,
