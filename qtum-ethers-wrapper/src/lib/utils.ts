@@ -1,4 +1,4 @@
-import { encode as encodeVaruint, encodingLength } from 'varuint-bitcoin';
+import { encode as encodeVaruint } from 'varuint-bitcoin';
 import { encode } from 'bip66';
 import { OPS } from "./helpers/opcodes";
 import { BufferCursor } from './helpers/buffer-cursor';
@@ -8,7 +8,6 @@ import { encode as encodeCInt } from "bitcoinjs-lib/src/script_number"
 import { sha256 } from "hash.js"
 const toBuffer = require('typedarray-to-buffer')
 import { BigNumber } from "bignumber.js"
-
 import {
     arrayify
 } from "ethers/lib/utils";
@@ -152,11 +151,11 @@ export function txToBuffer(tx: any) {
         if (vout.value > 0) {
             cursor.writeBytes(encodeVaruint(vout.script.length));
             cursor.writeBytes(vout.script);
-    
+
         } else {
             cursor.writeBytes(encodeVaruint(Buffer.from("010403a0252601284cf2608060405234801561001057600080fd5b506040516020806100f2833981016040525160005560bf806100336000396000f30060806040526004361060485763ffffffff7c010000000000000000000000000000000000000000000000000000000060003504166360fe47b18114604d5780636d4ce63c146064575b600080fd5b348015605857600080fd5b5060626004356088565b005b348015606f57600080fd5b506076608d565b60408051918252519081900360200190f35b600055565b600054905600a165627a7a7230582049a087087e1fc6da0b68ca259d45a2e369efcbb50e93f9b7fa3e198de6402b810029c1", "hex").length));
             cursor.writeBytes(Buffer.from("010403a0252601284cf2608060405234801561001057600080fd5b506040516020806100f2833981016040525160005560bf806100336000396000f30060806040526004361060485763ffffffff7c010000000000000000000000000000000000000000000000000000000060003504166360fe47b18114604d5780636d4ce63c146064575b600080fd5b348015605857600080fd5b5060626004356088565b005b348015606f57600080fd5b506076608d565b60408051918252519081900360200190f35b600055565b600054905600a165627a7a7230582049a087087e1fc6da0b68ca259d45a2e369efcbb50e93f9b7fa3e198de6402b810029c1", "hex"));
-    
+
         }
     }
     // locktime
@@ -293,12 +292,12 @@ export function addVins(utxos: Array<ListUTXOs>, neededAmount: number | string):
                 break;
             }
         }
-       
+
     }
     return [inputs, amounts];
 }
 
-export function addVouts(gasPrice: number, gasLimit: number, data: string, address: string, amounts: Array<any>, neededAmount: string, hash160PubKey: string): (Array<any>){
+export function addVouts(gasPrice: number, gasLimit: number, data: string, address: string, amounts: Array<any>, neededAmount: string, hash160PubKey: string): (Array<any>) {
     let vouts = [];
     let networkFee = 0.002;
     let returnAmount = amounts.reduce((a, b) => a + b);
