@@ -85,7 +85,8 @@ export class QtumContractFactory extends ContractFactory {
         // Send the deployment transaction
         const tx = await this.signer.sendTransaction(unsignedTx);
         // @ts-ignore
-        const address = `0x${generateContractAddress(unsignedTx.data.split("0x")[1])}`;
+        console.log(tx, 'txSigned')
+        const address = `0x${generateContractAddress("")}`;
         const contract = getStatic<(address: string, contractInterface: ContractInterface, signer?: Signer) => Contract>(this.constructor, "getContract")(address, this.interface, this.signer);
         defineReadOnly(contract, "deployTransaction", tx);
         return contract;

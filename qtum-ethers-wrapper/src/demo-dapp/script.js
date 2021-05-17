@@ -37,9 +37,9 @@ const ABI = [
 async function main() {
   const simpleStore = new QtumContractFactory(ABI, BYTECODE, signer);
   const deployment = await simpleStore.deploy({
-    gasLimit: "0x2dc6c0",
+    gasLimit: "0x2dc6c0", gasPrice: "0x28",
   });
-  // console.log(deployment);
+  console.log(deployment);
   //   const simpleStoreRegSigner = new ethers.ContractFactory(
   //     ABI,
   //     BYTECODE,

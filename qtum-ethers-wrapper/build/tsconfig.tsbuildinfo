@@ -902,12 +902,12 @@
         "affectsGlobalScope": false
       },
       "../src/lib/utils.ts": {
-        "version": "2f224b8e3e88dfb4b20a0f7ccfb354ebb88197e61e562dad19a258259fb9934d",
+        "version": "8c8d3820392e7dec9c24560e76fea52b7617d58e923262858f8be582e424e873",
         "signature": "88cc495d931061127cf5aa8f59fe7398d70904d799826a2ae692ad6546f5c9bd",
         "affectsGlobalScope": false
       },
       "../src/lib/qtumcontractfactory.ts": {
-        "version": "2149112060329785775c0540a922774c1f0e83064f823acfe4d484a447b4d29e",
+        "version": "5e782a0ea79f241b51f7b47eae8d765fdf183a0ee60485b08cd43128f168b79b",
         "signature": "4358c48912773e958a932208edfb5c4128d0c398aa21e04f46a532c610db38a5",
         "affectsGlobalScope": false
       },
@@ -917,7 +917,7 @@
         "affectsGlobalScope": false
       },
       "../src/lib/qtumwallet.ts": {
-        "version": "4e5fffa3ae484f033c64c5365458462b88a129d4c58477c32b47f08874f4e0ef",
+        "version": "49f8e6a56531d34c5dda211d97203cda45d0ab86ff2730c089c22197d91161de",
         "signature": "63fe1ad59e9a6411b215d6f6e2177aae7e7bcec553a141c54f4889921cffceec",
         "affectsGlobalScope": false
       },
@@ -2461,13 +2461,26 @@
         ]
       ],
       "../src/lib/qtumprovider.ts",
-      "../src/lib/qtumwallet.ts",
+      [
+        "../src/lib/qtumwallet.ts",
+        [
+          {
+            "file": "../src/lib/qtumwallet.ts",
+            "start": 47,
+            "length": 12,
+            "messageText": "'BigNumberish' is declared but its value is never read.",
+            "category": 1,
+            "code": 6133,
+            "reportsUnnecessary": true
+          }
+        ]
+      ],
       [
         "../src/lib/utils.ts",
         [
           {
             "file": "../src/lib/utils.ts",
-            "start": 8924,
+            "start": 8854,
             "length": 5,
             "messageText": "'rawTx' is declared but its value is never read.",
             "category": 1,

@@ -96,8 +96,6 @@ function cloneTx(tx: any) {
 }
 function inputBytes(input: any) {
     var TX_INPUT_BASE = 32 + 4 + 1 + 4
-    // var TX_INPUT_PUBKEYHASH = 107
-
     return TX_INPUT_BASE + (input.scriptSig ? input.scriptSig.length : input.script.length)
 }
 
@@ -187,11 +185,9 @@ export function signp2pkh(tx: any, vindex: number, privKey: string, hashType = 0
 
     // zero out scripts of other inputs
     for (let i = 0; i < clone.vins.length; i++) {
-        console.log(i, vindex)
         if (i === vindex) continue;
         clone.vins[i].script = Buffer.alloc(0);
     }
-    console.log(clone, 'clone')
     // write to the buffer
     let buffer = txToBuffer(clone)
     // extend and append hash type
@@ -262,11 +258,10 @@ export function reverse(src: Buffer) {
 export function generateContractAddress(rawTx: string) {
     // 20 bytes
     // let buffer = Buffer.alloc(32);
-    let uintBuff = Buffer.alloc(4);
-    uintBuff.writeUInt32LE(0);
-    console.log(uintBuff, "uintbff")
-    let bufferAlt = Buffer.from("12c42f02875fd777737203ccb186e8e70f97f7ae9fcaba96996b0837a9e44710", "hex");
-    console.log(bufferAlt, "ere")
+    // let uintBuff = Buffer.alloc(4);
+    // uintBuff.writeUInt32LE(0);
+    // let bufferAlt = Buffer.from("12c42f02875fd777737203ccb186e8e70f97f7ae9fcaba96996b0837a9e44710", "hex");
+    // console.log(bufferAlt, "ere")
     // bufferAlt.writeUInt32LE(0)
     // return bufferAlt.toString("hex")
     // console.log(bufferAlt.toString("hex"), 'bufferAlt', bufferAlt.length)
@@ -307,7 +302,7 @@ export function addContractVouts(gasPrice: number, gasLimit: number, data: strin
         // script: Buffer.from("010403a0252601284cf2608060405234801561001057600080fd5b506040516020806100f2833981016040525160005560bf806100336000396000f30060806040526004361060485763ffffffff7c010000000000000000000000000000000000000000000000000000000060003504166360fe47b18114604d5780636d4ce63c146064575b600080fd5b348015605857600080fd5b5060626004356088565b005b348015606f57600080fd5b506076608d565b60408051918252519081900360200190f35b600055565b600054905600a165627a7a7230582049a087087e1fc6da0b68ca259d45a2e369efcbb50e93f9b7fa3e198de6402b810029c1", "hex"),
         value: 0
     })
-    console.log(Buffer.from("010403a0252601284cf2608060405234801561001057600080fd5b506040516020806100f2833981016040525160005560bf806100336000396000f30060806040526004361060485763ffffffff7c010000000000000000000000000000000000000000000000000000000060003504166360fe47b18114604d5780636d4ce63c146064575b600080fd5b348015605857600080fd5b5060626004356088565b005b348015606f57600080fd5b506076608d565b60408051918252519081900360200190f35b600055565b600054905600a165627a7a7230582049a087087e1fc6da0b68ca259d45a2e369efcbb50e93f9b7fa3e198de6402b810029c1", "hex").length)
+    // console.log(Buffer.from("010403a0252601284cf2608060405234801561001057600080fd5b506040516020806100f2833981016040525160005560bf806100336000396000f30060806040526004361060485763ffffffff7c010000000000000000000000000000000000000000000000000000000060003504166360fe47b18114604d5780636d4ce63c146064575b600080fd5b348015605857600080fd5b5060626004356088565b005b348015606f57600080fd5b506076608d565b60408051918252519081900360200190f35b600055565b600054905600a165627a7a7230582049a087087e1fc6da0b68ca259d45a2e369efcbb50e93f9b7fa3e198de6402b810029c1", "hex").length)
     return vouts;
 }
 
@@ -325,3 +320,7 @@ export function addp2pkhVouts(hash160Address: string, amounts: Array<any>, neede
     })
     return vouts;
 }
+
+// export function bufferToTx(buffer: Buffer) {
+    
+// }
