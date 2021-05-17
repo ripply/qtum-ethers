@@ -766,11 +766,6 @@
         "signature": "1d7d9e42cb2cc36dfc7ce35755ce67d5ff0f4a2ef72d3019f4c461bfd22123da",
         "affectsGlobalScope": false
       },
-      "../node_modules/buffer/index.d.ts": {
-        "version": "8e9c23ba78aabc2e0a27033f18737a6df754067731e69dc5f52823957d60a4b6",
-        "signature": "8e9c23ba78aabc2e0a27033f18737a6df754067731e69dc5f52823957d60a4b6",
-        "affectsGlobalScope": false
-      },
       "../node_modules/hash.js/lib/hash.d.ts": {
         "version": "51bd18d47ab67727e72711355e713fa1d1e7d2cb79dd550af7b70308e8b57391",
         "signature": "51bd18d47ab67727e72711355e713fa1d1e7d2cb79dd550af7b70308e8b57391",
@@ -917,13 +912,13 @@
         "affectsGlobalScope": false
       },
       "../src/lib/utils.ts": {
-        "version": "8985e769e9883318a43ad3d22b5792d434eec829cf5f9e13d5bcd7f7d95eed8f",
-        "signature": "ed6f8ce1502edb50d0b8e8e187950164a457da5bdfcf0aff3792c23aa6e91a03",
+        "version": "ba6885f21e2503a2007a72347df7b6a72a2fe715de37a4c744e831f66cfb2952",
+        "signature": "5529472a00d7cafe4db5197a6a5382d5778855e77467581a6b6aec6349c79c04",
         "affectsGlobalScope": false
       },
       "../src/lib/qtumwallet.ts": {
-        "version": "89514725b065e11b99ef1f9a9f8a4508bb3e3e1424bc9ff95a3111fb3bc46cc0",
-        "signature": "23170fea83331ebe2ff13e1a5484b482cae952ab052d889e83ba55fe13bbc2a6",
+        "version": "826f492ffde0477203ea319ce728709047daf38ccdd408c43ccf7d1aaf4824cf",
+        "signature": "63fe1ad59e9a6411b215d6f6e2177aae7e7bcec553a141c54f4889921cffceec",
         "affectsGlobalScope": false
       },
       "../src/lib/bip66.d.ts": {
@@ -1631,7 +1626,6 @@
       ],
       "../src/lib/qtumwallet.ts": [
         "../node_modules/@ethersproject/abstract-provider/lib/index.d.ts",
-        "../node_modules/@types/node/buffer.d.ts",
         "../node_modules/bignumber.js/bignumber.d.ts",
         "../node_modules/ethers/lib/index.d.ts",
         "../node_modules/ethers/lib/utils.d.ts",
@@ -2402,7 +2396,6 @@
       "../node_modules/bitcoinjs-lib/types/script_signature.d.ts",
       "../node_modules/bitcoinjs-lib/types/transaction.d.ts",
       "../node_modules/bitcoinjs-lib/types/transaction_builder.d.ts",
-      "../node_modules/buffer/index.d.ts",
       "../node_modules/ethers/lib/_version.d.ts",
       "../node_modules/ethers/lib/ethers.d.ts",
       "../node_modules/ethers/lib/index.d.ts",
@@ -2454,52 +2447,7 @@
         [
           {
             "file": "../src/lib/qtumwallet.ts",
-            "start": 246,
-            "length": 31,
-            "messageText": "'Buffer' is declared but its value is never read.",
-            "category": 1,
-            "code": 6133,
-            "reportsUnnecessary": true
-          },
-          {
-            "file": "../src/lib/qtumwallet.ts",
-            "start": 335,
-            "length": 16,
-            "messageText": "'contractTxScript' is declared but its value is never read.",
-            "category": 1,
-            "code": 6133,
-            "reportsUnnecessary": true
-          },
-          {
-            "file": "../src/lib/qtumwallet.ts",
-            "start": 365,
-            "length": 7,
-            "messageText": "'reverse' is declared but its value is never read.",
-            "category": 1,
-            "code": 6133,
-            "reportsUnnecessary": true
-          },
-          {
-            "file": "../src/lib/qtumwallet.ts",
-            "start": 374,
-            "length": 23,
-            "messageText": "'generateContractAddress' is declared but its value is never read.",
-            "category": 1,
-            "code": 6133,
-            "reportsUnnecessary": true
-          },
-          {
-            "file": "../src/lib/qtumwallet.ts",
-            "start": 435,
-            "length": 11,
-            "messageText": "'p2pkhScript' is declared but its value is never read.",
-            "category": 1,
-            "code": 6133,
-            "reportsUnnecessary": true
-          },
-          {
-            "file": "../src/lib/qtumwallet.ts",
-            "start": 1476,
+            "start": 1383,
             "length": 11,
             "messageText": "Object is possibly 'undefined'.",
             "category": 1,
@@ -2507,58 +2455,24 @@
           },
           {
             "file": "../src/lib/qtumwallet.ts",
-            "start": 3154,
-            "length": 7,
-            "code": 2345,
-            "category": 1,
-            "messageText": {
-              "messageText": "Argument of type 'string | Bytes | undefined' is not assignable to parameter of type 'string'.",
-              "category": 1,
-              "code": 2345,
-              "next": [
-                {
-                  "messageText": "Type 'undefined' is not assignable to type 'string'.",
-                  "category": 1,
-                  "code": 2322
-                }
-              ]
-            }
-          },
-          {
-            "file": "../src/lib/qtumwallet.ts",
-            "start": 3840,
-            "length": 7,
-            "code": 2345,
-            "category": 1,
-            "messageText": {
-              "messageText": "Argument of type 'string | Bytes | undefined' is not assignable to parameter of type 'string'.",
-              "category": 1,
-              "code": 2345,
-              "next": [
-                {
-                  "messageText": "Type 'undefined' is not assignable to type 'string'.",
-                  "category": 1,
-                  "code": 2322
-                }
-              ]
-            }
-          }
-        ]
-      ],
-      [
-        "../src/lib/utils.ts",
-        [
-          {
-            "file": "../src/lib/utils.ts",
-            "start": 34,
-            "length": 14,
-            "messageText": "'encodingLength' is declared but its value is never read.",
+            "start": 5046,
+            "length": 6,
+            "messageText": "'result' is declared but its value is never read.",
             "category": 1,
             "code": 6133,
             "reportsUnnecessary": true
+          },
+          {
+            "file": "../src/lib/qtumwallet.ts",
+            "start": 5549,
+            "length": 5,
+            "messageText": "Object is possibly 'undefined'.",
+            "category": 1,
+            "code": 2532
           }
         ]
       ],
+      "../src/lib/utils.ts",
       "../src/lib/varuint-bitcoin.d.ts",
       "../src/tests/contract_deployment.ts",
       "../src/tests/contract_interaction.ts"

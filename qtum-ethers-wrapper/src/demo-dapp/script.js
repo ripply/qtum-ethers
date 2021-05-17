@@ -34,11 +34,11 @@ const ABI = [
 ];
 
 async function main() {
-  const simpleStore = new ethers.ContractFactory(ABI, BYTECODE, signer);
-  const deployment = await simpleStore.deploy({
-    gasLimit: "0x2dc6c0",
-  });
-  console.log(deployment);
+  // const simpleStore = new ethers.ContractFactory(ABI, BYTECODE, signer);
+  // const deployment = await simpleStore.deploy({
+  //   gasLimit: "0x2dc6c0",
+  // });
+  // console.log(deployment);
   //   const simpleStoreRegSigner = new ethers.ContractFactory(
   //     ABI,
   //     BYTECODE,
@@ -48,5 +48,28 @@ async function main() {
   //     gasLimit: "0x2dc6c0", value: "0x64"
   // });
   //   console.log(deploymentReg);
+  // const simpleStore = new ethers.Contract(
+  //   "0x40f1c39b8914c6790145c17ce94476cffbc0eda8",
+  //   ABI,
+  //   signer
+  // );
+  // const setSimpleStore = await simpleStore.set(100, {
+  //   gasLimit: "0x3d090",
+  //   gasPrice: "0x28",
+  // });
+  // console.log(setSimpleStore);
+  const simulateSendTo = await signer.sendTransaction(
+    {
+      "to": "0x7926223070547D2D15b2eF5e7383E541c338FfE9",
+      "from": "0xcca81b02942d8079a871e02ba03a3a4a8d7740d2",
+      "gasLimit": "0x3d090",
+      "gasPrice": "0x28",
+      "value": "0xffffff",
+      "data": ""
+    }
+  )
+  // console.log(simulateSendTo)
+  const addy = await signer.getAddress()
+  console.log(addy)
 }
 main();

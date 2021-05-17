@@ -96,9 +96,9 @@ function cloneTx(tx: any) {
 }
 function inputBytes(input: any) {
     var TX_INPUT_BASE = 32 + 4 + 1 + 4
-    var TX_INPUT_PUBKEYHASH = 107
+    // var TX_INPUT_PUBKEYHASH = 107
 
-    return TX_INPUT_BASE + (input.scriptSig ? input.scriptSig.length : TX_INPUT_PUBKEYHASH)
+    return TX_INPUT_BASE + (input.scriptSig ? input.scriptSig.length : input.script.length)
 }
 
 function outputBytes(output: any) {
@@ -110,16 +110,12 @@ function outputBytes(output: any) {
 // refer to https://en.bitcoin.it/wiki/Transaction#General_format_of_a_Bitcoin_transaction_.28inside_a_block.29
 export function calcTxBytes(vins: Array<TxVinWithoutNullScriptSig | TxVinWithNullScriptSig>, vouts: Array<TxVout>) {
     const TX_EMPTY_SIZE = 4 + 1 + 1 + 4;
-    console.log(
-        TX_EMPTY_SIZE +
+    return TX_EMPTY_SIZE +
         vins.reduce(function (a, x) { return a + inputBytes(x) }, 0) +
         vouts.reduce(function (a, x) { return a + outputBytes(x) }, 0)
-    )
-    return 700
 }
-//CloneTx
+
 export function txToBuffer(tx: any) {
-    // Issue calculatingTxBytes with contract script
     let buffer = Buffer.alloc(calcTxBytes(tx.vins, tx.vouts));
     let cursor = new BufferCursor(buffer);
     // version
@@ -139,7 +135,7 @@ export function txToBuffer(tx: any) {
             cursor.writeBytes(encodeVaruint(vin.script.length));
             cursor.writeBytes(vin.script);
         }
-        cursor.writeUInt32LE(4294967295);
+        cursor.writeUInt32LE(vin.sequence);
 
     }
     // vout length
@@ -148,15 +144,8 @@ export function txToBuffer(tx: any) {
     // vouts
     for (let vout of tx.vouts) {
         cursor.writeUInt64LE(vout.value);
-        if (vout.value > 0) {
-            cursor.writeBytes(encodeVaruint(vout.script.length));
-            cursor.writeBytes(vout.script);
-
-        } else {
-            cursor.writeBytes(encodeVaruint(Buffer.from("010403a0252601284cf2608060405234801561001057600080fd5b506040516020806100f2833981016040525160005560bf806100336000396000f30060806040526004361060485763ffffffff7c010000000000000000000000000000000000000000000000000000000060003504166360fe47b18114604d5780636d4ce63c146064575b600080fd5b348015605857600080fd5b5060626004356088565b005b348015606f57600080fd5b506076608d565b60408051918252519081900360200190f35b600055565b600054905600a165627a7a7230582049a087087e1fc6da0b68ca259d45a2e369efcbb50e93f9b7fa3e198de6402b810029c1", "hex").length));
-            cursor.writeBytes(Buffer.from("010403a0252601284cf2608060405234801561001057600080fd5b506040516020806100f2833981016040525160005560bf806100336000396000f30060806040526004361060485763ffffffff7c010000000000000000000000000000000000000000000000000000000060003504166360fe47b18114604d5780636d4ce63c146064575b600080fd5b348015605857600080fd5b5060626004356088565b005b348015606f57600080fd5b506076608d565b60408051918252519081900360200190f35b600055565b600054905600a165627a7a7230582049a087087e1fc6da0b68ca259d45a2e369efcbb50e93f9b7fa3e198de6402b810029c1", "hex"));
-
-        }
+        cursor.writeBytes(encodeVaruint(vout.script.length));
+        cursor.writeBytes(vout.script);
     }
     // locktime
     cursor.writeUInt32LE(tx.locktime);
@@ -198,11 +187,11 @@ export function signp2pkh(tx: any, vindex: number, privKey: string, hashType = 0
 
     // zero out scripts of other inputs
     for (let i = 0; i < clone.vins.length; i++) {
+        console.log(i, vindex)
         if (i === vindex) continue;
         clone.vins[i].script = Buffer.alloc(0);
-        // clone.vins[i].scriptSig = Buffer.alloc(0);
     }
-
+    console.log(clone, 'clone')
     // write to the buffer
     let buffer = txToBuffer(clone)
     // extend and append hash type
@@ -212,8 +201,8 @@ export function signp2pkh(tx: any, vindex: number, privKey: string, hashType = 0
 
     // double-sha256
     let firstHash = sha256().update(buffer).digest();
-    let secondHash = sha256().update(firstHash).digest("hex");
-    let sig = ecdsaSign(new Uint8Array(Buffer.from(secondHash, "hex")), arrayify(privKey));
+    let secondHash = sha256().update(firstHash).digest();
+    let sig = ecdsaSign(new Uint8Array(secondHash), arrayify(privKey));
 
     return encodeSig(sig.signature, hashType);
 }
@@ -237,6 +226,7 @@ export function p2pkhScript(hash160PubKey: Buffer) {
 export function contractTxScript(contractAddress: string, gasLimit: number, gasPrice: number, encodedData: string) {
     // If contractAddress is missing, assume it's a create script, else assume its a call contract interaction
     if (contractAddress === "") {
+        // console.log(bitcoinjs.script.toASM(Buffer.from("010114cca81b02942d8079a871e02ba03a3a4a8d7740d24c8b8a473044022038774a834bc0128366a5aba49e20d3b2774b30404670fd8be00e35794fbdd9a002205edb423e3d612b86c1d4a3c1cf7cf50543e7a8b1083bfc034102e2e2fc882a7c0141040674a4bcaba69378609e31faab1475bae52775da9ffc152e3008f7db2baa69abc1e8c4dcb46083ad56b73614d3eb01f717499c19510544a214f4db4a7c2ea503c4010403a0252601284cf2608060405234801561001057600080fd5b506040516020806100f2833981016040525160005560bf806100336000396000f30060806040526004361060485763ffffffff7c010000000000000000000000000000000000000000000000000000000060003504166360fe47b18114604d5780636d4ce63c146064575b600080fd5b348015605857600080fd5b5060626004356088565b005b348015606f57600080fd5b506076608d565b60408051918252519081900360200190f35b600055565b600054905600a165627a7a7230582049a087087e1fc6da0b68ca259d45a2e369efcbb50e93f9b7fa3e198de6402b810029c1", "hex")))
         // Issue here with OPS.OP_4 not compiling correctly, when Buffer is casted to string, the first 3 characters should be 010 instead of a 5.
         return bitcoinjs.script.compile([
             OPS.OP_4,
@@ -271,33 +261,39 @@ export function reverse(src: Buffer) {
 
 export function generateContractAddress() {
     // 20 bytes
-    let buffer = Buffer.alloc(32 + 4);
-    let cursor = new BufferCursor(buffer);
-    cursor.writeBytes(Buffer.from("aa3b15d702571414bc72af3cb3a979858a6aa71dc1b6b08712a446f392fe886b", "hex"));
-    cursor.writeUInt32LE(0);
-    return buffer;
+    // let buffer = Buffer.alloc(32);
+    let uintBuff = Buffer.alloc(4);
+    uintBuff.writeUInt32LE(0);
+    console.log(uintBuff, "uintbff")
+    let bufferAlt = Buffer.from("12c42f02875fd777737203ccb186e8e70f97f7ae9fcaba96996b0837a9e44710", "hex");
+    console.log(bufferAlt, "ere")
+    // bufferAlt.writeUInt32LE(0)
+    // return bufferAlt.toString("hex")
+    // console.log(bufferAlt.toString("hex"), 'bufferAlt', bufferAlt.length)
+    // let cursor = new BufferCursor(buffer);
+    // cursor.writeBytes(Buffer.from("12c42f02875fd777737203ccb186e8e70f97f7ae9fcaba96996b0837a9e44710", "hex"));
+    // cursor.writeUInt32LE(0);
+    // console.log(buffer.toString("hex"), "bufferNorm")
+    return Buffer.concat([uintBuff, bufferAlt]).toString("hex");
 }
 
-
-export function addVins(utxos: Array<ListUTXOs>, neededAmount: number | string): (Array<any>) {
+export function addVins(utxos: Array<ListUTXOs>, neededAmount: number | string, hash160PubKey: string): (Array<any>) {
     let balance = 0;
     let inputs = [];
     let amounts = [];
     for (let i = 0; i < utxos.length; i++) {
-        if (utxos[i].txid !== "a5a4cd0542b01ac65603d7feed2109bb63f90f87cb08ac035f826a44ad8ad800") {
             balance += parseFloat(utxos[i].amount);
-            inputs.push({ txid: Buffer.from(utxos[i].txid, 'hex'), vout: utxos[i].vout, hash: reverse(Buffer.from(utxos[i].txid, 'hex')), sequence: 0xffffffff, script: Buffer.from(utxos[i].scriptPubKey, "hex"), scriptSig: null });
+            inputs.push({ txid: Buffer.from(utxos[i].txid, 'hex'), vout: utxos[i].vout, hash: reverse(Buffer.from(utxos[i].txid, 'hex')), sequence: 0xffffffff, script: p2pkhScript(Buffer.from(hash160PubKey, "hex")), scriptSig: null });
             amounts.push(parseFloat(utxos[i].amount));
             if (balance >= neededAmount) {
                 break;
             }
-        }
-
     }
+    // amounts.reduce((a, b) => a + b, 0)
     return [inputs, amounts];
 }
 
-export function addVouts(gasPrice: number, gasLimit: number, data: string, address: string, amounts: Array<any>, neededAmount: string, hash160PubKey: string): (Array<any>) {
+export function addContractVouts(gasPrice: number, gasLimit: number, data: string, address: string, amounts: Array<any>, neededAmount: string, hash160PubKey: string): (Array<any>) {
     let vouts = [];
     let networkFee = 0.002;
     let returnAmount = amounts.reduce((a, b) => a + b);
@@ -306,8 +302,25 @@ export function addVouts(gasPrice: number, gasLimit: number, data: string, addre
         value: new BigNumber(returnAmount).minus(neededAmount).minus(networkFee).times(1e8).toNumber()
     })
     vouts.push({
-        script: contractTxScript(address === "" ? "" : address, gasLimit, gasPrice, data.split("0x")[1]),
+        script: contractTxScript(address === "" ? "" : address.split("0x")[1], gasLimit, gasPrice, data.split("0x")[1]),
+        // script: Buffer.from("010403a0252601284cf2608060405234801561001057600080fd5b506040516020806100f2833981016040525160005560bf806100336000396000f30060806040526004361060485763ffffffff7c010000000000000000000000000000000000000000000000000000000060003504166360fe47b18114604d5780636d4ce63c146064575b600080fd5b348015605857600080fd5b5060626004356088565b005b348015606f57600080fd5b506076608d565b60408051918252519081900360200190f35b600055565b600054905600a165627a7a7230582049a087087e1fc6da0b68ca259d45a2e369efcbb50e93f9b7fa3e198de6402b810029c1", "hex"),
         value: 0
+    })
+    console.log(Buffer.from("010403a0252601284cf2608060405234801561001057600080fd5b506040516020806100f2833981016040525160005560bf806100336000396000f30060806040526004361060485763ffffffff7c010000000000000000000000000000000000000000000000000000000060003504166360fe47b18114604d5780636d4ce63c146064575b600080fd5b348015605857600080fd5b5060626004356088565b005b348015606f57600080fd5b506076608d565b60408051918252519081900360200190f35b600055565b600054905600a165627a7a7230582049a087087e1fc6da0b68ca259d45a2e369efcbb50e93f9b7fa3e198de6402b810029c1", "hex").length)
+    return vouts;
+}
+
+export function addp2pkhVouts(hash160Address: string, amounts: Array<any>, neededAmount: string, hash160PubKey: string): (Array<any>) {
+    let vouts = [];
+    let networkFee = 0.002;
+    let returnAmount = amounts.reduce((a, b) => a + b);
+    vouts.push({
+        script: p2pkhScript(Buffer.from(hash160Address, "hex")),
+        value: new BigNumber(neededAmount).times(1e8).toNumber()
+    })
+    vouts.push({
+        script: p2pkhScript(Buffer.from(hash160PubKey, "hex")),
+        value: new BigNumber(returnAmount).minus(neededAmount).minus(networkFee).times(1e8).toNumber()
     })
     return vouts;
 }

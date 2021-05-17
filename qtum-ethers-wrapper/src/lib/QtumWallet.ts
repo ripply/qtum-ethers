@@ -6,7 +6,7 @@ import {
 import { TransactionRequest } from "@ethersproject/abstract-provider";
 import { BigNumber } from "bignumber.js"
 import { sha256, ripemd160 } from "hash.js"
-import { Tx, txToBuffer, p2pkhScriptSig, signp2pkh, addVins, addVouts } from './utils'
+import { Tx, txToBuffer, p2pkhScriptSig, signp2pkh, addVins, addp2pkhVouts, addContractVouts, generateContractAddress } from './utils'
 
 const logger = new Logger("QtumWallet");
 
@@ -28,10 +28,11 @@ export class QtumWallet extends Wallet {
     signTransaction = (transaction: TransactionRequest): Promise<string> => {
         return resolveProperties(transaction).then((tx) => {
             // Transform Hex Values
-            let gasPrice: number | string;
-            let gasLimit: number | string;
+            let gasPrice: string;
+            let gasLimit: number;
             let neededAmount: string;
-            tx.gasPrice !== "" ? gasPrice = new BigNumber(parseInt(tx.gasPrice.toString(), 16).toString() + `e-8`).toFixed(7) : gasPrice = 0.0000004;
+            // @ts-ignore
+            tx.gasPrice !== "" ? gasPrice = new BigNumber(parseInt(tx.gasPrice.toString(), 16).toString() + `e-8`).toFixed(7) : gasPrice = new BigNumber(parseInt("0x28".toString(), 16).toString() + `e-8`).toFixed(7);
             tx.gasLimit !== "" ? gasLimit = BigNumberEthers.from(tx.gasLimit).toNumber() : gasLimit = 250000;
             tx.value !== "" ? neededAmount = new BigNumber(gasPrice).times(gasLimit).plus(parseInt("0xffffff".toString(), 16).toString() + `e-8`).toFixed(7) : neededAmount = new BigNumber(gasPrice).times(gasLimit).plus(parseInt(tx.value.toString(), 16).toString() + `e-8`).toFixed(7);
             // Create the transaction object
@@ -42,40 +43,59 @@ export class QtumWallet extends Wallet {
             // @ts-ignore
             this.provider.getUtxos(tx.from, neededAmount).then((result) => {
                 // Select the Vins
-                let [vins, amounts] = addVins(result, 1.002);
+                let [vins, amounts] = addVins(result, neededAmount, hash160PubKey);
                 qtumTx.vins = vins;
                 // Check if this is a deploy, call, or sendtoaddress TX
                 if ((tx.to == "" || tx.to == undefined) && tx.data != "") {
                     // Deploy 
                     // Add the Vouts
-                    // const bufferObj = generateContractAddress();
-                    // const sha256Hash = sha256().update(bufferObj).digest("hex")
-                    // const contractAddy = ripemd160().update(sha256Hash).digest("hex")
-                    // console.log(contractAddy, 'contractAddy')
-                    qtumTx.vouts = addVouts(40, 2500000, tx.data, "", amounts, 1.002, hash160PubKey);
+                    // @ts-ignore
+                    qtumTx.vouts = addContractVouts(40, 2500000, tx.data, "", amounts, 1.003, hash160PubKey);
                     let updatedVins = qtumTx.vins.map((vin, index) => {
                         return { ...vin, ['scriptSig']: p2pkhScriptSig(signp2pkh(qtumTx, index, this.privateKey, 0x01), this.publicKey.split("0x")[1]) }
                     })
                     qtumTx.vins = updatedVins
                     let result = txToBuffer(qtumTx).toString('hex');
-                    console.log(result, "resulttt");
+                    console.log(result, "result");
                     return;
+                }
+                else if ((tx.to == "" || tx.to == undefined) && tx.data != "" && tx.value !== "") {
+                    return logger.throwError(
+                        "You cannot send QTUM while deploying a contract.",
+                        Logger.errors.NOT_IMPLEMENTED,
+                        {
+                            error: "You cannot send QTUM while deploying a contract.",
+                        }
+                    );
                 }
                 else if (tx.to != "" && tx.data != "") {
                     // Call
                     // Add the Vouts
-                    qtumTx.vouts = addVouts(40, 2500000, tx.data, tx.to, amounts, neededAmount, hash160PubKey);
+                    // @ts-ignore
+                    qtumTx.vouts = addContractVouts(40, 250000, tx.data, tx.to, amounts, neededAmount, hash160PubKey);
                     let updatedVins = qtumTx.vins.map((vin, index) => {
                         return { ...vin, ['scriptSig']: p2pkhScriptSig(signp2pkh(qtumTx, index, this.privateKey, 0x01), this.publicKey.split("0x")[1]) }
                     })
                     qtumTx.vins = updatedVins
                     let result = txToBuffer(qtumTx).toString('hex');
-                    console.log(result, "resulttt");
+                    console.log(result, "result");
                     return;
                 }
                 else {
                     // Send to address
-
+                    const sha256Hash = sha256().update(super.publicKey.split("0x")[1], "hex").digest("hex")
+                    const hash160PubKey = ripemd160().update(sha256Hash, "hex").digest("hex")
+                    // @ts-ignore
+                    const sha256HashAddress = sha256().update(tx.to.split("0x")[1], "hex").digest("hex")
+                    const hash160Address = ripemd160().update(sha256HashAddress, "hex").digest("hex")
+                    qtumTx.vouts = addp2pkhVouts(hash160Address, amounts, neededAmount, hash160PubKey);
+                    let updatedVins = qtumTx.vins.map((vin, index) => {
+                        return { ...vin, ['scriptSig']: p2pkhScriptSig(signp2pkh(qtumTx, index, this.privateKey, 0x01), this.publicKey.split("0x")[1]) }
+                    })
+                    qtumTx.vins = updatedVins
+                    let result = txToBuffer(qtumTx).toString('hex');
+                    console.log(result, "result");
+                    return;
                 }
             }).catch((error: any) => {
                 if (forwardErrors.indexOf(error.code) >= 0) {
