@@ -751,26 +751,6 @@
         "signature": "d6068e4b05f9fd73c11ffead8f51eedb4a6dcee816e845d80b192f60fa0d5ccc",
         "affectsGlobalScope": false
       },
-      "../src/lib/qtumcontractfactory.ts": {
-        "version": "3969c19341b301f9a4ce13e1a9e2c3917ef1f115b954865c09a85f13b1b21d84",
-        "signature": "ffd777bcd3dd580b9b20f4a09a678155709f441eca94514e305a35b4e5e0931e",
-        "affectsGlobalScope": false
-      },
-      "../src/lib/qtumprovider.ts": {
-        "version": "6188ad046ab857722390753c2d27a2853f5e32a835b4cced8f4fcdd1eaff94a3",
-        "signature": "b3423d8eac445975f3b46dc7983ea94a8f3a85fc2b092aed86d93bf5e8be7595",
-        "affectsGlobalScope": false
-      },
-      "../node_modules/bignumber.js/bignumber.d.ts": {
-        "version": "1d7d9e42cb2cc36dfc7ce35755ce67d5ff0f4a2ef72d3019f4c461bfd22123da",
-        "signature": "1d7d9e42cb2cc36dfc7ce35755ce67d5ff0f4a2ef72d3019f4c461bfd22123da",
-        "affectsGlobalScope": false
-      },
-      "../node_modules/hash.js/lib/hash.d.ts": {
-        "version": "51bd18d47ab67727e72711355e713fa1d1e7d2cb79dd550af7b70308e8b57391",
-        "signature": "51bd18d47ab67727e72711355e713fa1d1e7d2cb79dd550af7b70308e8b57391",
-        "affectsGlobalScope": true
-      },
       "../src/lib/helpers/opcodes.ts": {
         "version": "d4ea2ad68d6e388cc6b4dc0bfa01b4f4faaa06d04b7013f491063de0fe048bf8",
         "signature": "b7681f81f080bba11bacb4132a55e0c18c95f4fc321b0392b9c36a1cf02d89ee",
@@ -911,13 +891,33 @@
         "signature": "10288db5d4a02e189e3acca1486b1182236d81a95158dd49b91c46ab57571d3d",
         "affectsGlobalScope": false
       },
+      "../node_modules/hash.js/lib/hash.d.ts": {
+        "version": "51bd18d47ab67727e72711355e713fa1d1e7d2cb79dd550af7b70308e8b57391",
+        "signature": "51bd18d47ab67727e72711355e713fa1d1e7d2cb79dd550af7b70308e8b57391",
+        "affectsGlobalScope": true
+      },
+      "../node_modules/bignumber.js/bignumber.d.ts": {
+        "version": "1d7d9e42cb2cc36dfc7ce35755ce67d5ff0f4a2ef72d3019f4c461bfd22123da",
+        "signature": "1d7d9e42cb2cc36dfc7ce35755ce67d5ff0f4a2ef72d3019f4c461bfd22123da",
+        "affectsGlobalScope": false
+      },
       "../src/lib/utils.ts": {
-        "version": "ba6885f21e2503a2007a72347df7b6a72a2fe715de37a4c744e831f66cfb2952",
-        "signature": "5529472a00d7cafe4db5197a6a5382d5778855e77467581a6b6aec6349c79c04",
+        "version": "2f224b8e3e88dfb4b20a0f7ccfb354ebb88197e61e562dad19a258259fb9934d",
+        "signature": "88cc495d931061127cf5aa8f59fe7398d70904d799826a2ae692ad6546f5c9bd",
+        "affectsGlobalScope": false
+      },
+      "../src/lib/qtumcontractfactory.ts": {
+        "version": "2149112060329785775c0540a922774c1f0e83064f823acfe4d484a447b4d29e",
+        "signature": "4358c48912773e958a932208edfb5c4128d0c398aa21e04f46a532c610db38a5",
+        "affectsGlobalScope": false
+      },
+      "../src/lib/qtumprovider.ts": {
+        "version": "6188ad046ab857722390753c2d27a2853f5e32a835b4cced8f4fcdd1eaff94a3",
+        "signature": "b3423d8eac445975f3b46dc7983ea94a8f3a85fc2b092aed86d93bf5e8be7595",
         "affectsGlobalScope": false
       },
       "../src/lib/qtumwallet.ts": {
-        "version": "826f492ffde0477203ea319ce728709047daf38ccdd408c43ccf7d1aaf4824cf",
+        "version": "4e5fffa3ae484f033c64c5365458462b88a129d4c58477c32b47f08874f4e0ef",
         "signature": "63fe1ad59e9a6411b215d6f6e2177aae7e7bcec553a141c54f4889921cffceec",
         "affectsGlobalScope": false
       },
@@ -1618,7 +1618,13 @@
         "../node_modules/@types/bn.js/index.d.ts"
       ],
       "../src/lib/qtumcontractfactory.ts": [
-        "../node_modules/ethers/lib/index.d.ts"
+        "../node_modules/@ethersproject/abi/lib/index.d.ts",
+        "../node_modules/@ethersproject/abstract-provider/lib/index.d.ts",
+        "../node_modules/@ethersproject/address/lib/index.d.ts",
+        "../node_modules/@ethersproject/logger/lib/index.d.ts",
+        "../node_modules/ethers/lib/index.d.ts",
+        "../node_modules/ethers/lib/utils.d.ts",
+        "../src/lib/utils.ts"
       ],
       "../src/lib/qtumprovider.ts": [
         "../node_modules/ethers/lib/index.d.ts",
@@ -2440,39 +2446,36 @@
       "../src/lib/bitcoinjs-lib.d.ts",
       "../src/lib/helpers/buffer-cursor.ts",
       "../src/lib/helpers/opcodes.ts",
-      "../src/lib/qtumcontractfactory.ts",
-      "../src/lib/qtumprovider.ts",
       [
-        "../src/lib/qtumwallet.ts",
+        "../src/lib/qtumcontractfactory.ts",
         [
           {
-            "file": "../src/lib/qtumwallet.ts",
-            "start": 1383,
-            "length": 11,
-            "messageText": "Object is possibly 'undefined'.",
-            "category": 1,
-            "code": 2532
-          },
-          {
-            "file": "../src/lib/qtumwallet.ts",
-            "start": 5046,
-            "length": 6,
-            "messageText": "'result' is declared but its value is never read.",
+            "file": "../src/lib/qtumcontractfactory.ts",
+            "start": 170,
+            "length": 19,
+            "messageText": "'TransactionResponse' is declared but its value is never read.",
             "category": 1,
             "code": 6133,
             "reportsUnnecessary": true
-          },
-          {
-            "file": "../src/lib/qtumwallet.ts",
-            "start": 5549,
-            "length": 5,
-            "messageText": "Object is possibly 'undefined'.",
-            "category": 1,
-            "code": 2532
           }
         ]
       ],
-      "../src/lib/utils.ts",
+      "../src/lib/qtumprovider.ts",
+      "../src/lib/qtumwallet.ts",
+      [
+        "../src/lib/utils.ts",
+        [
+          {
+            "file": "../src/lib/utils.ts",
+            "start": 8924,
+            "length": 5,
+            "messageText": "'rawTx' is declared but its value is never read.",
+            "category": 1,
+            "code": 6133,
+            "reportsUnnecessary": true
+          }
+        ]
+      ],
       "../src/lib/varuint-bitcoin.d.ts",
       "../src/tests/contract_deployment.ts",
       "../src/tests/contract_interaction.ts"

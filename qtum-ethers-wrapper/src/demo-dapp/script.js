@@ -1,6 +1,7 @@
 const { ethers } = require("ethers");
 const { QtumWallet } = require("../../build/main/lib/QtumWallet");
 const { QtumProvider } = require("../../build/main/lib/QtumProvider");
+const { QtumContractFactory } = require("../../build/main/lib/QtumContractFactory");
 
 const provider = new QtumProvider("http://localhost:23889");
 const ethProvider = new ethers.providers.JsonRpcProvider(
@@ -34,10 +35,10 @@ const ABI = [
 ];
 
 async function main() {
-  // const simpleStore = new ethers.ContractFactory(ABI, BYTECODE, signer);
-  // const deployment = await simpleStore.deploy({
-  //   gasLimit: "0x2dc6c0",
-  // });
+  const simpleStore = new QtumContractFactory(ABI, BYTECODE, signer);
+  const deployment = await simpleStore.deploy({
+    gasLimit: "0x2dc6c0",
+  });
   // console.log(deployment);
   //   const simpleStoreRegSigner = new ethers.ContractFactory(
   //     ABI,
@@ -58,18 +59,18 @@ async function main() {
   //   gasPrice: "0x28",
   // });
   // console.log(setSimpleStore);
-  const simulateSendTo = await signer.sendTransaction(
-    {
-      "to": "0x7926223070547D2D15b2eF5e7383E541c338FfE9",
-      "from": "0xcca81b02942d8079a871e02ba03a3a4a8d7740d2",
-      "gasLimit": "0x3d090",
-      "gasPrice": "0x28",
-      "value": "0xffffff",
-      "data": ""
-    }
-  )
+  // const simulateSendTo = await signer.sendTransaction(
+  //   {
+  //     "to": "0x7926223070547D2D15b2eF5e7383E541c338FfE9",
+  //     "from": "0xcca81b02942d8079a871e02ba03a3a4a8d7740d2",
+  //     "gasLimit": "0x3d090",
+  //     "gasPrice": "0x28",
+  //     "value": "0xffffff",
+  //     "data": ""
+  //   }
+  // )
   // console.log(simulateSendTo)
-  const addy = await signer.getAddress()
-  console.log(addy)
+  // const addy = await signer.getAddress()
+  // console.log(addy)
 }
 main();

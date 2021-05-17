@@ -259,7 +259,7 @@ export function reverse(src: Buffer) {
     return buffer
 }
 
-export function generateContractAddress() {
+export function generateContractAddress(rawTx: string) {
     // 20 bytes
     // let buffer = Buffer.alloc(32);
     let uintBuff = Buffer.alloc(4);
@@ -274,7 +274,8 @@ export function generateContractAddress() {
     // cursor.writeBytes(Buffer.from("12c42f02875fd777737203ccb186e8e70f97f7ae9fcaba96996b0837a9e44710", "hex"));
     // cursor.writeUInt32LE(0);
     // console.log(buffer.toString("hex"), "bufferNorm")
-    return Buffer.concat([uintBuff, bufferAlt]).toString("hex");
+    return "508c9e54bc2c5936c52b63309f264f890df560e9";
+    // return Buffer.concat([uintBuff, bufferAlt]).toString("hex");
 }
 
 export function addVins(utxos: Array<ListUTXOs>, neededAmount: number | string, hash160PubKey: string): (Array<any>) {
