@@ -1,4 +1,5 @@
 /// <reference types="node" />
+import { Transaction } from "@ethersproject/transactions";
 export interface ListUTXOs {
     address: string;
     txid: string;
@@ -57,11 +58,12 @@ export declare function txToBuffer(tx: any): Buffer;
 export declare function toDER(x: Buffer): Buffer;
 export declare function encodeSig(signature: Uint8Array, hashType: number): Buffer;
 export declare function signp2pkh(tx: any, vindex: number, privKey: string, hashType?: number): Buffer;
-export declare function p2pkhScriptSig(sig: any, pubkey: any): Buffer;
-export declare function p2pkhScript(hash160PubKey: Buffer): Buffer;
-export declare function contractTxScript(contractAddress: string, gasLimit: number, gasPrice: number, encodedData: string): Buffer;
+export declare function p2pkhScriptSig(sig: any, pubkey: any): any;
+export declare function p2pkhScript(hash160PubKey: Buffer): any;
+export declare function contractTxScript(contractAddress: string, gasLimit: number, gasPrice: number, encodedData: string): any;
 export declare function reverse(src: Buffer): Buffer;
 export declare function generateContractAddress(rawTx: string): string;
 export declare function addVins(utxos: Array<ListUTXOs>, neededAmount: number | string, hash160PubKey: string): (Array<any>);
 export declare function addContractVouts(gasPrice: number, gasLimit: number, data: string, address: string, amounts: Array<any>, neededAmount: string, hash160PubKey: string): (Array<any>);
 export declare function addp2pkhVouts(hash160Address: string, amounts: Array<any>, neededAmount: string, hash160PubKey: string): (Array<any>);
+export declare function parseSignedTransaction(transaction: string): Transaction;

@@ -3,14 +3,18 @@ import { encode } from 'bip66';
 import { OPS } from "./helpers/opcodes";
 import { BufferCursor } from './helpers/buffer-cursor';
 import { ecdsaSign } from 'secp256k1';
-import bitcoinjs = require("bitcoinjs-lib");
 import { encode as encodeCInt } from "bitcoinjs-lib/src/script_number"
-import { sha256 } from "hash.js"
-const toBuffer = require('typedarray-to-buffer')
+import { sha256, ripemd160 } from "hash.js"
 import { BigNumber } from "bignumber.js"
 import {
     arrayify
 } from "ethers/lib/utils";
+import { Transaction } from "@ethersproject/transactions";
+import { BigNumber as BigNumberEthers } from "ethers";
+const toBuffer = require('typedarray-to-buffer')
+const bitcoinjs = require("bitcoinjs-lib");
+const utxoDecoder = require("@crypto-hex-decoder/utxo");
+import { decode } from "./helpers/hex-decoder";
 export interface ListUTXOs {
     address: string,
     txid: string,
@@ -124,7 +128,6 @@ export function txToBuffer(tx: any) {
     // vin
     for (let vin of tx.vins) {
         cursor.writeBytes(vin.hash);
-        // Issue with using 4, needed 5
         cursor.writeUInt32LE(vin.vout);
         if (vin.scriptSig !== null) {
             cursor.writeBytes(encodeVaruint(vin.scriptSig.length));
@@ -134,7 +137,6 @@ export function txToBuffer(tx: any) {
             cursor.writeBytes(vin.script);
         }
         cursor.writeUInt32LE(vin.sequence);
-
     }
     // vout length
     cursor.writeBytes(encodeVaruint(tx.vouts.length));
@@ -222,8 +224,6 @@ export function p2pkhScript(hash160PubKey: Buffer) {
 export function contractTxScript(contractAddress: string, gasLimit: number, gasPrice: number, encodedData: string) {
     // If contractAddress is missing, assume it's a create script, else assume its a call contract interaction
     if (contractAddress === "") {
-        // console.log(bitcoinjs.script.toASM(Buffer.from("010114cca81b02942d8079a871e02ba03a3a4a8d7740d24c8b8a473044022038774a834bc0128366a5aba49e20d3b2774b30404670fd8be00e35794fbdd9a002205edb423e3d612b86c1d4a3c1cf7cf50543e7a8b1083bfc034102e2e2fc882a7c0141040674a4bcaba69378609e31faab1475bae52775da9ffc152e3008f7db2baa69abc1e8c4dcb46083ad56b73614d3eb01f717499c19510544a214f4db4a7c2ea503c4010403a0252601284cf2608060405234801561001057600080fd5b506040516020806100f2833981016040525160005560bf806100336000396000f30060806040526004361060485763ffffffff7c010000000000000000000000000000000000000000000000000000000060003504166360fe47b18114604d5780636d4ce63c146064575b600080fd5b348015605857600080fd5b5060626004356088565b005b348015606f57600080fd5b506076608d565b60408051918252519081900360200190f35b600055565b600054905600a165627a7a7230582049a087087e1fc6da0b68ca259d45a2e369efcbb50e93f9b7fa3e198de6402b810029c1", "hex")))
-        // Issue here with OPS.OP_4 not compiling correctly, when Buffer is casted to string, the first 3 characters should be 010 instead of a 5.
         return bitcoinjs.script.compile([
             OPS.OP_4,
             encodeCInt(gasLimit),
@@ -239,7 +239,6 @@ export function contractTxScript(contractAddress: string, gasLimit: number, gasP
             Buffer.from(encodedData, "hex"),
             Buffer.from(contractAddress, "hex"),
             OPS.OP_CALL,
-
         ])
     }
 }
@@ -256,21 +255,28 @@ export function reverse(src: Buffer) {
 }
 
 export function generateContractAddress(rawTx: string) {
+    console.log(rawTx)
+    // Buffer.from("f6287c7a0ea0389c9f7cba86d7e08b804ae163f3", "hex")
     // 20 bytes
-    // let buffer = Buffer.alloc(32);
+    //f6287c7a0ea0389c9f7cba86d7e08b804ae163f3
+    let buffer = Buffer.alloc(32 + 4);
     // let uintBuff = Buffer.alloc(4);
-    // uintBuff.writeUInt32LE(0);
-    // let bufferAlt = Buffer.from("12c42f02875fd777737203ccb186e8e70f97f7ae9fcaba96996b0837a9e44710", "hex");
+    // uintBuff.writeUInt32LE(1);
+    // console.log(uintBuff)
+    // let bufferAlt = Buffer.from("dbede0f6cdf8af6df3e794a3c46075e0aa793a9534a617a9ccfb6d632a52a927", "hex");
     // console.log(bufferAlt, "ere")
     // bufferAlt.writeUInt32LE(0)
     // return bufferAlt.toString("hex")
     // console.log(bufferAlt.toString("hex"), 'bufferAlt', bufferAlt.length)
-    // let cursor = new BufferCursor(buffer);
-    // cursor.writeBytes(Buffer.from("12c42f02875fd777737203ccb186e8e70f97f7ae9fcaba96996b0837a9e44710", "hex"));
-    // cursor.writeUInt32LE(0);
+    let cursor = new BufferCursor(buffer);
+    cursor.writeUInt32LE(1);
+    cursor.writeBytes(Buffer.from("dbede0f6cdf8af6df3e794a3c46075e0aa793a9534a617a9ccfb6d632a52a927", "hex"));
     // console.log(buffer.toString("hex"), "bufferNorm")
-    return "508c9e54bc2c5936c52b63309f264f890df560e9";
-    // return Buffer.concat([uintBuff, bufferAlt]).toString("hex");
+    // return "508c9e54bc2c5936c52b63309f264f890df560e9";
+    let firstHash = sha256().update(buffer.toString("hex"), "hex").digest("hex");
+    let secondHash = ripemd160().update(firstHash).digest("hex");
+    console.log(firstHash, 'firstHash', secondHash, 'secondHash')
+    return secondHash;
 }
 
 export function addVins(utxos: Array<ListUTXOs>, neededAmount: number | string, hash160PubKey: string): (Array<any>) {
@@ -278,12 +284,12 @@ export function addVins(utxos: Array<ListUTXOs>, neededAmount: number | string, 
     let inputs = [];
     let amounts = [];
     for (let i = 0; i < utxos.length; i++) {
-            balance += parseFloat(utxos[i].amount);
-            inputs.push({ txid: Buffer.from(utxos[i].txid, 'hex'), vout: utxos[i].vout, hash: reverse(Buffer.from(utxos[i].txid, 'hex')), sequence: 0xffffffff, script: p2pkhScript(Buffer.from(hash160PubKey, "hex")), scriptSig: null });
-            amounts.push(parseFloat(utxos[i].amount));
-            if (balance >= neededAmount) {
-                break;
-            }
+        balance += parseFloat(utxos[i].amount);
+        inputs.push({ txid: Buffer.from(utxos[i].txid, 'hex'), vout: utxos[i].vout, hash: reverse(Buffer.from(utxos[i].txid, 'hex')), sequence: 0xffffffff, script: p2pkhScript(Buffer.from(hash160PubKey, "hex")), scriptSig: null });
+        amounts.push(parseFloat(utxos[i].amount));
+        if (balance >= neededAmount) {
+            break;
+        }
     }
     // amounts.reduce((a, b) => a + b, 0)
     return [inputs, amounts];
@@ -299,10 +305,8 @@ export function addContractVouts(gasPrice: number, gasLimit: number, data: strin
     })
     vouts.push({
         script: contractTxScript(address === "" ? "" : address.split("0x")[1], gasLimit, gasPrice, data.split("0x")[1]),
-        // script: Buffer.from("010403a0252601284cf2608060405234801561001057600080fd5b506040516020806100f2833981016040525160005560bf806100336000396000f30060806040526004361060485763ffffffff7c010000000000000000000000000000000000000000000000000000000060003504166360fe47b18114604d5780636d4ce63c146064575b600080fd5b348015605857600080fd5b5060626004356088565b005b348015606f57600080fd5b506076608d565b60408051918252519081900360200190f35b600055565b600054905600a165627a7a7230582049a087087e1fc6da0b68ca259d45a2e369efcbb50e93f9b7fa3e198de6402b810029c1", "hex"),
         value: 0
     })
-    // console.log(Buffer.from("010403a0252601284cf2608060405234801561001057600080fd5b506040516020806100f2833981016040525160005560bf806100336000396000f30060806040526004361060485763ffffffff7c010000000000000000000000000000000000000000000000000000000060003504166360fe47b18114604d5780636d4ce63c146064575b600080fd5b348015605857600080fd5b5060626004356088565b005b348015606f57600080fd5b506076608d565b60408051918252519081900360200190f35b600055565b600054905600a165627a7a7230582049a087087e1fc6da0b68ca259d45a2e369efcbb50e93f9b7fa3e198de6402b810029c1", "hex").length)
     return vouts;
 }
 
@@ -321,6 +325,29 @@ export function addp2pkhVouts(hash160Address: string, amounts: Array<any>, neede
     return vouts;
 }
 
-// export function bufferToTx(buffer: Buffer) {
-    
-// }
+export function parseSignedTransaction(transaction: string) {
+    let tx: Transaction = {
+        hash: "",
+        to: "",
+        from: "",
+        nonce: 1,
+        gasLimit: BigNumberEthers.from("0x28"),
+        gasPrice: BigNumberEthers.from("0x28"),
+        data: "",
+        value: BigNumberEthers.from("0x28"),
+        chainId: 81,
+    };
+    // Set hash (double sha256 of raw TX string)
+    const sha256HashFirst = sha256().update(transaction, "hex").digest("hex")
+    const sha256HashSecond = reverse(Buffer.from(sha256().update(sha256HashFirst, "hex").digest("hex"), "hex")).toString("hex")
+    tx['hash'] = `0x${sha256HashSecond}`
+    // Hacky way to find out if TX contains contract creation, call, or P2PKH (needs to be refined)
+    // Check the outputs for 0 values (creation or call, count items in ASM format) - note: OP_CREATE & OP_CALL are not recognized, thus the logic for figuring out call vs contract is to 
+    // count ASM items (4 for creation, OP_4, gasLimit, gasPrice, byteCode), (5 for call, OP_4, gasLimit, gasPrice, data, contractAddress)
+    // const btcEncodedRawTx = "02000000024ef16d31536aaa9a0926bcc921324625fabc0a8444b590fe7c42a3cb6985a9f6000000008b483045022100fcf284d1948c87276ad0bd97fd6279fdb96d249abdfbfc0354061ee12f77c1cb02207946fb5a293a9a30685f72e0fea9cf2e0dc447e059dbbce37bc67112887876d30141040674a4bcaba69378609e31faab1475bae52775da9ffc152e3008f7db2baa69abc1e8c4dcb46083ad56b73614d3eb01f717499c19510544a214f4db4a7c2ea503ffffffff4f57d182c55d3a3130e5f4222423b35ce36c2cc67bd03ef4e4e5419abd485a17000000008a473044022044fb2d2f5c81f1f2cd241e500e14974968e5ab7b32f95eaac55c08b259904e6702206b4c93eed33a62124e18f683b39430b3862460ca5812a3d5fc0ed4469584a3d10141040674a4bcaba69378609e31faab1475bae52775da9ffc152e3008f7db2baa69abc1e8c4dcb46083ad56b73614d3eb01f717499c19510544a214f4db4a7c2ea503ffffffff02c0a6c104000000001976a914cca81b02942d8079a871e02ba03a3a4a8d7740d288ac0000000000000000fc5403c0c62d01284cf2608060405234801561001057600080fd5b506040516020806100f2833981016040525160005560bf806100336000396000f30060806040526004361060485763ffffffff7c010000000000000000000000000000000000000000000000000000000060003504166360fe47b18114604d5780636d4ce63c146064575b600080fd5b348015605857600080fd5b5060626004356088565b005b348015606f57600080fd5b506076608d565b60408051918252519081900360200190f35b600055565b600054905600a165627a7a7230582049a087087e1fc6da0b68ca259d45a2e369efcbb50e93f9b7fa3e198de6402b810029c100000000";
+    // const btcDecodedRawTx = decode(btcEncodedRawTx);
+    // console.log(btcDecodedRawTx.outs.filter((i: any) => i.value === 0), "first")
+    // console.log("Decoded transaction : " + JSON.stringify(btcDecodedRawTx));
+    // tx['to'] = 
+    return tx
+}

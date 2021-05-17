@@ -11,3 +11,5 @@ Fee estimation before script is serialized(?)
 Parse signed transaction
 
 Finish writing unit tests
+
+Refactor

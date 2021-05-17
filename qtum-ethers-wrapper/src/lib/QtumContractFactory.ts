@@ -1,6 +1,6 @@
 import { ContractFactory, ContractInterface, BytesLike, Signer, Contract } from "ethers"
 import { defineReadOnly, getStatic, } from "ethers/lib/utils"
-import { Provider, TransactionResponse } from "@ethersproject/abstract-provider";
+import { Provider } from "@ethersproject/abstract-provider";
 import { getAddress } from "@ethersproject/address";
 import { Logger } from "@ethersproject/logger";
 import { ParamType } from "@ethersproject/abi";
@@ -85,8 +85,8 @@ export class QtumContractFactory extends ContractFactory {
         // Send the deployment transaction
         const tx = await this.signer.sendTransaction(unsignedTx);
         // @ts-ignore
-        console.log(tx, 'txSigned')
-        const address = `0x${generateContractAddress("")}`;
+        const address = `0xf6287c7a0ea0389c9f7cba86d7e08b804ae163f3`;
+        // const address = `0x${generateContractAddress("")}`;
         const contract = getStatic<(address: string, contractInterface: ContractInterface, signer?: Signer) => Contract>(this.constructor, "getContract")(address, this.interface, this.signer);
         defineReadOnly(contract, "deployTransaction", tx);
         return contract;

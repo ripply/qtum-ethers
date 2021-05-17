@@ -2,6 +2,7 @@ import { providers } from "ethers";
 import {
     ConnectionInfo
   } from "ethers/lib/utils";
+import { parseSignedTransaction } from "./utils";
 export class QtumProvider extends providers.JsonRpcProvider {
   constructor(
     url?: ConnectionInfo | string,
@@ -21,15 +22,16 @@ export class QtumProvider extends providers.JsonRpcProvider {
     const signedTx = await Promise.resolve(signedTransaction);
     const hexTx = `0x${signedTx}`;
     // Parse the signed transaction here
+    const tx = parseSignedTransaction(signedTx);
     try {
       const hash = await this.perform("sendTransaction", {
         signedTransaction: hexTx,
       });
-      return hash
-      // return this._wrapTransaction(tx, hash);
+      // Note: need to destructure return result here.
+      return this._wrapTransaction(tx, ...hash);
     } catch (error) {
-      error.transaction = "";
-      error.transactionHash = "";
+      error.transaction = tx;
+      error.transactionHash = tx.hash;
       throw error;
     }
   }
