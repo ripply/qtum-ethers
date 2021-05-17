@@ -71,7 +71,7 @@ export class QtumWallet extends Wallet {
                     // Call
                     // Add the Vouts
                     // @ts-ignore
-                    qtumTx.vouts = addContractVouts(40, 250000, tx.data, tx.to, amounts, neededAmount, hash160PubKey);
+                    qtumTx.vouts = addContractVouts(BigNumberEthers.from(tx.gasPrice).toNumber(), gasLimit, tx.data, tx.to, amounts, neededAmount, hash160PubKey);
                     let updatedVins = qtumTx.vins.map((vin, index) => {
                         return { ...vin, ['scriptSig']: p2pkhScriptSig(signp2pkh(qtumTx, index, this.privateKey, 0x01), this.publicKey.split("0x")[1]) }
                     })
