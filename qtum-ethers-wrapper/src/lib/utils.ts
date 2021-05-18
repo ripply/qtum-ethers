@@ -257,11 +257,10 @@ export function reverse(src: Buffer) {
 export function generateContractAddress(rawTx: string) {
     let buffer = Buffer.alloc(32 + 4);
     let cursor = new BufferCursor(buffer);
-    cursor.writeBytes(reverse(Buffer.from("af6d980f8fb0e067a730736d51c651f88e29c299d1d7c760beea3d36bc71690d", "hex")));
-    cursor.writeUInt32LE(1);
+    cursor.writeBytes(reverse(Buffer.from(rawTx, "hex")));
+    cursor.writeUInt32LE(0);
     let firstHash = sha256().update(buffer.toString("hex"), "hex").digest("hex");
-    let secondHash = ripemd160().update(firstHash).digest("hex");
-    console.log(firstHash, 'firstHash', secondHash, 'secondHash')
+    let secondHash = ripemd160().update(firstHash, "hex").digest("hex");
     return secondHash;
 }
 
@@ -286,12 +285,12 @@ export function addContractVouts(gasPrice: number, gasLimit: number, data: strin
     let networkFee = 0.002;
     let returnAmount = amounts.reduce((a, b) => a + b);
     vouts.push({
-        script: p2pkhScript(Buffer.from(hash160PubKey, "hex")),
-        value: new BigNumber(returnAmount).minus(neededAmount).minus(networkFee).times(1e8).toNumber()
-    })
-    vouts.push({
         script: contractTxScript(address === "" ? "" : address.split("0x")[1], gasLimit, gasPrice, data.split("0x")[1]),
         value: 0
+    })
+    vouts.push({
+        script: p2pkhScript(Buffer.from(hash160PubKey, "hex")),
+        value: new BigNumber(returnAmount).minus(neededAmount).minus(networkFee).times(1e8).toNumber()
     })
     return vouts;
 }
