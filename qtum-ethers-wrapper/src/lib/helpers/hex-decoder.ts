@@ -5,11 +5,11 @@ const bitcoinjs = require('bitcoinjs-lib');
  * Decode utxo hex.
  * @param {string} hex
  */
-export function decode (hex: string) {
+export function decode(hex: string) {
   let tx = bitcoinjs.Transaction.fromHex(hex)
-  
-  tx.ins.forEach((input: any) =>{
-    if (input.witness.length > 0){
+
+  tx.ins.forEach((input: any) => {
+    if (input.witness.length > 0) {
       input.type = 'Segwit'
       input.witness = decodeWitness(input.witness)
       input.script = {
@@ -17,14 +17,14 @@ export function decode (hex: string) {
       }
     } else {
       let decodedScript = bitcoinjs.script.toASM(input.script).split(" ")
-      if(decodedScript.length === 2){
+      if (decodedScript.length === 2) {
         input.type = 'P2PKH'
         input.script = {
           signature: decodedScript[0],
           publicKey: decodedScript[1]
         }
       }
-      else{
+      else {
         input.type = 'Unkown'
         input.script = {
           hex: decodedScript
@@ -35,8 +35,7 @@ export function decode (hex: string) {
   })
 
   tx.outs.forEach((output: any) => {
-      console.log(bitcoinjs.script.toASM(bitcoinjs.script.decompile(Buffer.from("540390d00301282460fe47b100000000000000000000000000000000000000000000000000000000000003ea14f6287c7a0ea0389c9f7cba86d7e08b804ae163f3c2", "hex"))), 'output.script')
-    output.script = bitcoinjs.script.toASM(output.script)
+    output.script = output.script
   })
 
   tx.totalValue = sumOutputValue(tx)
@@ -49,7 +48,7 @@ export function decode (hex: string) {
  * @param {Transaction} tx
  * @returns {number} satoshis 
  */
-function sumOutputValue (tx: any){
+function sumOutputValue(tx: any) {
   let totalValue = 0;
   if (tx && tx.outs && tx.outs.length > 0) {
     totalValue = tx.outs.map((out: any) => out.value).reduce(reducer)
@@ -62,12 +61,12 @@ function sumOutputValue (tx: any){
  * @param {Array} witness 
  * @return {signature: string, publicKey: string, hashType:number}
  */
-function decodeWitness(witness: Array<any>){
+function decodeWitness(witness: Array<any>) {
   const { signature: sigBuf, hashType } = bitcoinjs.script.signature.decode(witness[0])
   const signature = sigBuf.toString('hex')
   const publicKey = witness[1].toString('hex')
   return { signature, publicKey, hashType }
 }
 
-function reducer(a: any, b: any){ return a + b}
+function reducer(a: any, b: any) { return a + b }
 

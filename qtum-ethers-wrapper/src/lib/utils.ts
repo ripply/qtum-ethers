@@ -3,17 +3,17 @@ import { encode } from 'bip66';
 import { OPS } from "./helpers/opcodes";
 import { BufferCursor } from './helpers/buffer-cursor';
 import { ecdsaSign } from 'secp256k1';
-import { encode as encodeCInt } from "bitcoinjs-lib/src/script_number"
+import { encode as encodeCInt, decode as decodeCInt } from "bitcoinjs-lib/src/script_number"
 import { sha256, ripemd160 } from "hash.js"
 import { BigNumber } from "bignumber.js"
 import {
-    arrayify
+    arrayify,
+    hexlify
 } from "ethers/lib/utils";
 import { Transaction } from "@ethersproject/transactions";
 import { BigNumber as BigNumberEthers } from "ethers";
 const toBuffer = require('typedarray-to-buffer')
 const bitcoinjs = require("bitcoinjs-lib");
-const utxoDecoder = require("@crypto-hex-decoder/utxo");
 import { decode } from "./helpers/hex-decoder";
 export interface ListUTXOs {
     address: string,
@@ -280,13 +280,13 @@ export function addVins(utxos: Array<ListUTXOs>, neededAmount: number | string, 
     return [inputs, amounts];
 }
 
-export function addContractVouts(gasPrice: number, gasLimit: number, data: string, address: string, amounts: Array<any>, neededAmount: string, hash160PubKey: string): (Array<any>) {
+export function addContractVouts(gasPrice: number, gasLimit: number, data: string, address: string, amounts: Array<any>, neededAmount: string, value: number, hash160PubKey: string): (Array<any>) {
     let vouts = [];
     let networkFee = 0.002;
     let returnAmount = amounts.reduce((a, b) => a + b);
     vouts.push({
         script: contractTxScript(address === "" ? "" : address.split("0x")[1], gasLimit, gasPrice, data.split("0x")[1]),
-        value: 0
+        value: value
     })
     vouts.push({
         script: p2pkhScript(Buffer.from(hash160PubKey, "hex")),
@@ -300,12 +300,12 @@ export function addp2pkhVouts(hash160Address: string, amounts: Array<any>, neede
     let networkFee = 0.002;
     let returnAmount = amounts.reduce((a, b) => a + b);
     vouts.push({
-        script: p2pkhScript(Buffer.from(hash160PubKey, "hex")),
-        value: new BigNumber(returnAmount).minus(neededAmount).minus(networkFee).times(1e8).toNumber()
-    })
-    vouts.push({
         script: p2pkhScript(Buffer.from(hash160Address, "hex")),
         value: new BigNumber(neededAmount).times(1e8).toNumber()
+    })
+    vouts.push({
+        script: p2pkhScript(Buffer.from(hash160PubKey, "hex")),
+        value: new BigNumber(returnAmount).minus(neededAmount).minus(networkFee).times(1e8).toNumber()
     })
     return vouts;
 }
@@ -316,25 +316,47 @@ export function parseSignedTransaction(transaction: string) {
         to: "",
         from: "",
         nonce: 1,
-        gasLimit: BigNumberEthers.from("0x28"),
+        gasLimit: BigNumberEthers.from("0x3d090"),
         gasPrice: BigNumberEthers.from("0x28"),
         data: "",
-        value: BigNumberEthers.from("0x28"),
+        value: BigNumberEthers.from("0x0"),
         chainId: 81,
     };
     // Set hash (double sha256 of raw TX string)
     const sha256HashFirst = sha256().update(transaction, "hex").digest("hex")
     const sha256HashSecond = reverse(Buffer.from(sha256().update(sha256HashFirst, "hex").digest("hex"), "hex")).toString("hex")
     tx['hash'] = `0x${sha256HashSecond}`
-
-    // tx['from'] = 
     // Hacky way to find out if TX contains contract creation, call, or P2PKH (needs to be refined)
     // Check the outputs for 0 values (creation or call, count items in ASM format) - note: OP_CREATE & OP_CALL are not recognized, thus the logic for figuring out call vs contract is to 
     // count ASM items (4 for creation, OP_4, gasLimit, gasPrice, byteCode), (5 for call, OP_4, gasLimit, gasPrice, data, contractAddress)
-    // const btcEncodedRawTx = "02000000024ef16d31536aaa9a0926bcc921324625fabc0a8444b590fe7c42a3cb6985a9f6000000008b483045022100fcf284d1948c87276ad0bd97fd6279fdb96d249abdfbfc0354061ee12f77c1cb02207946fb5a293a9a30685f72e0fea9cf2e0dc447e059dbbce37bc67112887876d30141040674a4bcaba69378609e31faab1475bae52775da9ffc152e3008f7db2baa69abc1e8c4dcb46083ad56b73614d3eb01f717499c19510544a214f4db4a7c2ea503ffffffff4f57d182c55d3a3130e5f4222423b35ce36c2cc67bd03ef4e4e5419abd485a17000000008a473044022044fb2d2f5c81f1f2cd241e500e14974968e5ab7b32f95eaac55c08b259904e6702206b4c93eed33a62124e18f683b39430b3862460ca5812a3d5fc0ed4469584a3d10141040674a4bcaba69378609e31faab1475bae52775da9ffc152e3008f7db2baa69abc1e8c4dcb46083ad56b73614d3eb01f717499c19510544a214f4db4a7c2ea503ffffffff02c0a6c104000000001976a914cca81b02942d8079a871e02ba03a3a4a8d7740d288ac0000000000000000fc5403c0c62d01284cf2608060405234801561001057600080fd5b506040516020806100f2833981016040525160005560bf806100336000396000f30060806040526004361060485763ffffffff7c010000000000000000000000000000000000000000000000000000000060003504166360fe47b18114604d5780636d4ce63c146064575b600080fd5b348015605857600080fd5b5060626004356088565b005b348015606f57600080fd5b506076608d565b60408051918252519081900360200190f35b600055565b600054905600a165627a7a7230582049a087087e1fc6da0b68ca259d45a2e369efcbb50e93f9b7fa3e198de6402b810029c100000000";
-    // const btcDecodedRawTx = decode(btcEncodedRawTx);
-    // console.log(btcDecodedRawTx.outs.filter((i: any) => i.value === 0), "first")
-    // console.log("Decoded transaction : " + JSON.stringify(btcDecodedRawTx));
-    // tx['to'] = 
+    const btcDecodedRawTx = decode(transaction);
+    // Check if first OP code is OP_DUP -> assume p2pkh script
+    if (bitcoinjs.script.decompile(btcDecodedRawTx.outs[0].script)[0] === OPS.OP_DUP) {
+        tx['to'] = `0x${bitcoinjs.script.decompile(btcDecodedRawTx.outs[0].script)[2].toString("hex")}`
+        tx['from'] = `0x${bitcoinjs.script.decompile(btcDecodedRawTx.outs[1].script)[2].toString("hex")}`
+        tx['value'] = BigNumberEthers.from(hexlify(btcDecodedRawTx.outs[0].value))
+    }
+    // Check if first OP code is OP_4 and length is > 5 -> assume contract call
+    else if (bitcoinjs.script.decompile(btcDecodedRawTx.outs[0].script)[0] === OPS.OP_4 && bitcoinjs.script.decompile(btcDecodedRawTx.outs[0].script).length > 5) {
+        tx['to'] = `0x${bitcoinjs.script.decompile(btcDecodedRawTx.outs[0].script)[4].toString("hex")}`
+        tx['from'] = `0x${bitcoinjs.script.decompile(btcDecodedRawTx.outs[1].script)[2].toString("hex")}`
+        tx['value'] = btcDecodedRawTx.outs[0].value > 0 ? BigNumberEthers.from(hexlify(btcDecodedRawTx.outs[0].value)) : BigNumberEthers.from("0x0")
+        tx['data'] = bitcoinjs.script.decompile(btcDecodedRawTx.outs[0].script)[3].toString("hex")
+    }
+    // assume contract creation
+    else {
+        tx['to'] = ""
+        tx['from'] = `0x${bitcoinjs.script.decompile(btcDecodedRawTx.outs[1].script)[2].toString("hex")}`
+        tx['gasLimit'] = BigNumberEthers.from(hexlify(decodeCInt(bitcoinjs.script.decompile(btcDecodedRawTx.outs[0].script)[1])))
+        tx['gasPrice'] = BigNumberEthers.from(hexlify(decodeCInt(bitcoinjs.script.decompile(btcDecodedRawTx.outs[0].script)[2])))
+        tx['data'] = bitcoinjs.script.decompile(btcDecodedRawTx.outs[0].script)[3].toString("hex")
+    }
+    // console.log(bitcoinjs.script.decompile(btcDecodedRawTx.outs[0].script)[0])
+    // tx['gasLimit'] = BigNumberEthers.from(hexlify(decodeCInt(bitcoinjs.script.decompile(btcDecodedRawTx.outs.filter((i: any) => i.value === 0)[0].script)[1])))
+    // tx['gasPrice'] = BigNumberEthers.from(hexlify(decodeCInt(bitcoinjs.script.decompile(btcDecodedRawTx.outs.filter((i: any) => i.value === 0)[0].script)[2])))
+    // tx['data'] = bitcoinjs.script.decompile(btcDecodedRawTx.outs.filter((i: any) => i.value === 0)[0].script)[3].toString("hex")
+    // tx['to'] = bitcoinjs.script.decompile(btcDecodedRawTx.outs.filter((i: any) => i.value === 0)[0].script).length > 5 ? `0x${bitcoinjs.script.decompile(btcDecodedRawTx.outs.filter((i: any) => i.value === 0)[0].script)[4].toString("hex")}` : ""
+    // tx['from'] = `0x${bitcoinjs.script.decompile(btcDecodedRawTx.outs.filter((i: any) => i.value != 0)[0].script)[2].toString("hex")}`
+    console.log(tx);
     return tx
 }

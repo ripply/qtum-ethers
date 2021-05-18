@@ -2,13 +2,6 @@
 # yarn lockfile v1
 
 
-"@crypto-hex-decoder/utxo@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@crypto-hex-decoder/utxo/-/utxo-2.0.0.tgz#b050610d3cd0f71e8cbc470cfcce2106ae6f86c0"
-  integrity sha512-SzJ9YaWEeql5WqG0bVQ9sCjVU4p1Rj2kYvwM2MLXglRRUxHAs+2W5rAHS2PowUZR1yVvSZYWRlibZilaI193nQ==
-  dependencies:
-    bitcoinjs-lib "5.0.5"
-
 "@ethersproject/abi@5.1.2", "@ethersproject/abi@^5.1.0":
   version "5.1.2"
   resolved "https://registry.yarnpkg.com/@ethersproject/abi/-/abi-5.1.2.tgz#a8e75cd0455e6dc9e4861c3d1c22bbe436c1d775"
@@ -487,7 +480,7 @@ bip174@^2.0.1:
   resolved "https://registry.yarnpkg.com/bip174/-/bip174-2.0.1.tgz#39cf8ca99e50ce538fb762589832f4481d07c254"
   integrity sha512-i3X26uKJOkDTAalYAp0Er+qGMDhrbbh2o93/xiPyAN2s25KrClSpe3VXo/7mNJoqA5qfko8rLS2l3RWZgYmjKQ==
 
-bip32@^2.0.3, bip32@^2.0.4:
+bip32@^2.0.4:
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/bip32/-/bip32-2.0.6.tgz#6a81d9f98c4cd57d05150c60d8f9e75121635134"
   integrity sha512-HpV5OMLLGTjSVblmrtYRfFFKuQB+GArM0+XP8HGWfJ5vxYBqo+DesvJwOdC2WJ3bCkZShGf0QIfoIpeomVzVdA==
@@ -520,27 +513,6 @@ bitcoinjs-lib@*:
     bech32 "^1.1.2"
     bip174 "^2.0.1"
     bip32 "^2.0.4"
-    bip66 "^1.1.0"
-    bitcoin-ops "^1.4.0"
-    bs58check "^2.0.0"
-    create-hash "^1.1.0"
-    create-hmac "^1.1.3"
-    merkle-lib "^2.0.10"
-    pushdata-bitcoin "^1.0.1"
-    randombytes "^2.0.1"
-    tiny-secp256k1 "^1.1.1"
-    typeforce "^1.11.3"
-    varuint-bitcoin "^1.0.4"
-    wif "^2.0.1"
-
-bitcoinjs-lib@5.0.5:
-  version "5.0.5"
-  resolved "https://registry.yarnpkg.com/bitcoinjs-lib/-/bitcoinjs-lib-5.0.5.tgz#1c76f82479913affac2b0b9821884a6f7373902b"
-  integrity sha512-BUimtgWFoWmoXQ74XxlQH8y9Vzi8ypFiWErDkP+VBe0nGcU3bKAJbNhzhZOO1/QAfyelfNvxVV5Cj189XinmPg==
-  dependencies:
-    "@types/node" "10.12.18"
-    bech32 "^1.1.2"
-    bip32 "^2.0.3"
     bip66 "^1.1.0"
     bitcoin-ops "^1.4.0"
     bs58check "^2.0.0"

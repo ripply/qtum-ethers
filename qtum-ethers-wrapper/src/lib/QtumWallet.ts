@@ -54,7 +54,7 @@ export class QtumWallet extends Wallet {
                 qtumTx.vins = vins;
                 // Grab contract vouts (scripts/p2pkh)
                 // @ts-ignore
-                qtumTx.vouts = addContractVouts(BigNumberEthers.from(tx.gasPrice).toNumber(), BigNumberEthers.from(tx.gasLimit).toNumber(), tx.data, "", amounts, needed, hash160PubKey);
+                qtumTx.vouts = addContractVouts(BigNumberEthers.from(tx.gasPrice).toNumber(), BigNumberEthers.from(tx.gasLimit).toNumber(), tx.data, "", amounts, needed, 0, hash160PubKey);
                 // Sign necessary vins
                 const updatedVins = qtumTx.vins.map((vin, index) => {
                     return { ...vin, ['scriptSig']: p2pkhScriptSig(signp2pkh(qtumTx, index, this.privateKey, 0x01), this.publicKey.split("0x")[1]) }
@@ -78,7 +78,7 @@ export class QtumWallet extends Wallet {
             }
 
         }
-        else if (!!tx.to === false && !!tx.value === false && !!tx.data === true) {
+        else if (!!tx.to === false && !!tx.value === true && !!tx.data === true) {
             return logger.throwError(
                 "You cannot send QTUM while deploying a contract. Try deploying again without a value.",
                 Logger.errors.NOT_IMPLEMENTED,
@@ -99,7 +99,7 @@ export class QtumWallet extends Wallet {
                 qtumTx.vins = vins;
                 // Grab contract vouts (scripts/p2pkh)
                 // @ts-ignore
-                qtumTx.vouts = addContractVouts(BigNumberEthers.from(tx.gasPrice).toNumber(), BigNumberEthers.from(tx.gasLimit).toNumber(), tx.data, tx.to, amounts, needed, hash160PubKey);
+                qtumTx.vouts = addContractVouts(BigNumberEthers.from(tx.gasPrice).toNumber(), BigNumberEthers.from(tx.gasLimit).toNumber(), tx.data, tx.to, amounts, needed, !!tx.value === true ? new BigNumber(BigNumberEthers.from(tx.value).toNumber() + `e-8`).times(1e8).toNumber() : 0, hash160PubKey);
                 // Sign necessary vins
                 const updatedVins = qtumTx.vins.map((vin, index) => {
                     return { ...vin, ['scriptSig']: p2pkhScriptSig(signp2pkh(qtumTx, index, this.privateKey, 0x01), this.publicKey.split("0x")[1]) }

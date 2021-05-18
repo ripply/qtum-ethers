@@ -13,3 +13,5 @@ Parse signed transaction
 Finish writing unit tests
 
 Refactor
+
+Set global variables

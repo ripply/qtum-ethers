@@ -782,13 +782,13 @@
         "affectsGlobalScope": false
       },
       "../src/lib/helpers/hex-decoder.ts": {
-        "version": "8eb1ad221e03b58c59cf8a95c3df2903775186b24ff79fa6e00288cdfd272654",
+        "version": "e0ce646dc89eb37cc5fcda2a07f9caeb4ffc0e60657f306df9439c53aaeea7a9",
         "signature": "5e60c4aa675af5712547857a09d7dfc136d28c05f6f5d6fe8643e9f4a77aba14",
         "affectsGlobalScope": false
       },
       "../src/lib/utils.ts": {
-        "version": "b8c5fa483786f82e758a7907550dc92235200bb6257cf2a5e5400c4838d81d3c",
-        "signature": "1c5499a134f2a7f51384479e3ba52462a57869383a0e586ccafeecaf11ac163c",
+        "version": "5df049f00b0683297c4db5fe106042b50ddc1ced6df843aef72d108bc4a1c68d",
+        "signature": "6ee926449f9929514126a8b14f29ad4d83f3dddab41a2ee9e317805ed0fb752a",
         "affectsGlobalScope": false
       },
       "../src/lib/qtumcontractfactory.ts": {
@@ -802,7 +802,7 @@
         "affectsGlobalScope": false
       },
       "../src/lib/qtumwallet.ts": {
-        "version": "f54ea274013c646050bbdb404f6d11cfa7216e8616ee6ee2bc33fee87300cc43",
+        "version": "8661455fe90923b252bf9d0255e915e61c7f25a680566a97822d52bf9d2c83f7",
         "signature": "f5b716d8bea47cb15d0ec90524830edbe059f9b4e66d461c35463670347d1cc1",
         "affectsGlobalScope": false
       },
@@ -812,8 +812,8 @@
         "affectsGlobalScope": false
       },
       "../src/lib/bitcoinjs-lib.d.ts": {
-        "version": "9eccc5d386eec2a38b8b201627baf8688ec4b2f231018649a1bd2be77e0b1acd",
-        "signature": "9eccc5d386eec2a38b8b201627baf8688ec4b2f231018649a1bd2be77e0b1acd",
+        "version": "43e4cfba2937fa829b19948c5d8f19c9fdd8677512f8bb9f20e5aff9f5ce8370",
+        "signature": "43e4cfba2937fa829b19948c5d8f19c9fdd8677512f8bb9f20e5aff9f5ce8370",
         "affectsGlobalScope": false
       },
       "../src/lib/varuint-bitcoin.d.ts": {
@@ -822,14 +822,14 @@
         "affectsGlobalScope": false
       },
       "../src/tests/contractfactory.test.ts": {
+        "version": "b4d661d76eee38026eecb4d0a4d38a7a328d18c9f36df54525884166e652b7ab",
+        "signature": "11c127d6f0f7465bdd1443b50cf5a534ea515daf5a1aa08fc826ae440a10bf09",
+        "affectsGlobalScope": true
+      },
+      "../src/tests/contractinteraction.test.ts": {
         "version": "9bfe53db1e41d8f01a4d90db2830b8533f8ed2a5a9b8ff4aca6a080f77867552",
         "signature": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "affectsGlobalScope": false
-      },
-      "../src/tests/contractinteraction.test.ts": {
-        "version": "f977e20d9520d0306e66f3655785b8b99a46697ad71f04f276ff931ba5253b3d",
-        "signature": "11c127d6f0f7465bdd1443b50cf5a534ea515daf5a1aa08fc826ae440a10bf09",
-        "affectsGlobalScope": true
       },
       "../node_modules/@types/mocha/index.d.ts": {
         "version": "0359800d3b440f8515001431cde1500944e156040577425eb3f7b80af0846612",
@@ -2067,29 +2067,7 @@
       "../src/lib/qtumcontractfactory.ts",
       "../src/lib/qtumprovider.ts",
       "../src/lib/qtumwallet.ts",
-      [
-        "../src/lib/utils.ts",
-        [
-          {
-            "file": "../src/lib/utils.ts",
-            "start": 645,
-            "length": 11,
-            "messageText": "'utxoDecoder' is declared but its value is never read.",
-            "category": 1,
-            "code": 6133,
-            "reportsUnnecessary": true
-          },
-          {
-            "file": "../src/lib/utils.ts",
-            "start": 696,
-            "length": 47,
-            "messageText": "'decode' is declared but its value is never read.",
-            "category": 1,
-            "code": 6133,
-            "reportsUnnecessary": true
-          }
-        ]
-      ],
+      "../src/lib/utils.ts",
       "../src/lib/varuint-bitcoin.d.ts",
       "../src/tests/contractfactory.test.ts",
       "../src/tests/contractinteraction.test.ts"

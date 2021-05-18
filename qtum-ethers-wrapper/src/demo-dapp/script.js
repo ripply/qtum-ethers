@@ -37,12 +37,12 @@ const ABI = [
 ];
 
 async function main() {
-  const simpleStore = new QtumContractFactory(ABI, BYTECODE, signer);
-  const deployment = await simpleStore.deploy({
-    gasLimit: "0x2dc6c0"
-  })
-  console.log(deployment.address)
-  console.log(deployment);
+  // const simpleStore = new QtumContractFactory(ABI, BYTECODE, signer);
+  // const deployment = await simpleStore.deploy({
+  //   gasLimit: "0x2dc6c0"
+  // })
+  // console.log(deployment.address)
+  // console.log(deployment);
   //   const simpleStoreRegSigner = new ethers.ContractFactory(
   //     ABI,
   //     BYTECODE,
@@ -68,16 +68,16 @@ async function main() {
   //   gasPrice: "0x28",
   // });
   // console.log(getSimpleStore);
-  // const addy = await signer.getAddress();
-  // console.log(addy);
-  // const simulateSendTo = await signer.sendTransaction({
-  //   to: "0x7926223070547D2D15b2eF5e7383E541c338FfE9".toLowerCase(),
-  //   from: addy.toLowerCase(),
-  //   gasLimit: "0x3d090",
-  //   gasPrice: "0x28",
-  //   value: "0xffffff",
-  //   data: "",
-  // });
-  // console.log(simulateSendTo)
+  const addy = await signer.getAddress();
+  console.log(addy);
+  const simulateSendTo = await signer.sendTransaction({
+    to: "0x7926223070547D2D15b2eF5e7383E541c338FfE9".toLowerCase(),
+    from: addy.toLowerCase(),
+    gasLimit: "0x3d090",
+    gasPrice: "0x28",
+    value: "0xffffff",
+    data: "",
+  });
+  console.log(simulateSendTo)
 }
 main();

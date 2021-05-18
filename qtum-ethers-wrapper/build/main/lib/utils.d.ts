@@ -64,6 +64,6 @@ export declare function contractTxScript(contractAddress: string, gasLimit: numb
 export declare function reverse(src: Buffer): Buffer;
 export declare function generateContractAddress(rawTx: string): string;
 export declare function addVins(utxos: Array<ListUTXOs>, neededAmount: number | string, hash160PubKey: string): (Array<any>);
-export declare function addContractVouts(gasPrice: number, gasLimit: number, data: string, address: string, amounts: Array<any>, neededAmount: string, hash160PubKey: string): (Array<any>);
+export declare function addContractVouts(gasPrice: number, gasLimit: number, data: string, address: string, amounts: Array<any>, neededAmount: string, value: number, hash160PubKey: string): (Array<any>);
 export declare function addp2pkhVouts(hash160Address: string, amounts: Array<any>, neededAmount: string, hash160PubKey: string): (Array<any>);
 export declare function parseSignedTransaction(transaction: string): Transaction;

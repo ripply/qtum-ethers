@@ -29,11 +29,10 @@
     "build": "yarn build:main && yarn build:module",
     "build:main": "tsc -p tsconfig.json",
     "build:module": "tsc -p tsconfig.module.json",
-    "test": "node ./src/demo-dapp/script.js",
+    "test": "node ./src/demo-dapp/script.js && mocha --exit --timeout 0 ./src/tests/ContractFactory.test.ts",
     "clean": "rm -rf build"
   },
   "devDependencies": {
-    "@crypto-hex-decoder/utxo": "^2.0.0",
     "@types/chai": "^4.2.18",
     "@types/mocha": "^8.2.2",
     "mocha": "^8.4.0"
