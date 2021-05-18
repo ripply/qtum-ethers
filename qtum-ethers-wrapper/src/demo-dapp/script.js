@@ -37,11 +37,11 @@ const ABI = [
 ];
 
 async function main() {
-  // const simpleStore = new QtumContractFactory(ABI, BYTECODE, signer);
-  // const deployment = await simpleStore.deploy({
-  //   gasLimit: "0x2dc6c0", gasPrice: "0x28",
-  // });
-  // console.log(deployment);
+  const simpleStore = new QtumContractFactory(ABI, BYTECODE, signer);
+  const deployment = await simpleStore.deploy({
+    gasLimit: "0x2dc6c0"
+  });
+  console.log(deployment);
   //   const simpleStoreRegSigner = new ethers.ContractFactory(
   //     ABI,
   //     BYTECODE,
@@ -51,34 +51,32 @@ async function main() {
   //     gasLimit: "0x2dc6c0", value: "0x64"
   // });
   //   console.log(deploymentReg);
-  const simpleStore = new ethers.Contract(
-    "0xf6287c7a0ea0389c9f7cba86d7e08b804ae163f3",
-    ABI,
-    signer
-  );
-  const setSimpleStore = await simpleStore.set(1002, {
-    gasLimit: "0x3d090",
-    gasPrice: "0x28",
-  });
-  console.log(setSimpleStore);
+  // const simpleStore = new ethers.Contract(
+  //   "0xa88e480eeed60ccfa4456b7c624fb0a6abcf812e",
+  //   ABI,
+  //   signer
+  // );
+  // const setSimpleStore = await simpleStore.set(10, {
+  //   gasLimit: "0x3d090",
+  //   gasPrice: "0x28",
+  // });
+  // console.log(setSimpleStore);
 
   // const getSimpleStore = await simpleStore.get({
   //   gasLimit: "0x3d090",
   //   gasPrice: "0x28",
   // });
   // console.log(getSimpleStore);
-  // const simulateSendTo = await signer.sendTransaction(
-  //   {
-  //     "to": "0x7926223070547D2D15b2eF5e7383E541c338FfE9",
-  //     "from": "0xcca81b02942d8079a871e02ba03a3a4a8d7740d2",
-  //     "gasLimit": "0x3d090",
-  //     "gasPrice": "0x28",
-  //     "value": "0xffffff",
-  //     "data": ""
-  //   }
-  // )
+  // const addy = await signer.getAddress();
+  // console.log(addy);
+  // const simulateSendTo = await signer.sendTransaction({
+  //   to: "0x7926223070547D2D15b2eF5e7383E541c338FfE9".toLowerCase(),
+  //   from: addy.toLowerCase(),
+  //   gasLimit: "0x3d090",
+  //   gasPrice: "0x28",
+  //   value: "0xffffff",
+  //   data: "",
+  // });
   // console.log(simulateSendTo)
-  // const addy = await signer.getAddress()
-  // console.log(addy)
 }
 main();

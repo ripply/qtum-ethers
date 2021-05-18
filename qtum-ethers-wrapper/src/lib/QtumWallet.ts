@@ -25,93 +25,148 @@ export class QtumWallet extends Wallet {
         return Promise.resolve(`0x${prefixlessAddress}`);
     };
 
-    signTransaction = (transaction: TransactionRequest): Promise<string> => {
-        return this.populateTransaction(transaction).then((transactionRequest) => {
-            return resolveProperties(transactionRequest).then((tx) => {
-                // Transform Hex Values
-                let gasPrice: number | string;
-                let gasLimit: number;
-                let neededAmount: string;
-                typeof tx.gasPrice !== "undefined" && tx.gasPrice !== "" ? gasPrice = new BigNumber(BigNumberEthers.from(tx.gasPrice).toNumber() + `e-8`).toFixed(7) : gasPrice = 0.0000004;
-                typeof tx.gasLimit !== "undefined" && tx.gasLimit !== "" ? gasLimit = BigNumberEthers.from(tx.gasLimit).toNumber() : gasLimit = 2500000;
-                typeof tx.value !== "undefined" && tx.value !== "" ? neededAmount = new BigNumber(gasPrice).times(gasLimit).plus(parseInt(tx.value.toString(), 16).toString() + `e-8`).toFixed(7) : neededAmount = new BigNumber(gasPrice).times(gasLimit).toFixed(7);
-                // Create the transaction object
-                let qtumTx: Tx = { version: 2, locktime: 0, vins: [], vouts: [] };
-                const sha256Hash = sha256().update(super.publicKey.split("0x")[1], "hex").digest("hex")
-                const hash160PubKey = ripemd160().update(sha256Hash, "hex").digest("hex")
-                // Check that the account has enough UTXO's for spending + gas 
+    // Override to create a raw, serialized, and signed transaction based on QTUM's UTXO model
+
+    async signTransaction(transaction: TransactionRequest): Promise<string> {
+        const populatedTransaction = await this.populateTransaction(transaction);
+        const tx = await resolveProperties(populatedTransaction);
+
+        // Building the QTUM tx that will eventually be serialized.
+        let qtumTx: Tx = { version: 2, locktime: 0, vins: [], vouts: [] };
+
+        // Get the public key, sha256 hash the pubkey, then run ripemd160 on the sha256 hash, return the hash160PubKey
+        const sha256Hash = sha256().update(super.publicKey.split("0x")[1], "hex").digest("hex");
+        const hash160PubKey = ripemd160().update(sha256Hash, "hex").digest("hex");
+
+        // 100,000 bytes = 0.004 * 100 = 0.4 https://medium.com/coinmonks/big-transactions-big-blocks-42d04b3b635b, assuming MAX_FEE_RATE is needed when grabbing UTXO's.
+        const MAX_FEE_RATE = 0.4;
+
+        // Determine if this transaction is a contract creation, call, or send-to-address
+        if (!!tx.to === false && !!tx.value === false && !!tx.data === true) {
+            // Contract Creation
+            // @ts-ignore
+            const needed = new BigNumber(new BigNumber(BigNumberEthers.from(tx.gasPrice).toNumber() + `e-8`).toFixed(7)).times(BigNumberEthers.from(tx.gasLimit).toNumber()).plus(MAX_FEE_RATE).toFixed(7)
+            try {
                 // @ts-ignore
-                const serializedTransaction = this.provider.getUtxos(tx.from, neededAmount).then((result) => {
-                    // Select the Vins
-                    let [vins, amounts] = addVins(result, neededAmount, hash160PubKey);
-                    qtumTx.vins = vins;
-                    // Check if this is a deploy, call, or sendtoaddress TX
-                    if ((tx.to == "" || tx.to == undefined) && tx.data != "") {
-                        // Deploy 
-                        // Add the Vouts
-                        // @ts-ignore
-                        qtumTx.vouts = addContractVouts(BigNumberEthers.from(tx.gasPrice).toNumber(), gasLimit, tx.data, "", amounts, neededAmount, hash160PubKey);
-                        let updatedVins = qtumTx.vins.map((vin, index) => {
-                            return { ...vin, ['scriptSig']: p2pkhScriptSig(signp2pkh(qtumTx, index, this.privateKey, 0x01), this.publicKey.split("0x")[1]) }
-                        })
-                        qtumTx.vins = updatedVins
-                        let result1 = txToBuffer(qtumTx).toString('hex');
-                        console.log(result1, "result");
-                        return result1;
-                    }
-                    else if ((tx.to == "" || tx.to == undefined) && tx.data != "" && tx.value !== "") {
-                        return logger.throwError(
-                            "You cannot send QTUM while deploying a contract.",
-                            Logger.errors.NOT_IMPLEMENTED,
-                            {
-                                error: "You cannot send QTUM while deploying a contract.",
-                            }
-                        );
-                    }
-                    else if (tx.to != "" && tx.data != "") {
-                        // Call
-                        // Add the Vouts
-                        // @ts-ignore
-                        qtumTx.vouts = addContractVouts(BigNumberEthers.from(tx.gasPrice).toNumber(), gasLimit, tx.data, tx.to, amounts, neededAmount, hash160PubKey);
-                        let updatedVins = qtumTx.vins.map((vin, index) => {
-                            return { ...vin, ['scriptSig']: p2pkhScriptSig(signp2pkh(qtumTx, index, this.privateKey, 0x01), this.publicKey.split("0x")[1]) }
-                        })
-                        qtumTx.vins = updatedVins
-                        let result1 = txToBuffer(qtumTx).toString('hex');
-                        console.log(result1, "result");
-                        return result1;
-                    }
-                    else {
-                        // Send to address
-                        const sha256Hash = sha256().update(super.publicKey.split("0x")[1], "hex").digest("hex")
-                        const hash160PubKey = ripemd160().update(sha256Hash, "hex").digest("hex")
-                        // @ts-ignore
-                        const sha256HashAddress = sha256().update(tx.to.split("0x")[1], "hex").digest("hex")
-                        const hash160Address = ripemd160().update(sha256HashAddress, "hex").digest("hex")
-                        qtumTx.vouts = addp2pkhVouts(hash160Address, amounts, neededAmount, hash160PubKey);
-                        let updatedVins = qtumTx.vins.map((vin, index) => {
-                            return { ...vin, ['scriptSig']: p2pkhScriptSig(signp2pkh(qtumTx, index, this.privateKey, 0x01), this.publicKey.split("0x")[1]) }
-                        })
-                        qtumTx.vins = updatedVins
-                        let result1 = txToBuffer(qtumTx).toString('hex');
-                        console.log(result1, "result");
-                        return result1;
-                    }
-                }).catch((error: any) => {
-                    if (forwardErrors.indexOf(error.code) >= 0) {
-                        throw error;
-                    }
-                    return logger.throwError(
-                        "Needed amount of UTXO's exceed the total you own.",
-                        Logger.errors.INSUFFICIENT_FUNDS,
-                        {
-                            error: error,
-                        }
-                    );
+                const utxos = await this.provider.getUtxos(tx.from, needed)
+                // Grab vins for transaction object.
+                const [vins, amounts] = addVins(utxos, needed, hash160PubKey);
+                qtumTx.vins = vins;
+                // Grab contract vouts (scripts/p2pkh)
+                // @ts-ignore
+                qtumTx.vouts = addContractVouts(BigNumberEthers.from(tx.gasPrice).toNumber(), BigNumberEthers.from(tx.gasLimit).toNumber(), tx.data, "", amounts, needed, hash160PubKey);
+                // Sign necessary vins
+                const updatedVins = qtumTx.vins.map((vin, index) => {
+                    return { ...vin, ['scriptSig']: p2pkhScriptSig(signp2pkh(qtumTx, index, this.privateKey, 0x01), this.publicKey.split("0x")[1]) }
                 })
-                return serializedTransaction;
-            });
-        })
+                qtumTx.vins = updatedVins
+                // Build the serialized transaction string.
+                const serialized = txToBuffer(qtumTx).toString('hex');
+                console.log(serialized, "serializedString");
+                return serialized;
+            } catch (error: any) {
+                if (forwardErrors.indexOf(error.code) >= 0) {
+                    throw error;
+                }
+                return logger.throwError(
+                    "Needed amount of UTXO's exceed the total you own.",
+                    Logger.errors.INSUFFICIENT_FUNDS,
+                    {
+                        error: error,
+                    }
+                );
+            }
+
+        }
+        else if (!!tx.to === false && !!tx.value === false && !!tx.data === true) {
+            return logger.throwError(
+                "You cannot send QTUM while deploying a contract. Try deploying again without a value.",
+                Logger.errors.NOT_IMPLEMENTED,
+                {
+                    error: "You cannot send QTUM while deploying a contract. Try deploying again without a value.",
+                }
+            );
+        }
+        else if (!!tx.to === true && !!tx.data === true) {
+            // Call Contract
+            // @ts-ignore
+            const needed = !!tx.value === true ? new BigNumber(new BigNumber(BigNumberEthers.from(tx.gasPrice).toNumber() + `e-8`).toFixed(7)).times(BigNumberEthers.from(tx.gasLimit).toNumber()).plus(MAX_FEE_RATE).plus(parseInt(tx.value.toString(), 16).toString() + `e-8`).toFixed(7) : new BigNumber(new BigNumber(BigNumberEthers.from(tx.gasPrice).toNumber() + `e-8`).toFixed(7)).times(BigNumberEthers.from(tx.gasLimit).toNumber()).plus(MAX_FEE_RATE).toFixed(7)
+            try {
+                // @ts-ignore
+                const utxos = await this.provider.getUtxos(tx.from, needed)
+                // Grab vins for transaction object.
+                const [vins, amounts] = addVins(utxos, needed, hash160PubKey);
+                qtumTx.vins = vins;
+                // Grab contract vouts (scripts/p2pkh)
+                // @ts-ignore
+                qtumTx.vouts = addContractVouts(BigNumberEthers.from(tx.gasPrice).toNumber(), BigNumberEthers.from(tx.gasLimit).toNumber(), tx.data, tx.to, amounts, needed, hash160PubKey);
+                // Sign necessary vins
+                const updatedVins = qtumTx.vins.map((vin, index) => {
+                    return { ...vin, ['scriptSig']: p2pkhScriptSig(signp2pkh(qtumTx, index, this.privateKey, 0x01), this.publicKey.split("0x")[1]) }
+                })
+                qtumTx.vins = updatedVins
+                // Build the serialized transaction string.
+                const serialized = txToBuffer(qtumTx).toString('hex');
+                console.log(serialized, "serializedString");
+                return serialized;
+            } catch (error: any) {
+                if (forwardErrors.indexOf(error.code) >= 0) {
+                    throw error;
+                }
+                return logger.throwError(
+                    "Needed amount of UTXO's exceed the total you own.",
+                    Logger.errors.INSUFFICIENT_FUNDS,
+                    {
+                        error: error,
+                    }
+                );
+            }
+
+        }
+        else if (!!tx.to === true && !!tx.value === true && !!tx.data === false) {
+            // P2PKH (send-to-address)
+            // @ts-ignore
+            const needed = new BigNumber(MAX_FEE_RATE).plus(parseInt(tx.value.toString(), 16).toString() + `e-8`).toFixed(7);
+            try {
+                // @ts-ignore
+                const utxos = await this.provider.getUtxos(tx.from, needed)
+                // Grab vins for transaction object.
+                const [vins, amounts] = addVins(utxos, needed, hash160PubKey);
+                qtumTx.vins = vins;
+                // Grab contract vouts (scripts/p2pkh)
+                // @ts-ignore
+                qtumTx.vouts = addp2pkhVouts(tx.to.split("0x")[1], amounts, new BigNumber(parseInt(tx.value.toString(), 16).toString() + `e-8`).toFixed(7), hash160PubKey);
+                // Sign necessary vins
+                const updatedVins = qtumTx.vins.map((vin, index) => {
+                    return { ...vin, ['scriptSig']: p2pkhScriptSig(signp2pkh(qtumTx, index, this.privateKey, 0x01), this.publicKey.split("0x")[1]) }
+                })
+                qtumTx.vins = updatedVins
+                // Build the serialized transaction string.
+                const serialized = txToBuffer(qtumTx).toString('hex');
+                console.log(serialized, "serializedString");
+                return serialized;
+            } catch (error: any) {
+                if (forwardErrors.indexOf(error.code) >= 0) {
+                    throw error;
+                }
+                return logger.throwError(
+                    "Needed amount of UTXO's exceed the total you own.",
+                    Logger.errors.INSUFFICIENT_FUNDS,
+                    {
+                        error: error,
+                    }
+                );
+            }
+        }
+        else {
+            return logger.throwError(
+                "Unidentified error building your transaction, make sure the to, from, gasPrice, gasLimit, and data fields are correct.",
+                Logger.errors.NOT_IMPLEMENTED,
+                {
+                    error: "Unidentified error building your transaction, make sure the to, from, gasPrice, gasLimit, and data fields are correct.",
+                }
+            );
+        }
     };
 
 }

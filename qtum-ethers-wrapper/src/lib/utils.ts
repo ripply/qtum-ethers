@@ -255,24 +255,10 @@ export function reverse(src: Buffer) {
 }
 
 export function generateContractAddress(rawTx: string) {
-    console.log(rawTx)
-    // Buffer.from("f6287c7a0ea0389c9f7cba86d7e08b804ae163f3", "hex")
-    // 20 bytes
-    //f6287c7a0ea0389c9f7cba86d7e08b804ae163f3
     let buffer = Buffer.alloc(32 + 4);
-    // let uintBuff = Buffer.alloc(4);
-    // uintBuff.writeUInt32LE(1);
-    // console.log(uintBuff)
-    // let bufferAlt = Buffer.from("dbede0f6cdf8af6df3e794a3c46075e0aa793a9534a617a9ccfb6d632a52a927", "hex");
-    // console.log(bufferAlt, "ere")
-    // bufferAlt.writeUInt32LE(0)
-    // return bufferAlt.toString("hex")
-    // console.log(bufferAlt.toString("hex"), 'bufferAlt', bufferAlt.length)
     let cursor = new BufferCursor(buffer);
+    cursor.writeBytes(reverse(Buffer.from("af6d980f8fb0e067a730736d51c651f88e29c299d1d7c760beea3d36bc71690d", "hex")));
     cursor.writeUInt32LE(1);
-    cursor.writeBytes(Buffer.from("dbede0f6cdf8af6df3e794a3c46075e0aa793a9534a617a9ccfb6d632a52a927", "hex"));
-    // console.log(buffer.toString("hex"), "bufferNorm")
-    // return "508c9e54bc2c5936c52b63309f264f890df560e9";
     let firstHash = sha256().update(buffer.toString("hex"), "hex").digest("hex");
     let secondHash = ripemd160().update(firstHash).digest("hex");
     console.log(firstHash, 'firstHash', secondHash, 'secondHash')
@@ -315,12 +301,12 @@ export function addp2pkhVouts(hash160Address: string, amounts: Array<any>, neede
     let networkFee = 0.002;
     let returnAmount = amounts.reduce((a, b) => a + b);
     vouts.push({
-        script: p2pkhScript(Buffer.from(hash160Address, "hex")),
-        value: new BigNumber(neededAmount).times(1e8).toNumber()
-    })
-    vouts.push({
         script: p2pkhScript(Buffer.from(hash160PubKey, "hex")),
         value: new BigNumber(returnAmount).minus(neededAmount).minus(networkFee).times(1e8).toNumber()
+    })
+    vouts.push({
+        script: p2pkhScript(Buffer.from(hash160Address, "hex")),
+        value: new BigNumber(neededAmount).times(1e8).toNumber()
     })
     return vouts;
 }
@@ -341,6 +327,8 @@ export function parseSignedTransaction(transaction: string) {
     const sha256HashFirst = sha256().update(transaction, "hex").digest("hex")
     const sha256HashSecond = reverse(Buffer.from(sha256().update(sha256HashFirst, "hex").digest("hex"), "hex")).toString("hex")
     tx['hash'] = `0x${sha256HashSecond}`
+
+    // tx['from'] = 
     // Hacky way to find out if TX contains contract creation, call, or P2PKH (needs to be refined)
     // Check the outputs for 0 values (creation or call, count items in ASM format) - note: OP_CREATE & OP_CALL are not recognized, thus the logic for figuring out call vs contract is to 
     // count ASM items (4 for creation, OP_4, gasLimit, gasPrice, byteCode), (5 for call, OP_4, gasLimit, gasPrice, data, contractAddress)
