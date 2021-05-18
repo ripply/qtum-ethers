@@ -5,6 +5,7 @@ import { getAddress } from "@ethersproject/address";
 import { Logger } from "@ethersproject/logger";
 import { ParamType } from "@ethersproject/abi";
 import { generateContractAddress } from "./helpers/utils";
+
 const version = "contracts/5.1.1";
 
 const logger = new Logger(version);

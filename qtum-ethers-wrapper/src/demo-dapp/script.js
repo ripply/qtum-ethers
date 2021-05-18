@@ -37,12 +37,12 @@ const ABI = [
 ];
 
 async function main() {
-  const simpleStore = new QtumContractFactory(ABI, BYTECODE, signer);
-  const deployment = await simpleStore.deploy({
-    gasLimit: "0x2dc6c0"
-  })
-  console.log(deployment.address)
-  console.log(deployment);
+  // const simpleStore = new QtumContractFactory(ABI, BYTECODE, signer);
+  // const deployment = await simpleStore.deploy({
+  //   gasLimit: "0x2dc6c0"
+  // })
+  // console.log(deployment.address)
+  // console.log(deployment);
   //   const simpleStoreRegSigner = new ethers.ContractFactory(
   //     ABI,
   //     BYTECODE,
@@ -76,7 +76,7 @@ async function main() {
     gasLimit: "0x3d090",
     gasPrice: "0x28",
     value: "0xfffff",
-    data: "",
+    data: "0xdddd",
   });
   console.log(simulateSendTo)
 }

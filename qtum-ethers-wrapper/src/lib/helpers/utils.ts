@@ -1,6 +1,7 @@
 import { encode as encodeVaruint } from 'varuint-bitcoin';
 import { encode } from 'bip66';
 import { OPS } from "./opcodes";
+import { GLOBAL_VARS } from "./global-vars";
 import { BufferCursor } from './buffer-cursor';
 import { ecdsaSign } from 'secp256k1';
 import { encode as encodeCInt, decode as decodeCInt } from "bitcoinjs-lib/src/script_number"
@@ -12,9 +13,10 @@ import {
 } from "ethers/lib/utils";
 import { Transaction } from "@ethersproject/transactions";
 import { BigNumber as BigNumberEthers } from "ethers";
+import { decode } from "./hex-decoder";
 const toBuffer = require('typedarray-to-buffer')
 const bitcoinjs = require("bitcoinjs-lib");
-import { decode } from "./hex-decoder";
+
 export interface ListUTXOs {
     address: string,
     txid: string,
@@ -72,13 +74,13 @@ export interface Tx {
     vins: Array<TxVinWithNullScriptSig | TxVinWithoutNullScriptSig>,
     vouts: Array<TxVout>
 }
-function cloneBuffer(buffer: Buffer) {
+function cloneBuffer(buffer: Buffer): Buffer {
     let result = Buffer.alloc(buffer.length);
     buffer.copy(result);
     return result;
 }
 
-function cloneTx(tx: any) {
+function cloneTx(tx: any): CloneTx {
     let result = { version: tx.version, locktime: tx.locktime, vins: <any>[], vouts: <any>[] };
     for (let vin of tx.vins) {
         result.vins.push({
@@ -98,26 +100,22 @@ function cloneTx(tx: any) {
     }
     return result;
 }
-function inputBytes(input: any) {
-    var TX_INPUT_BASE = 32 + 4 + 1 + 4
-    return TX_INPUT_BASE + (input.scriptSig ? input.scriptSig.length : input.script.length)
+function inputBytes(input: any): number {
+    return GLOBAL_VARS.TX_INPUT_BASE + (input.scriptSig ? input.scriptSig.length : input.script.length)
 }
 
-function outputBytes(output: any) {
-    var TX_OUTPUT_BASE = 8 + 1
-    var TX_OUTPUT_PUBKEYHASH = 25
-    return TX_OUTPUT_BASE + (output.script ? output.script.length : TX_OUTPUT_PUBKEYHASH)
+function outputBytes(output: any): number {
+    return GLOBAL_VARS.TX_OUTPUT_BASE + (output.script ? output.script.length : GLOBAL_VARS.TX_OUTPUT_PUBKEYHASH)
 }
 
 // refer to https://en.bitcoin.it/wiki/Transaction#General_format_of_a_Bitcoin_transaction_.28inside_a_block.29
-export function calcTxBytes(vins: Array<TxVinWithoutNullScriptSig | TxVinWithNullScriptSig>, vouts: Array<TxVout>) {
-    const TX_EMPTY_SIZE = 4 + 1 + 1 + 4;
-    return TX_EMPTY_SIZE +
+export function calcTxBytes(vins: Array<TxVinWithoutNullScriptSig | TxVinWithNullScriptSig>, vouts: Array<TxVout>): number {
+    return GLOBAL_VARS.TX_EMPTY_SIZE +
         vins.reduce(function (a, x) { return a + inputBytes(x) }, 0) +
         vouts.reduce(function (a, x) { return a + outputBytes(x) }, 0)
 }
 
-export function txToBuffer(tx: any) {
+export function txToBuffer(tx: any): Buffer {
     let buffer = Buffer.alloc(calcTxBytes(tx.vins, tx.vouts));
     let cursor = new BufferCursor(buffer);
     // version
@@ -153,7 +151,7 @@ export function txToBuffer(tx: any) {
 }
 
 // refer to: https://github.com/bitcoinjs/bitcoinjs-lib/blob/master/src/script_signature.js
-export function toDER(x: Buffer) {
+export function toDER(x: Buffer): Buffer {
     let i = 0;
     while (x[i] === 0) ++i;
     if (i === x.length) return Buffer.alloc(1);
@@ -163,7 +161,7 @@ export function toDER(x: Buffer) {
 }
 
 // refer to: https://github.com/bitcoinjs/bitcoinjs-lib/blob/master/src/script_signature.js
-export function encodeSig(signature: Uint8Array, hashType: number) {
+export function encodeSig(signature: Uint8Array, hashType: number): Buffer {
     const hashTypeMod = hashType & ~0x80;
     if (hashTypeMod <= 0 || hashTypeMod >= 4) throw new Error('Invalid hashType ' + hashType);
 
@@ -178,7 +176,7 @@ export function encodeSig(signature: Uint8Array, hashType: number) {
 
 /////////////////////////////////////////
 
-export function signp2pkh(tx: any, vindex: number, privKey: string, hashType = 0x01) {
+export function signp2pkh(tx: any, vindex: number, privKey: string): Buffer {
     let clone = cloneTx(tx);
     // clean up relevant script
     let filteredPrevOutScript = clone.vins[vindex].script.filter((op: any) => op !== OPS.OP_CODESEPARATOR);
@@ -195,22 +193,22 @@ export function signp2pkh(tx: any, vindex: number, privKey: string, hashType = 0
     // extend and append hash type
     buffer = Buffer.alloc(buffer.length + 4, buffer);
     // append the hash type
-    buffer.writeUInt32LE(hashType, buffer.length - 4);
+    buffer.writeUInt32LE(GLOBAL_VARS.HASH_TYPE, buffer.length - 4);
 
     // double-sha256
     let firstHash = sha256().update(buffer).digest();
     let secondHash = sha256().update(firstHash).digest();
     let sig = ecdsaSign(new Uint8Array(secondHash), arrayify(privKey));
 
-    return encodeSig(sig.signature, hashType);
+    return encodeSig(sig.signature, GLOBAL_VARS.HASH_TYPE);
 }
-export function p2pkhScriptSig(sig: any, pubkey: any) {
+export function p2pkhScriptSig(sig: any, pubkey: any): Buffer {
     return bitcoinjs.script.compile([sig, Buffer.from(pubkey, 'hex')]);
 }
 
 // Refer to:
 // https://github.com/bitcoinjs/bitcoinjs-lib/blob/master/src/payments/p2pkh.js#L58
-export function p2pkhScript(hash160PubKey: Buffer) {
+export function p2pkhScript(hash160PubKey: Buffer): Buffer {
     // prettier-ignore
     return bitcoinjs.script.compile([
         OPS.OP_DUP,
@@ -221,7 +219,7 @@ export function p2pkhScript(hash160PubKey: Buffer) {
     ]);
 }
 
-export function contractTxScript(contractAddress: string, gasLimit: number, gasPrice: number, encodedData: string) {
+export function contractTxScript(contractAddress: string, gasLimit: number, gasPrice: number, encodedData: string): Buffer {
     // If contractAddress is missing, assume it's a create script, else assume its a call contract interaction
     if (contractAddress === "") {
         return bitcoinjs.script.compile([
@@ -244,13 +242,11 @@ export function contractTxScript(contractAddress: string, gasLimit: number, gasP
 }
 
 export function reverse(src: Buffer) {
-    var buffer = Buffer.alloc(src.length)
-
+    let buffer = Buffer.alloc(src.length)
     for (var i = 0, j = src.length - 1; i <= j; ++i, --j) {
         buffer[i] = src[j]
         buffer[j] = src[i]
     }
-
     return buffer
 }
 
@@ -277,7 +273,6 @@ export function addVins(utxos: Array<ListUTXOs>, neededAmount: number | string, 
             break;
         }
     }
-    // amounts.reduce((a, b) => a + b, 0)
     return [inputs, amounts];
 }
 
@@ -311,7 +306,7 @@ export function addp2pkhVouts(hash160Address: string, amounts: Array<any>, neede
     return vouts;
 }
 
-export function parseSignedTransaction(transaction: string) {
+export function parseSignedTransaction(transaction: string): Transaction {
     let tx: Transaction = {
         hash: "",
         to: "",
@@ -354,3 +349,7 @@ export function parseSignedTransaction(transaction: string) {
     }
     return tx
 }
+
+// export function serializeTransaction(): string {
+
+// }

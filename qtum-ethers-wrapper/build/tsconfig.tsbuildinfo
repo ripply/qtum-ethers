@@ -312,8 +312,8 @@
         "affectsGlobalScope": true
       },
       "../node_modules/@types/node/async_hooks.d.ts": {
-        "version": "c9e8a340da877b05a52525554aa255b3f44958c7f6748ebf5cbe0bfbe6766878",
-        "signature": "c9e8a340da877b05a52525554aa255b3f44958c7f6748ebf5cbe0bfbe6766878",
+        "version": "e23424b97418eca3226fd24de079f1203eb70360622e4e093af2aff14d4be6ec",
+        "signature": "e23424b97418eca3226fd24de079f1203eb70360622e4e093af2aff14d4be6ec",
         "affectsGlobalScope": false
       },
       "../node_modules/@types/node/buffer.d.ts": {
@@ -342,8 +342,8 @@
         "affectsGlobalScope": false
       },
       "../node_modules/@types/node/crypto.d.ts": {
-        "version": "0084b54e281a37c75079f92ca20603d5731de063e7a425852b2907de4dd19932",
-        "signature": "0084b54e281a37c75079f92ca20603d5731de063e7a425852b2907de4dd19932",
+        "version": "aab38abd210255237d4dc101c9e5b5f8d746fd75aeb30cc77b6a4d322b06693d",
+        "signature": "aab38abd210255237d4dc101c9e5b5f8d746fd75aeb30cc77b6a4d322b06693d",
         "affectsGlobalScope": false
       },
       "../node_modules/@types/node/dgram.d.ts": {
@@ -402,8 +402,8 @@
         "affectsGlobalScope": false
       },
       "../node_modules/@types/node/net.d.ts": {
-        "version": "40b957b502b40dd490ee334aed47a30636f8d14a0267d1b6c088c2be1dcf2757",
-        "signature": "40b957b502b40dd490ee334aed47a30636f8d14a0267d1b6c088c2be1dcf2757",
+        "version": "ae7b9d7ab1652cc1866ba6e269d0eeaf1708d07327714124ed2cbd059f5e4766",
+        "signature": "ae7b9d7ab1652cc1866ba6e269d0eeaf1708d07327714124ed2cbd059f5e4766",
         "affectsGlobalScope": false
       },
       "../node_modules/@types/node/os.d.ts": {
@@ -442,8 +442,8 @@
         "affectsGlobalScope": false
       },
       "../node_modules/@types/node/repl.d.ts": {
-        "version": "64535caf208a02420d2d04eb2029269efedd11eb8597ada0d5e6f3d54ec663ae",
-        "signature": "64535caf208a02420d2d04eb2029269efedd11eb8597ada0d5e6f3d54ec663ae",
+        "version": "a6b0abdb67d63ebe964ba5fee31bc3daf10c12eecd46b24d778426010c04c67e",
+        "signature": "a6b0abdb67d63ebe964ba5fee31bc3daf10c12eecd46b24d778426010c04c67e",
         "affectsGlobalScope": false
       },
       "../node_modules/@types/node/stream.d.ts": {
@@ -492,8 +492,8 @@
         "affectsGlobalScope": false
       },
       "../node_modules/@types/node/vm.d.ts": {
-        "version": "1aa7dbace2b7b2ef60897dcd4f66252ee6ba85e594ded8918c9acdcecda1896c",
-        "signature": "1aa7dbace2b7b2ef60897dcd4f66252ee6ba85e594ded8918c9acdcecda1896c",
+        "version": "60c9e27816ec8ac8df7240598bb086e95b47edfb454c5cbf4003c812e0ed6e39",
+        "signature": "60c9e27816ec8ac8df7240598bb086e95b47edfb454c5cbf4003c812e0ed6e39",
         "affectsGlobalScope": false
       },
       "../node_modules/@types/node/worker_threads.d.ts": {
@@ -532,8 +532,8 @@
         "affectsGlobalScope": false
       },
       "../node_modules/@types/node/index.d.ts": {
-        "version": "6c137dee82a61e14a1eb6a0ba56925b66fd83abf15acf72fe59a10b15e80e319",
-        "signature": "6c137dee82a61e14a1eb6a0ba56925b66fd83abf15acf72fe59a10b15e80e319",
+        "version": "49daf80661034e07d919f1c716aef69324e34d18a63a282f8100f52c961b58a7",
+        "signature": "49daf80661034e07d919f1c716aef69324e34d18a63a282f8100f52c961b58a7",
         "affectsGlobalScope": false
       },
       "../node_modules/@ethersproject/providers/lib/formatter.d.ts": {
@@ -756,6 +756,11 @@
         "signature": "b7681f81f080bba11bacb4132a55e0c18c95f4fc321b0392b9c36a1cf02d89ee",
         "affectsGlobalScope": false
       },
+      "../src/lib/helpers/global-vars.ts": {
+        "version": "af2d811e89ba2e8d4a89bd5d13d214c8f551f14ff3c3828d4ac9d859143a71df",
+        "signature": "b785a764614f40d40252d3f1394c01c8763cfd1f05fe30f6eddaeec03c21bf77",
+        "affectsGlobalScope": false
+      },
       "../node_modules/@types/bn.js/index.d.ts": {
         "version": "cdac7e46e615e1fdcca7c3a2aab2fbd19085443048733cf239a090f7a17efa27",
         "signature": "cdac7e46e615e1fdcca7c3a2aab2fbd19085443048733cf239a090f7a17efa27",
@@ -787,8 +792,8 @@
         "affectsGlobalScope": false
       },
       "../src/lib/helpers/utils.ts": {
-        "version": "b2ff1a7d89b0af2e04e54f7061925708e66addeae940bc8594e17339cb94645d",
-        "signature": "6ee926449f9929514126a8b14f29ad4d83f3dddab41a2ee9e317805ed0fb752a",
+        "version": "c7223823dbc48a88e662432bcc98b09062d5f46ed8721ad0abdcfe00133a06f5",
+        "signature": "9e1793cfd9b51ba055c3a2b58c59cb152e32909612d0870256d95e7931aba0c3",
         "affectsGlobalScope": false
       },
       "../src/lib/qtumprovider.ts": {
@@ -797,7 +802,7 @@
         "affectsGlobalScope": false
       },
       "../src/lib/qtumwallet.ts": {
-        "version": "8bb558b6212cf2ba8713a2eaec4def215f84e98eed014b7e4285a1190e07b426",
+        "version": "53dda631f7ca5ba782a573de63ebd1025589cb36c8bac16bcf624c97a634a950",
         "signature": "f5b716d8bea47cb15d0ec90524830edbe059f9b4e66d461c35463670347d1cc1",
         "affectsGlobalScope": false
       },
@@ -807,7 +812,7 @@
         "affectsGlobalScope": false
       },
       "../src/lib/qtumcontractfactory.ts": {
-        "version": "8f0842f7f6a10646716147d6ecfa0fc54f76902998cf8963ceb407ec9a6375bb",
+        "version": "04c87904c4233759c392acd6c1d25d759eb7041f67c6a2f27dcc15392606656d",
         "signature": "4358c48912773e958a932208edfb5c4128d0c398aa21e04f46a532c610db38a5",
         "affectsGlobalScope": false
       },
@@ -1383,6 +1388,7 @@
         "../src/lib/helpers/bip66.d.ts",
         "../src/lib/helpers/bitcoinjs-lib.d.ts",
         "../src/lib/helpers/buffer-cursor.ts",
+        "../src/lib/helpers/global-vars.ts",
         "../src/lib/helpers/hex-decoder.ts",
         "../src/lib/helpers/opcodes.ts",
         "../src/lib/helpers/varuint-bitcoin.d.ts"
@@ -1407,6 +1413,7 @@
         "../node_modules/ethers/lib/index.d.ts",
         "../node_modules/ethers/lib/utils.d.ts",
         "../node_modules/hash.js/lib/hash.d.ts",
+        "../src/lib/helpers/global-vars.ts",
         "../src/lib/helpers/utils.ts"
       ]
     },
@@ -2078,6 +2085,7 @@
       "../src/lib/helpers/bip66.d.ts",
       "../src/lib/helpers/bitcoinjs-lib.d.ts",
       "../src/lib/helpers/buffer-cursor.ts",
+      "../src/lib/helpers/global-vars.ts",
       "../src/lib/helpers/hex-decoder.ts",
       "../src/lib/helpers/opcodes.ts",
       "../src/lib/helpers/utils.ts",
