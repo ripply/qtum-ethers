@@ -1,7 +1,7 @@
 import { encode as encodeVaruint } from 'varuint-bitcoin';
 import { encode } from 'bip66';
-import { OPS } from "./helpers/opcodes";
-import { BufferCursor } from './helpers/buffer-cursor';
+import { OPS } from "./opcodes";
+import { BufferCursor } from './buffer-cursor';
 import { ecdsaSign } from 'secp256k1';
 import { encode as encodeCInt, decode as decodeCInt } from "bitcoinjs-lib/src/script_number"
 import { sha256, ripemd160 } from "hash.js"
@@ -14,7 +14,7 @@ import { Transaction } from "@ethersproject/transactions";
 import { BigNumber as BigNumberEthers } from "ethers";
 const toBuffer = require('typedarray-to-buffer')
 const bitcoinjs = require("bitcoinjs-lib");
-import { decode } from "./helpers/hex-decoder";
+import { decode } from "./hex-decoder";
 export interface ListUTXOs {
     address: string,
     txid: string,
@@ -258,6 +258,7 @@ export function generateContractAddress(rawTx: string) {
     let buffer = Buffer.alloc(32 + 4);
     let cursor = new BufferCursor(buffer);
     cursor.writeBytes(reverse(Buffer.from(rawTx, "hex")));
+    // assuming vout index is 0 as the transaction is serialized with that assumption.
     cursor.writeUInt32LE(0);
     let firstHash = sha256().update(buffer.toString("hex"), "hex").digest("hex");
     let secondHash = ripemd160().update(firstHash, "hex").digest("hex");
@@ -351,12 +352,5 @@ export function parseSignedTransaction(transaction: string) {
         tx['gasPrice'] = BigNumberEthers.from(hexlify(decodeCInt(bitcoinjs.script.decompile(btcDecodedRawTx.outs[0].script)[2])))
         tx['data'] = bitcoinjs.script.decompile(btcDecodedRawTx.outs[0].script)[3].toString("hex")
     }
-    // console.log(bitcoinjs.script.decompile(btcDecodedRawTx.outs[0].script)[0])
-    // tx['gasLimit'] = BigNumberEthers.from(hexlify(decodeCInt(bitcoinjs.script.decompile(btcDecodedRawTx.outs.filter((i: any) => i.value === 0)[0].script)[1])))
-    // tx['gasPrice'] = BigNumberEthers.from(hexlify(decodeCInt(bitcoinjs.script.decompile(btcDecodedRawTx.outs.filter((i: any) => i.value === 0)[0].script)[2])))
-    // tx['data'] = bitcoinjs.script.decompile(btcDecodedRawTx.outs.filter((i: any) => i.value === 0)[0].script)[3].toString("hex")
-    // tx['to'] = bitcoinjs.script.decompile(btcDecodedRawTx.outs.filter((i: any) => i.value === 0)[0].script).length > 5 ? `0x${bitcoinjs.script.decompile(btcDecodedRawTx.outs.filter((i: any) => i.value === 0)[0].script)[4].toString("hex")}` : ""
-    // tx['from'] = `0x${bitcoinjs.script.decompile(btcDecodedRawTx.outs.filter((i: any) => i.value != 0)[0].script)[2].toString("hex")}`
-    console.log(tx);
     return tx
 }

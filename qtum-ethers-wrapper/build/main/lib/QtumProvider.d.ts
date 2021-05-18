@@ -3,7 +3,7 @@ import { ConnectionInfo } from "ethers/lib/utils";
 export declare class QtumProvider extends providers.JsonRpcProvider {
     constructor(url?: ConnectionInfo | string, network?: providers.Networkish);
     /**
-     * Override for ETH parsing of transaction
+     * Override for QTUM parsing of transaction
      * https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/base-provider.ts
      */
     sendTransaction(signedTransaction: string | Promise<string>): Promise<providers.TransactionResponse>;

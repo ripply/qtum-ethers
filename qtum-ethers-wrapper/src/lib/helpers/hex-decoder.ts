@@ -1,6 +1,5 @@
 const bitcoinjs = require('bitcoinjs-lib');
 
-
 /**
  * Decode utxo hex.
  * @param {string} hex

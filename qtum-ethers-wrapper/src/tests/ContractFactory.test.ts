@@ -25,17 +25,7 @@ describe("SimpleStore", function () {
         const simpleStore = new QtumContractFactory(ABI, BYTECODE, signer);
         try {
             await simpleStore.deploy({
-                gasLimit: "0x2dc6c0", gasPrice: "0x28", value: "0xff"
-            });
-        } catch (err) {
-            expect(err.reason).to.equal("You cannot send QTUM while deploying a contract. Try deploying again without a value.")
-        }
-    });
-    it("QtumContractFactory should reject if the deployer tries sending a value", async function () {
-        const simpleStore = new QtumContractFactory(ABI, BYTECODE, signer);
-        try {
-            await simpleStore.deploy({
-                gasLimit: "0x2dc6c0", gasPrice: "0x28", value: "0xff"
+                gasLimit: "0x2dc6c0", gasPrice: "0x28", value: "0xffffff"
             });
         } catch (err) {
             expect(err.reason).to.equal("You cannot send QTUM while deploying a contract. Try deploying again without a value.")

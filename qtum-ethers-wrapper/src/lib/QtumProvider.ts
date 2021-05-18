@@ -2,7 +2,8 @@ import { providers } from "ethers";
 import {
     ConnectionInfo
   } from "ethers/lib/utils";
-import { parseSignedTransaction } from "./utils";
+import { parseSignedTransaction } from "./helpers/utils";
+
 export class QtumProvider extends providers.JsonRpcProvider {
   constructor(
     url?: ConnectionInfo | string,
@@ -12,7 +13,7 @@ export class QtumProvider extends providers.JsonRpcProvider {
   }
 
   /**
-   * Override for ETH parsing of transaction
+   * Override for QTUM parsing of transaction
    * https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/base-provider.ts
    */
   async sendTransaction(

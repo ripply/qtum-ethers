@@ -6,7 +6,7 @@ import {
 import { TransactionRequest } from "@ethersproject/abstract-provider";
 import { BigNumber } from "bignumber.js"
 import { sha256, ripemd160 } from "hash.js"
-import { Tx, txToBuffer, p2pkhScriptSig, signp2pkh, addVins, addp2pkhVouts, addContractVouts } from './utils'
+import { Tx, txToBuffer, p2pkhScriptSig, signp2pkh, addVins, addp2pkhVouts, addContractVouts } from './helpers/utils'
 
 const logger = new Logger("QtumWallet");
 
@@ -126,7 +126,7 @@ export class QtumWallet extends Wallet {
         else if (!!tx.to === true && !!tx.value === true && !!tx.data === false) {
             // P2PKH (send-to-address)
             // @ts-ignore
-            const needed = new BigNumber(MAX_FEE_RATE).plus(parseInt(tx.value.toString(), 16).toString() + `e-8`).toFixed(7);
+            const needed = new BigNumber(MAX_FEE_RATE).plus(BigNumberEthers.from(tx.value).toNumber() + `e-8`).toFixed(7);
             try {
                 // @ts-ignore
                 const utxos = await this.provider.getUtxos(tx.from, needed)
@@ -135,7 +135,7 @@ export class QtumWallet extends Wallet {
                 qtumTx.vins = vins;
                 // Grab contract vouts (scripts/p2pkh)
                 // @ts-ignore
-                qtumTx.vouts = addp2pkhVouts(tx.to.split("0x")[1], amounts, new BigNumber(parseInt(tx.value.toString(), 16).toString() + `e-8`).toFixed(7), hash160PubKey);
+                qtumTx.vouts = addp2pkhVouts(tx.to.split("0x")[1], amounts, new BigNumber(BigNumberEthers.from(tx.value).toNumber() + `e-8`).toFixed(7), hash160PubKey);
                 // Sign necessary vins
                 const updatedVins = qtumTx.vins.map((vin, index) => {
                     return { ...vin, ['scriptSig']: p2pkhScriptSig(signp2pkh(qtumTx, index, this.privateKey, 0x01), this.publicKey.split("0x")[1]) }

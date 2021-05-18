@@ -1,10 +1,8 @@
-const assert = require('assert');
-import {BN} from "bn.js"
+import { BN } from "bn.js"
 export class BufferCursor {
-  _buffer: any;
-  _position: any;
-  constructor(buffer: any) {
-    assert(Buffer.isBuffer(buffer), 'Requires a buffer');
+  _buffer: Buffer;
+  _position: number;
+  constructor(buffer: Buffer) {
     this._buffer = buffer;
     this._position = 0;
   }
@@ -19,27 +17,27 @@ export class BufferCursor {
   get buffer(): Buffer { return this._buffer; }
 
 
-  readUInt8() {
+  readUInt8(): Buffer {
     return this._readStandard(this.readUInt8.name, 1);
   }
 
-  readUInt16LE() {
+  readUInt16LE(): Buffer {
     return this._readStandard(this.readUInt16LE.name, 2);
   }
 
-  readUInt16BE() {
+  readUInt16BE(): Buffer {
     return this._readStandard(this.readUInt16BE.name, 2);
   }
 
-  readUInt32LE() {
+  readUInt32LE(): Buffer {
     return this._readStandard(this.readUInt32LE.name, 4);
   }
 
-  readUInt32BE() {
+  readUInt32BE(): Buffer {
     return this._readStandard(this.readUInt32BE.name, 4);
   }
 
-  readBytes(len: number) {
+  readBytes(len: number): Buffer {
     if (len === 0) {
       return Buffer.alloc(0);
     } else if (len > 0) {
@@ -55,35 +53,35 @@ export class BufferCursor {
     }
   }
 
-  writeUInt8(val: any) {
+  writeUInt8(val: number): void {
     this._writeStandard(this.writeUInt8.name, val, 1);
   }
 
-  writeUInt16LE(val: any) {
+  writeUInt16LE(val: number): void {
     this._writeStandard(this.writeUInt16LE.name, val, 2);
   }
 
-  writeUInt16BE(val: any) {
+  writeUInt16BE(val: number): void {
     this._writeStandard(this.writeUInt16BE.name, val, 2);
   }
 
-  writeUInt32LE(val: any) {
+  writeUInt32LE(val: number): void {
     this._writeStandard(this.writeUInt32LE.name, val, 4);
   }
 
-  writeInt32LE(val: any) {
+  writeInt32LE(val: number): void {
     this._writeStandard(this.writeInt32LE.name, val, 4);
   }
 
-  writeUInt32LEAlt(val: any) {
+  writeUInt32LEAlt(val: number): void {
     this._writeStandard(this.writeUInt32LE.name, val, 5);
   }
 
-  writeUInt32BE(val: any) {
+  writeUInt32BE(val: number): void {
     this._writeStandard(this.writeUInt32BE.name, val, 4);
   }
 
-  writeUInt64LE(value: any) {
+  writeUInt64LE(value: any): void {
     if (!(value instanceof BN)) value = new BN(value);
     this.writeBytes(value.toBuffer('le', 8));
   }
@@ -96,13 +94,15 @@ export class BufferCursor {
     this._position += buffer.length;
   }
 
-  _readStandard(fn: any, len: any) {
-    let result = this._buffer[fn](this._position);
+  _readStandard(fn: string, len: number): Buffer {
+    // @ts-ignore
+    let result: Buffer = this._buffer[fn](this._position);
     this._position += len;
     return result;
   }
 
-  _writeStandard(fn: any, val: any, len: any) {
+  _writeStandard(fn: string, val: number, len: number): void {
+    // @ts-ignore
     this._buffer[fn](val, this._position);
     this._position += len;
   }

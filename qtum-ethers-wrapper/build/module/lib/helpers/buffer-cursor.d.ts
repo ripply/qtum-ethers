@@ -1,26 +1,26 @@
 /// <reference types="node" />
 export declare class BufferCursor {
-    _buffer: any;
-    _position: any;
-    constructor(buffer: any);
+    _buffer: Buffer;
+    _position: number;
+    constructor(buffer: Buffer);
     get position(): number;
     get eof(): boolean;
     get buffer(): Buffer;
-    readUInt8(): any;
-    readUInt16LE(): any;
-    readUInt16BE(): any;
-    readUInt32LE(): any;
-    readUInt32BE(): any;
-    readBytes(len: number): any;
-    writeUInt8(val: any): void;
-    writeUInt16LE(val: any): void;
-    writeUInt16BE(val: any): void;
-    writeUInt32LE(val: any): void;
-    writeInt32LE(val: any): void;
-    writeUInt32LEAlt(val: any): void;
-    writeUInt32BE(val: any): void;
+    readUInt8(): Buffer;
+    readUInt16LE(): Buffer;
+    readUInt16BE(): Buffer;
+    readUInt32LE(): Buffer;
+    readUInt32BE(): Buffer;
+    readBytes(len: number): Buffer;
+    writeUInt8(val: number): void;
+    writeUInt16LE(val: number): void;
+    writeUInt16BE(val: number): void;
+    writeUInt32LE(val: number): void;
+    writeInt32LE(val: number): void;
+    writeUInt32LEAlt(val: number): void;
+    writeUInt32BE(val: number): void;
     writeUInt64LE(value: any): void;
     writeBytes(buffer: any): void;
-    _readStandard(fn: any, len: any): any;
-    _writeStandard(fn: any, val: any, len: any): void;
+    _readStandard(fn: string, len: number): Buffer;
+    _writeStandard(fn: string, val: number, len: number): void;
 }

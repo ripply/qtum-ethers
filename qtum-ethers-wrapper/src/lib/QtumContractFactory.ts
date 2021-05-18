@@ -1,10 +1,10 @@
 import { ContractFactory, ContractInterface, BytesLike, Signer, Contract } from "ethers"
-import { defineReadOnly, getStatic, } from "ethers/lib/utils"
+import { defineReadOnly, getStatic } from "ethers/lib/utils"
 import { Provider } from "@ethersproject/abstract-provider";
 import { getAddress } from "@ethersproject/address";
 import { Logger } from "@ethersproject/logger";
 import { ParamType } from "@ethersproject/abi";
-import { generateContractAddress } from "./utils";
+import { generateContractAddress } from "./helpers/utils";
 const version = "contracts/5.1.1";
 
 const logger = new Logger(version);
@@ -91,5 +91,4 @@ export class QtumContractFactory extends ContractFactory {
         defineReadOnly(contract, "deployTransaction", tx);
         return contract;
     }
-
 }
