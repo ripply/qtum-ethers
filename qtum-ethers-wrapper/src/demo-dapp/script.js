@@ -79,18 +79,18 @@ async function main() {
   //   gasPrice: "0x28",
   // });
   // console.log(getSimpleStore);
-  // const addy = signer.address;
-  // console.log(addy);
-  // const addy2 = await signer.getAddress();
-  // console.log(addy2);
-  // const simulateSendTo = await signer.sendTransaction({
-  //   to: "0x30a41759e2fec594fbb90ea2b212c9ef8074e227",
-  //   from: addy,
-  //   gasLimit: "0x3d090",
-  //   gasPrice: "0x28",
-  //   value: "0xfffff",
-  //   data: "",
-  // });
+  const addy = signer.address;
+  console.log(addy);
+  const addy2 = await signer.getAddress();
+  console.log(addy2);
+  const simulateSendTo = await signer.sendTransaction({
+    to: "0x30a41759e2fec59bcdb90ea2b212c9ef8074e227",
+    from: addy,
+    gasLimit: "0x3d090",
+    gasPrice: "0x28",
+    value: "0xfffff",
+    data: "",
+  });
   // const sent = await simulateSendTo.wait()
   // console.log(sent)
 }

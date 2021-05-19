@@ -836,15 +836,10 @@
         "signature": "6d1e64c066b32332e8adec49808f6aba821e71151cba9253946ac40762dff5b1",
         "affectsGlobalScope": false
       },
-      "../src/tests/contractfactory.test.ts": {
-        "version": "bc8462fbdaa3e2ca7cb641329ec90ac7ec545f5ffa7bf3077d93c60db101d522",
-        "signature": "51a3136205714a767da4b3ba2d086e4dce1b3b848082fe46bc4145a0c49f380c",
+      "../src/tests/contractfactory-wallet-provider.tests.ts": {
+        "version": "058fa3127c1d1bc63463a45400e10005de965c5f23e1f04d4eaa5442288ab7a7",
+        "signature": "0a188ac5a4422058a4a1cfa4df9872ae18cc57e8a9016ac5494fd0735d1f1344",
         "affectsGlobalScope": true
-      },
-      "../src/tests/contractinteraction.test.ts": {
-        "version": "9bfe53db1e41d8f01a4d90db2830b8533f8ed2a5a9b8ff4aca6a080f77867552",
-        "signature": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "affectsGlobalScope": false
       },
       "../node_modules/@types/mocha/index.d.ts": {
         "version": "0359800d3b440f8515001431cde1500944e156040577425eb3f7b80af0846612",
@@ -2250,8 +2245,7 @@
       "../src/lib/qtumcontractfactory.ts",
       "../src/lib/qtumprovider.ts",
       "../src/lib/qtumwallet.ts",
-      "../src/tests/contractfactory.test.ts",
-      "../src/tests/contractinteraction.test.ts"
+      "../src/tests/contractfactory-wallet-provider.tests.ts"
     ]
   },
   "version": "4.2.4"
