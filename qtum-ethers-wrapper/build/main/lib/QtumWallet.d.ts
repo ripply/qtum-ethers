@@ -1,6 +1,5 @@
-import { Wallet } from "ethers";
 import { TransactionRequest } from "@ethersproject/abstract-provider";
-export declare class QtumWallet extends Wallet {
-    getAddress: () => Promise<string>;
+import { IntermediateWallet } from './helpers/IntermediateWallet';
+export declare class QtumWallet extends IntermediateWallet {
     signTransaction(transaction: TransactionRequest): Promise<string>;
 }

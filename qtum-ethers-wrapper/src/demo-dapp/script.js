@@ -37,6 +37,17 @@ const ABI = [
 ];
 
 async function main() {
+  // const connectedContractFactory = simpleStore.connect(signer);
+  // if (!!connectedContractFactory.signer) {
+  //   const deployment = await connectedContractFactory.deploy({
+  //     gasLimit: "0x2dc6c0",
+  //     gasPrice: "0x28",
+  //   });
+  //   console.log("true");
+  //   expect(!!deployment.address, "true");
+  // } else {
+  //   console.log(false, connectedContractFactory.connect(signer));
+  // }
   // const simpleStore = new QtumContractFactory(ABI, BYTECODE, signer);
   // const deployment = await simpleStore.deploy({
   //   gasLimit: "0x2dc6c0"
@@ -53,11 +64,11 @@ async function main() {
   // });
   //   console.log(deploymentReg);
   // const simpleStore = new ethers.Contract(
-  //   "0xa88e480eeed60ccfa4456b7c624fb0a6abcf812e",
+  //   "0x865c45279552bfed54bd493d9676ff88fd16620d",
   //   ABI,
   //   signer
   // );
-  // const setSimpleStore = await simpleStore.set(10, {
+  // const setSimpleStore = await simpleStore.get({
   //   gasLimit: "0x3d090",
   //   gasPrice: "0x28",
   // });
@@ -68,16 +79,19 @@ async function main() {
   //   gasPrice: "0x28",
   // });
   // console.log(getSimpleStore);
-  const addy = await signer.getAddress();
-  console.log(addy);
-  const simulateSendTo = await signer.sendTransaction({
-    to: "0x7926223070547D2D15b2eF5e7383E541c338FfE9".toLowerCase(),
-    from: addy.toLowerCase(),
-    gasLimit: "0x3d090",
-    gasPrice: "0x28",
-    value: "0xfffff",
-    data: "0xdddd",
-  });
-  console.log(simulateSendTo)
+  // const addy = signer.address;
+  // console.log(addy);
+  // const addy2 = await signer.getAddress();
+  // console.log(addy2);
+  // const simulateSendTo = await signer.sendTransaction({
+  //   to: "0x30a41759e2fec594fbb90ea2b212c9ef8074e227",
+  //   from: addy,
+  //   gasLimit: "0x3d090",
+  //   gasPrice: "0x28",
+  //   value: "0xfffff",
+  //   data: "",
+  // });
+  // const sent = await simulateSendTo.wait()
+  // console.log(sent)
 }
 main();

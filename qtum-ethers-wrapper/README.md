@@ -2,16 +2,13 @@
 
 - To Fix
 
-Getting data necessary to build a contract address (python: serialize uint256(txid) + uInt32LE(vout)), sha256, hash160
-
-bitcoinjs-lib is not compiling the evm_create/evm_call scripts correctly, although the raw signed TX can be submitted to the network without any issues.
-
 Fee estimation before script is serialized(?)
-
-Parse signed transaction
 
 Finish writing unit tests
 
 Refactor
 
 Set global variables
+
+Creating an abstract class for changing the Wallet address property didn't work as intended, so I created a clone of the Wallet that would be extended while changing the way the address is defined in 
+the constuctor.

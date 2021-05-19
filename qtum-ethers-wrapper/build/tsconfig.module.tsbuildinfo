@@ -801,9 +801,14 @@
         "signature": "39f63376b704fd884bb54e987466b14a86af88467752f23a065a2dc48a61b002",
         "affectsGlobalScope": false
       },
+      "../src/lib/helpers/intermediatewallet.ts": {
+        "version": "3a6bcbff0725119ab617e84e8979778360dfee3ea1a67c717855bef3268ca786",
+        "signature": "aae3915b468f9f40bf1e8a11554239c600d3f4ab61d640bfd4f61866791adae7",
+        "affectsGlobalScope": false
+      },
       "../src/lib/qtumwallet.ts": {
-        "version": "53dda631f7ca5ba782a573de63ebd1025589cb36c8bac16bcf624c97a634a950",
-        "signature": "f5b716d8bea47cb15d0ec90524830edbe059f9b4e66d461c35463670347d1cc1",
+        "version": "7a4e990abb52e1807109f61c31ea5e299200db737f7e1e535e2ce82cb6198bab",
+        "signature": "98ebb576e31fbf1c6059a3905f1f6346157ac77c9bff9010227a0bc51da7f4ec",
         "affectsGlobalScope": false
       },
       "../src/index.ts": {
@@ -1378,6 +1383,9 @@
       "../src/lib/helpers/buffer-cursor.ts": [
         "../node_modules/@types/bn.js/index.d.ts"
       ],
+      "../src/lib/helpers/intermediatewallet.ts": [
+        "../node_modules/ethers/lib/index.d.ts"
+      ],
       "../src/lib/helpers/utils.ts": [
         "../node_modules/@ethersproject/transactions/lib/index.d.ts",
         "../node_modules/@types/secp256k1/index.d.ts",
@@ -1414,6 +1422,7 @@
         "../node_modules/ethers/lib/utils.d.ts",
         "../node_modules/hash.js/lib/hash.d.ts",
         "../src/lib/helpers/global-vars.ts",
+        "../src/lib/helpers/intermediatewallet.ts",
         "../src/lib/helpers/utils.ts"
       ]
     },
@@ -1910,6 +1919,9 @@
         "../src/lib/qtumprovider.ts",
         "../src/lib/qtumwallet.ts"
       ],
+      "../src/lib/helpers/intermediatewallet.ts": [
+        "../node_modules/ethers/lib/index.d.ts"
+      ],
       "../src/lib/helpers/utils.ts": [
         "../node_modules/@ethersproject/transactions/lib/index.d.ts"
       ],
@@ -1922,7 +1934,7 @@
       ],
       "../src/lib/qtumwallet.ts": [
         "../node_modules/@ethersproject/abstract-provider/lib/index.d.ts",
-        "../node_modules/ethers/lib/index.d.ts"
+        "../src/lib/helpers/intermediatewallet.ts"
       ]
     },
     "semanticDiagnosticsPerFile": [
@@ -2087,6 +2099,7 @@
       "../src/lib/helpers/buffer-cursor.ts",
       "../src/lib/helpers/global-vars.ts",
       "../src/lib/helpers/hex-decoder.ts",
+      "../src/lib/helpers/intermediatewallet.ts",
       "../src/lib/helpers/opcodes.ts",
       "../src/lib/helpers/utils.ts",
       "../src/lib/helpers/varuint-bitcoin.d.ts",

@@ -5,4 +5,5 @@ export declare const GLOBAL_VARS: {
     TX_EMPTY_SIZE: number;
     HASH_TYPE: number;
     MAX_FEE_RATE: number;
+    AVG_FEE_RATE: number;
 };

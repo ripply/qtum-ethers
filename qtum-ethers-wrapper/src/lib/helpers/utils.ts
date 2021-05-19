@@ -9,11 +9,14 @@ import { sha256, ripemd160 } from "hash.js"
 import { BigNumber } from "bignumber.js"
 import {
     arrayify,
+    BytesLike,
     hexlify
 } from "ethers/lib/utils";
 import { Transaction } from "@ethersproject/transactions";
 import { BigNumber as BigNumberEthers } from "ethers";
 import { decode } from "./hex-decoder";
+import { computePublicKey } from "@ethersproject/signing-key";
+
 const toBuffer = require('typedarray-to-buffer')
 const bitcoinjs = require("bitcoinjs-lib");
 
@@ -115,6 +118,20 @@ export function calcTxBytes(vins: Array<TxVinWithoutNullScriptSig | TxVinWithNul
         vouts.reduce(function (a, x) { return a + outputBytes(x) }, 0)
 }
 
+export function calcTxBytesToEstimateFee(vins: Array<TxVinWithoutNullScriptSig | TxVinWithNullScriptSig>, vouts: Array<any>): number {
+    return GLOBAL_VARS.TX_EMPTY_SIZE +
+        vins.reduce(function (a, x) { return a + inputBytesToEstimateFee() }, 0) +
+        vouts.reduce(function (a, x) { return a + outputBytesToEstimateFee(x) }, 0)
+}
+
+// Argument here would be irrelevant considering the assumption that all vins are p2pkh
+function inputBytesToEstimateFee(): number {
+    return GLOBAL_VARS.TX_INPUT_BASE + 139
+}
+
+function outputBytesToEstimateFee(script: Buffer): number {
+    return GLOBAL_VARS.TX_OUTPUT_BASE + script.length
+}
 export function txToBuffer(tx: any): Buffer {
     let buffer = Buffer.alloc(calcTxBytes(tx.vins, tx.vouts));
     let cursor = new BufferCursor(buffer);
@@ -250,58 +267,69 @@ export function reverse(src: Buffer) {
     return buffer
 }
 
-export function generateContractAddress(rawTx: string) {
+export function generateContractAddress(txid: string) {
     let buffer = Buffer.alloc(32 + 4);
     let cursor = new BufferCursor(buffer);
-    cursor.writeBytes(reverse(Buffer.from(rawTx, "hex")));
-    // assuming vout index is 0 as the transaction is serialized with that assumption.
+    cursor.writeBytes(reverse(Buffer.from(txid, "hex")));
+    // Assuming vout index is 0 as the transaction is serialized with that assumption.
     cursor.writeUInt32LE(0);
     let firstHash = sha256().update(buffer.toString("hex"), "hex").digest("hex");
     let secondHash = ripemd160().update(firstHash, "hex").digest("hex");
     return secondHash;
 }
 
-export function addVins(utxos: Array<ListUTXOs>, neededAmount: number | string, hash160PubKey: string): (Array<any>) {
-    let balance = 0;
+export function addVins(utxos: Array<ListUTXOs>, neededAmount: string, hash160PubKey: string): (Array<any>) {
+    let balance = 0.0;
     let inputs = [];
     let amounts = [];
     for (let i = 0; i < utxos.length; i++) {
-        balance += parseFloat(utxos[i].amount);
-        inputs.push({ txid: Buffer.from(utxos[i].txid, 'hex'), vout: utxos[i].vout, hash: reverse(Buffer.from(utxos[i].txid, 'hex')), sequence: 0xffffffff, script: p2pkhScript(Buffer.from(hash160PubKey, "hex")), scriptSig: null });
-        amounts.push(parseFloat(utxos[i].amount));
-        if (balance >= neededAmount) {
-            break;
+        // investigate issue where amount has no decimal point as calculation panics
+        // issue with this txid -> cd159803a85f0b2076a8beb5710b2a42a15d9a905f49a7c1ab4427d51e7cd4e3
+        if (utxos[i].txid !== "cd159803a85f0b2076a8beb5710b2a42a15d9a905f49a7c1ab4427d51e7cd4e3") {
+            let x: any = parseFloat(utxos[i].amount).toFixed(7)
+            // if (x % 1 == 0 ) {
+            //    let y = parseInt(x)
+            //    x = y.toFixed(7)
+            // }
+            balance += parseFloat(x);
+            inputs.push({ txid: Buffer.from(utxos[i].txid, 'hex'), vout: utxos[i].vout, hash: reverse(Buffer.from(utxos[i].txid, 'hex')), sequence: 0xffffffff, script: p2pkhScript(Buffer.from(hash160PubKey, "hex")), scriptSig: null });
+            amounts.push(parseFloat(x));
+            if (new BigNumber(neededAmount).isLessThanOrEqualTo(balance)) {
+                break;
+            }
         }
     }
     return [inputs, amounts];
 }
 
-export function addContractVouts(gasPrice: number, gasLimit: number, data: string, address: string, amounts: Array<any>, neededAmount: string, value: number, hash160PubKey: string): (Array<any>) {
+export function addContractVouts(gasPrice: number, gasLimit: number, data: string, address: string, amounts: Array<any>, value: string, hash160PubKey: string, vins: Array<any>): (Array<any>) {
     let vouts = [];
-    let networkFee = 0.002;
-    let returnAmount = amounts.reduce((a, b) => a + b);
+    const returnAmount = amounts.reduce((a, b) => a + b);
+    const networkFee = new BigNumber(calcTxBytesToEstimateFee(vins, [contractTxScript(address === "" ? "" : address.split("0x")[1], gasLimit, gasPrice, data.split("0x")[1]), p2pkhScript(Buffer.from(hash160PubKey, "hex"))]).toString() + `e-3`).times(0.004).toFixed(7);
+    const gas = new BigNumber(new BigNumber(gasPrice + `e-8`).toFixed(7)).times(gasLimit).toFixed(7)
+
     vouts.push({
         script: contractTxScript(address === "" ? "" : address.split("0x")[1], gasLimit, gasPrice, data.split("0x")[1]),
-        value: value
+        value: new BigNumber(value).times(1e8).toNumber()
     })
     vouts.push({
         script: p2pkhScript(Buffer.from(hash160PubKey, "hex")),
-        value: new BigNumber(returnAmount).minus(neededAmount).minus(networkFee).times(1e8).toNumber()
+        value: new BigNumber(returnAmount).minus(gas).minus(value).minus(networkFee).times(1e8).toNumber()
     })
     return vouts;
 }
 
-export function addp2pkhVouts(hash160Address: string, amounts: Array<any>, neededAmount: string, hash160PubKey: string): (Array<any>) {
+export function addp2pkhVouts(hash160Address: string, amounts: Array<any>, value: string, hash160PubKey: string, vins: Array<any>): (Array<any>) {
     let vouts = [];
-    let networkFee = 0.002;
-    let returnAmount = amounts.reduce((a, b) => a + b);
+    const returnAmount = amounts.reduce((a, b) => a + b);
+    const networkFee = new BigNumber(calcTxBytesToEstimateFee(vins, [p2pkhScript(Buffer.from(hash160Address, "hex")), p2pkhScript(Buffer.from(hash160PubKey, "hex"))]).toString() + `e-3`).times(0.004).toFixed(7);
     vouts.push({
         script: p2pkhScript(Buffer.from(hash160Address, "hex")),
-        value: new BigNumber(neededAmount).times(1e8).toNumber()
+        value: new BigNumber(value).times(1e8).toNumber()
     })
     vouts.push({
         script: p2pkhScript(Buffer.from(hash160PubKey, "hex")),
-        value: new BigNumber(returnAmount).minus(neededAmount).minus(networkFee).times(1e8).toNumber()
+        value: new BigNumber(returnAmount).minus(value).minus(networkFee).times(1e8).toNumber()
     })
     return vouts;
 }
@@ -350,6 +378,9 @@ export function parseSignedTransaction(transaction: string): Transaction {
     return tx
 }
 
-// export function serializeTransaction(): string {
-
-// }
+export function computeAddress(key: BytesLike | string): string {
+    const publicKey = computePublicKey(key);
+    const sha256Hash = sha256().update(publicKey.split("0x")[1], "hex").digest("hex")
+    const prefixlessAddress = ripemd160().update(sha256Hash, "hex").digest("hex")
+    return `0x${prefixlessAddress}`;
+}

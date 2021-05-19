@@ -757,8 +757,8 @@
         "affectsGlobalScope": false
       },
       "../src/lib/helpers/global-vars.ts": {
-        "version": "af2d811e89ba2e8d4a89bd5d13d214c8f551f14ff3c3828d4ac9d859143a71df",
-        "signature": "b785a764614f40d40252d3f1394c01c8763cfd1f05fe30f6eddaeec03c21bf77",
+        "version": "daba5f06736ea0620c31b50d10e3b321a85b2551f4f068cdbd85ee08a6b11a52",
+        "signature": "b926369c4e265fd12275bcfabf0b017a4ab949181f56cba4686178b461172ca8",
         "affectsGlobalScope": false
       },
       "../node_modules/@types/bn.js/index.d.ts": {
@@ -792,8 +792,8 @@
         "affectsGlobalScope": false
       },
       "../src/lib/helpers/utils.ts": {
-        "version": "c7223823dbc48a88e662432bcc98b09062d5f46ed8721ad0abdcfe00133a06f5",
-        "signature": "9e1793cfd9b51ba055c3a2b58c59cb152e32909612d0870256d95e7931aba0c3",
+        "version": "3bdb445a340736c3f6dbe7d0230a3e83e54e82ba32c894f6da996768299c3796",
+        "signature": "970479d8f81afb09468e96b96cafdee59a98b86489445216a9937d5f5e8dda4b",
         "affectsGlobalScope": false
       },
       "../src/lib/qtumprovider.ts": {
@@ -801,9 +801,14 @@
         "signature": "39f63376b704fd884bb54e987466b14a86af88467752f23a065a2dc48a61b002",
         "affectsGlobalScope": false
       },
+      "../src/lib/helpers/intermediatewallet.ts": {
+        "version": "34ba37808a82b227c3c547333356d706a2b4d37f51916ee0ffbda21eced9575a",
+        "signature": "848e83ecf60ad0fd28c2165e0d7cb2ff1f5f1419e42b4412ef66b9cb970a1f8b",
+        "affectsGlobalScope": false
+      },
       "../src/lib/qtumwallet.ts": {
-        "version": "53dda631f7ca5ba782a573de63ebd1025589cb36c8bac16bcf624c97a634a950",
-        "signature": "f5b716d8bea47cb15d0ec90524830edbe059f9b4e66d461c35463670347d1cc1",
+        "version": "e1a2db0d48d9c959b82358394f7bc8e784afaa626346f8e2e14df5c0b5fe786d",
+        "signature": "b9ebffd65852feafcdc076e773400c4675f0ca07677488e50a96b4164e6308d4",
         "affectsGlobalScope": false
       },
       "../src/index.ts": {
@@ -832,8 +837,8 @@
         "affectsGlobalScope": false
       },
       "../src/tests/contractfactory.test.ts": {
-        "version": "9276897340fffb2f5398e1ac7d9a19c0c388ed651ca4ec5cac577bf41a2b1d9a",
-        "signature": "11c127d6f0f7465bdd1443b50cf5a534ea515daf5a1aa08fc826ae440a10bf09",
+        "version": "bc8462fbdaa3e2ca7cb641329ec90ac7ec545f5ffa7bf3077d93c60db101d522",
+        "signature": "51a3136205714a767da4b3ba2d086e4dce1b3b848082fe46bc4145a0c49f380c",
         "affectsGlobalScope": true
       },
       "../src/tests/contractinteraction.test.ts": {
@@ -1378,7 +1383,25 @@
       "../src/lib/helpers/buffer-cursor.ts": [
         "../node_modules/@types/bn.js/index.d.ts"
       ],
+      "../src/lib/helpers/intermediatewallet.ts": [
+        "../node_modules/@ethersproject/abstract-provider/lib/index.d.ts",
+        "../node_modules/@ethersproject/abstract-signer/lib/index.d.ts",
+        "../node_modules/@ethersproject/address/lib/index.d.ts",
+        "../node_modules/@ethersproject/bytes/lib/index.d.ts",
+        "../node_modules/@ethersproject/hash/lib/index.d.ts",
+        "../node_modules/@ethersproject/hdnode/lib/index.d.ts",
+        "../node_modules/@ethersproject/json-wallets/lib/index.d.ts",
+        "../node_modules/@ethersproject/keccak256/lib/index.d.ts",
+        "../node_modules/@ethersproject/logger/lib/index.d.ts",
+        "../node_modules/@ethersproject/properties/lib/index.d.ts",
+        "../node_modules/@ethersproject/random/lib/index.d.ts",
+        "../node_modules/@ethersproject/signing-key/lib/index.d.ts",
+        "../node_modules/@ethersproject/transactions/lib/index.d.ts",
+        "../node_modules/@ethersproject/wordlists/lib/index.d.ts",
+        "../src/lib/helpers/utils.ts"
+      ],
       "../src/lib/helpers/utils.ts": [
+        "../node_modules/@ethersproject/signing-key/lib/index.d.ts",
         "../node_modules/@ethersproject/transactions/lib/index.d.ts",
         "../node_modules/@types/secp256k1/index.d.ts",
         "../node_modules/bignumber.js/bignumber.d.ts",
@@ -1412,8 +1435,8 @@
         "../node_modules/bignumber.js/bignumber.d.ts",
         "../node_modules/ethers/lib/index.d.ts",
         "../node_modules/ethers/lib/utils.d.ts",
-        "../node_modules/hash.js/lib/hash.d.ts",
         "../src/lib/helpers/global-vars.ts",
+        "../src/lib/helpers/intermediatewallet.ts",
         "../src/lib/helpers/utils.ts"
       ]
     },
@@ -1910,8 +1933,18 @@
         "../src/lib/qtumprovider.ts",
         "../src/lib/qtumwallet.ts"
       ],
+      "../src/lib/helpers/intermediatewallet.ts": [
+        "../node_modules/@ethersproject/abstract-provider/lib/index.d.ts",
+        "../node_modules/@ethersproject/abstract-signer/lib/index.d.ts",
+        "../node_modules/@ethersproject/bytes/lib/index.d.ts",
+        "../node_modules/@ethersproject/hdnode/lib/index.d.ts",
+        "../node_modules/@ethersproject/json-wallets/lib/index.d.ts",
+        "../node_modules/@ethersproject/signing-key/lib/index.d.ts",
+        "../node_modules/@ethersproject/wordlists/lib/index.d.ts"
+      ],
       "../src/lib/helpers/utils.ts": [
-        "../node_modules/@ethersproject/transactions/lib/index.d.ts"
+        "../node_modules/@ethersproject/transactions/lib/index.d.ts",
+        "../node_modules/ethers/lib/utils.d.ts"
       ],
       "../src/lib/qtumcontractfactory.ts": [
         "../node_modules/ethers/lib/index.d.ts"
@@ -1922,7 +1955,7 @@
       ],
       "../src/lib/qtumwallet.ts": [
         "../node_modules/@ethersproject/abstract-provider/lib/index.d.ts",
-        "../node_modules/ethers/lib/index.d.ts"
+        "../src/lib/helpers/intermediatewallet.ts"
       ]
     },
     "semanticDiagnosticsPerFile": [
@@ -2087,8 +2120,132 @@
       "../src/lib/helpers/buffer-cursor.ts",
       "../src/lib/helpers/global-vars.ts",
       "../src/lib/helpers/hex-decoder.ts",
+      [
+        "../src/lib/helpers/intermediatewallet.ts",
+        [
+          {
+            "file": "../src/lib/helpers/intermediatewallet.ts",
+            "start": 1747,
+            "length": 7,
+            "messageText": "Property 'address' has no initializer and is not definitely assigned in the constructor.",
+            "category": 1,
+            "code": 2564
+          },
+          {
+            "file": "../src/lib/helpers/intermediatewallet.ts",
+            "start": 1777,
+            "length": 8,
+            "messageText": "Property 'provider' has no initializer and is not definitely assigned in the constructor.",
+            "category": 1,
+            "code": 2564
+          },
+          {
+            "file": "../src/lib/helpers/intermediatewallet.ts",
+            "start": 1956,
+            "length": 11,
+            "messageText": "Property '_signingKey' has no initializer and is not definitely assigned in the constructor.",
+            "category": 1,
+            "code": 2564
+          },
+          {
+            "file": "../src/lib/helpers/intermediatewallet.ts",
+            "start": 2000,
+            "length": 9,
+            "messageText": "Property '_mnemonic' has no initializer and is not definitely assigned in the constructor.",
+            "category": 1,
+            "code": 2564
+          },
+          {
+            "file": "../src/lib/helpers/intermediatewallet.ts",
+            "start": 2477,
+            "length": 7,
+            "messageText": "Property 'address' is used before being assigned.",
+            "category": 1,
+            "code": 2565
+          },
+          {
+            "file": "../src/lib/helpers/intermediatewallet.ts",
+            "start": 3150,
+            "length": 4,
+            "code": 2345,
+            "category": 1,
+            "messageText": "Argument of type 'null' is not assignable to parameter of type 'string | undefined'."
+          },
+          {
+            "file": "../src/lib/helpers/intermediatewallet.ts",
+            "start": 3261,
+            "length": 7,
+            "messageText": "Property 'address' is used before being assigned.",
+            "category": 1,
+            "code": 2565
+          },
+          {
+            "file": "../src/lib/helpers/intermediatewallet.ts",
+            "start": 3481,
+            "length": 4,
+            "code": 2322,
+            "category": 1,
+            "messageText": "Type 'null' is not assignable to type 'Mnemonic'."
+          },
+          {
+            "file": "../src/lib/helpers/intermediatewallet.ts",
+            "start": 4455,
+            "length": 4,
+            "code": 2322,
+            "category": 1,
+            "messageText": "Type 'null' is not assignable to type 'Mnemonic'."
+          },
+          {
+            "file": "../src/lib/helpers/intermediatewallet.ts",
+            "start": 4774,
+            "length": 16,
+            "code": 2345,
+            "category": 1,
+            "messageText": {
+              "messageText": "Argument of type 'Provider | null' is not assignable to parameter of type 'this[\"provider\"]'.",
+              "category": 1,
+              "code": 2345,
+              "next": [
+                {
+                  "messageText": "Type 'null' is not assignable to type 'this[\"provider\"]'.",
+                  "category": 1,
+                  "code": 2322,
+                  "next": [
+                    {
+                      "messageText": "Type 'null' is not assignable to type 'Provider'.",
+                      "category": 1,
+                      "code": 2322
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "file": "../src/lib/helpers/intermediatewallet.ts",
+            "start": 8460,
+            "length": 4,
+            "code": 2345,
+            "category": 1,
+            "messageText": "Argument of type 'null' is not assignable to parameter of type 'string | undefined'."
+          }
+        ]
+      ],
       "../src/lib/helpers/opcodes.ts",
-      "../src/lib/helpers/utils.ts",
+      [
+        "../src/lib/helpers/utils.ts",
+        [
+          {
+            "file": "../src/lib/helpers/utils.ts",
+            "start": 3648,
+            "length": 1,
+            "messageText": "'x' is declared but its value is never read.",
+            "category": 1,
+            "code": 6133,
+            "reportsUnnecessary": true
+          }
+        ]
+      ],
       "../src/lib/helpers/varuint-bitcoin.d.ts",
       "../src/lib/qtumcontractfactory.ts",
       "../src/lib/qtumprovider.ts",
