@@ -17,7 +17,6 @@ export declare class BufferCursor {
     writeUInt16BE(val: number): void;
     writeUInt32LE(val: number): void;
     writeInt32LE(val: number): void;
-    writeUInt32LEAlt(val: number): void;
     writeUInt32BE(val: number): void;
     writeUInt64LE(value: any): void;
     writeBytes(buffer: any): void;

@@ -1,4 +1,4 @@
-import { encode as encodeVaruint } from 'varuint-bitcoin';
+import { encode as encodeVaruint, encodingLength } from 'varuint-bitcoin';
 import { encode } from 'bip66';
 import { OPS } from "./opcodes";
 import { GLOBAL_VARS } from "./global-vars";
@@ -104,18 +104,23 @@ function cloneTx(tx: any): CloneTx {
     return result;
 }
 function inputBytes(input: any): number {
-    return GLOBAL_VARS.TX_INPUT_BASE + (input.scriptSig ? input.scriptSig.length : input.script.length)
+    return GLOBAL_VARS.TX_INPUT_BASE + (input.scriptSig ? input.scriptSig.byteLength : input.script.byteLength)
 }
 
 function outputBytes(output: any): number {
-    return GLOBAL_VARS.TX_OUTPUT_BASE + (output.script ? output.script.length : GLOBAL_VARS.TX_OUTPUT_PUBKEYHASH)
+    return GLOBAL_VARS.TX_OUTPUT_BASE + (output.script ? output.script.byteLength : GLOBAL_VARS.TX_OUTPUT_PUBKEYHASH)
 }
 
 // refer to https://en.bitcoin.it/wiki/Transaction#General_format_of_a_Bitcoin_transaction_.28inside_a_block.29
 export function calcTxBytes(vins: Array<TxVinWithoutNullScriptSig | TxVinWithNullScriptSig>, vouts: Array<TxVout>): number {
-    return GLOBAL_VARS.TX_EMPTY_SIZE +
-        vins.reduce(function (a, x) { return a + inputBytes(x) }, 0) +
-        vouts.reduce(function (a, x) { return a + outputBytes(x) }, 0)
+    return 4 + encodingLength(vins.length) +
+        vins
+            .map(vin => (vin.scriptSig ? vin.scriptSig.byteLength : vin.script.byteLength))
+            .reduce((sum, len) => sum + 40 + encodingLength(len) + len, 0) +
+        encodingLength(vouts.length) +
+        vouts
+            .map(vout => vout.script.byteLength)
+            .reduce((sum, len) => sum + 8 + encodingLength(len) + len, 0) + 4
 }
 
 export function calcTxBytesToEstimateFee(vins: Array<TxVinWithoutNullScriptSig | TxVinWithNullScriptSig>, vouts: Array<any>): number {
@@ -130,14 +135,16 @@ function inputBytesToEstimateFee(): number {
 }
 
 function outputBytesToEstimateFee(script: Buffer): number {
-    return GLOBAL_VARS.TX_OUTPUT_BASE + script.length
+    return GLOBAL_VARS.TX_OUTPUT_BASE + script.byteLength
 }
 export function txToBuffer(tx: any): Buffer {
-    let buffer = Buffer.alloc(calcTxBytes(tx.vins, tx.vouts));
+    // +2 on certain contracts?
+    let neededBytes = calcTxBytes(tx.vins, tx.vouts);
+    console.log(neededBytes, 'neededBuffer')
+    let buffer = Buffer.alloc(neededBytes);
     let cursor = new BufferCursor(buffer);
     // version
     cursor.writeUInt32LE(tx.version);
-
     // vin length
     cursor.writeBytes(encodeVaruint(tx.vins.length));
     // vin
@@ -155,7 +162,6 @@ export function txToBuffer(tx: any): Buffer {
     }
     // vout length
     cursor.writeBytes(encodeVaruint(tx.vouts.length));
-
     // vouts
     for (let vout of tx.vouts) {
         cursor.writeUInt64LE(vout.value);
@@ -199,7 +205,6 @@ export function signp2pkh(tx: any, vindex: number, privKey: string): Buffer {
     let filteredPrevOutScript = clone.vins[vindex].script.filter((op: any) => op !== OPS.OP_CODESEPARATOR);
     // Uint8Array issue here
     clone.vins[vindex].script = toBuffer(filteredPrevOutScript);
-
     // zero out scripts of other inputs
     for (let i = 0; i < clone.vins.length; i++) {
         if (i === vindex) continue;
@@ -208,15 +213,18 @@ export function signp2pkh(tx: any, vindex: number, privKey: string): Buffer {
     // write to the buffer
     let buffer = txToBuffer(clone)
     // extend and append hash type
-    buffer = Buffer.alloc(buffer.length + 4, buffer);
+    buffer = Buffer.alloc(buffer.byteLength + 4, buffer);
     // append the hash type
-    buffer.writeUInt32LE(GLOBAL_VARS.HASH_TYPE, buffer.length - 4);
+    buffer.writeUInt32LE(GLOBAL_VARS.HASH_TYPE, buffer.byteLength - 4);
 
     // double-sha256
     let firstHash = sha256().update(buffer).digest();
     let secondHash = sha256().update(firstHash).digest();
+
+    // sign hash
     let sig = ecdsaSign(new Uint8Array(secondHash), arrayify(privKey));
 
+    // encode sig
     return encodeSig(sig.signature, GLOBAL_VARS.HASH_TYPE);
 }
 export function p2pkhScriptSig(sig: any, pubkey: any): Buffer {
@@ -305,9 +313,11 @@ export function addVins(utxos: Array<ListUTXOs>, neededAmount: string, hash160Pu
 export function addContractVouts(gasPrice: number, gasLimit: number, data: string, address: string, amounts: Array<any>, value: string, hash160PubKey: string, vins: Array<any>): (Array<any>) {
     let vouts = [];
     const returnAmount = amounts.reduce((a, b) => a + b);
+    console.log(amounts, returnAmount, new BigNumber(value).times(1e8).toNumber())
     const networkFee = new BigNumber(calcTxBytesToEstimateFee(vins, [contractTxScript(address === "" ? "" : address.split("0x")[1], gasLimit, gasPrice, data.split("0x")[1]), p2pkhScript(Buffer.from(hash160PubKey, "hex"))]).toString() + `e-3`).times(0.004).toFixed(7);
     const gas = new BigNumber(new BigNumber(gasPrice + `e-8`).toFixed(7)).times(gasLimit).toFixed(7)
-
+    new BigNumber(returnAmount).isGreaterThanOrEqualTo(new BigNumber(gas).plus(networkFee).plus(value)) === true ? console.log(true) : console.log(false)
+    // console.log(new BigNumber(returnAmount), new BigNumber(gas).plus(networkFee), new BigNumber(returnAmount).isGreaterThanOrEqualTo(new BigNumber(gas).plus(networkFee).plus(value)), new BigNumber(gas).plus(networkFee) )
     vouts.push({
         script: contractTxScript(address === "" ? "" : address.split("0x")[1], gasLimit, gasPrice, data.split("0x")[1]),
         value: new BigNumber(value).times(1e8).toNumber()
@@ -366,6 +376,7 @@ export function parseSignedTransaction(transaction: string): Transaction {
         tx['from'] = `0x${bitcoinjs.script.decompile(btcDecodedRawTx.outs[1].script)[2].toString("hex")}`
         tx['value'] = btcDecodedRawTx.outs[0].value > 0 ? BigNumberEthers.from(hexlify(btcDecodedRawTx.outs[0].value)) : BigNumberEthers.from("0x0")
         tx['data'] = bitcoinjs.script.decompile(btcDecodedRawTx.outs[0].script)[3].toString("hex")
+        tx['value'] = BigNumberEthers.from(hexlify(btcDecodedRawTx.outs[0].value)).toNumber() === 0 ? BigNumberEthers.from("0x0") : BigNumberEthers.from(hexlify(btcDecodedRawTx.outs[0].value))
     }
     // assume contract creation
     else {

@@ -767,8 +767,8 @@
         "affectsGlobalScope": false
       },
       "../src/lib/helpers/buffer-cursor.ts": {
-        "version": "baa845697876cd2acdc90eb5468d60b0155d1749c0e74f130c74c0022f25b342",
-        "signature": "ddd04a1adc24a953352882dfb08fa183715671e3497e820af0df4153d5008e97",
+        "version": "04617ea9e1418291854e0eb67684253df2815afa27cead83d6d6446d78cc7dd3",
+        "signature": "e781046756a62bf0966bc2f4ad85e1c04b909970c92f6d01fc55606c3ab7216b",
         "affectsGlobalScope": false
       },
       "../node_modules/@types/secp256k1/index.d.ts": {
@@ -792,12 +792,12 @@
         "affectsGlobalScope": false
       },
       "../src/lib/helpers/utils.ts": {
-        "version": "3bdb445a340736c3f6dbe7d0230a3e83e54e82ba32c894f6da996768299c3796",
+        "version": "7f707ff1fe1f561778f68684272aebbe34c23fc212795d6bc85e4288b1ed9e70",
         "signature": "970479d8f81afb09468e96b96cafdee59a98b86489445216a9937d5f5e8dda4b",
         "affectsGlobalScope": false
       },
       "../src/lib/qtumprovider.ts": {
-        "version": "1e4dd96f66649de9c0a7c4cbc6b546353027037a83b037fa95c4c68ad0fff01b",
+        "version": "3233ef55378c3b0fca7acf98d10720421a678147397c4313b89aaadb2f79c7b1",
         "signature": "39f63376b704fd884bb54e987466b14a86af88467752f23a065a2dc48a61b002",
         "affectsGlobalScope": false
       },
@@ -807,7 +807,7 @@
         "affectsGlobalScope": false
       },
       "../src/lib/qtumwallet.ts": {
-        "version": "e1a2db0d48d9c959b82358394f7bc8e784afaa626346f8e2e14df5c0b5fe786d",
+        "version": "f67882dbca3dfa2e4db3bbe967870b8402261cfc00aa08ca754a6582629a64c3",
         "signature": "b9ebffd65852feafcdc076e773400c4675f0ca07677488e50a96b4164e6308d4",
         "affectsGlobalScope": false
       },
@@ -837,8 +837,8 @@
         "affectsGlobalScope": false
       },
       "../src/tests/contractfactory-wallet-provider.tests.ts": {
-        "version": "058fa3127c1d1bc63463a45400e10005de965c5f23e1f04d4eaa5442288ab7a7",
-        "signature": "0a188ac5a4422058a4a1cfa4df9872ae18cc57e8a9016ac5494fd0735d1f1344",
+        "version": "839f824ec918d6883b235cc32b4c14ac88266f8c2a7a98dd9bc27d0a60f550df",
+        "signature": "03649f84fa5951c93d5620dc83e9c446b81b6baf2b312ebb92eb76eadfb2f773",
         "affectsGlobalScope": true
       },
       "../node_modules/@types/mocha/index.d.ts": {
@@ -2232,7 +2232,25 @@
         [
           {
             "file": "../src/lib/helpers/utils.ts",
-            "start": 3648,
+            "start": 2735,
+            "length": 10,
+            "messageText": "'inputBytes' is declared but its value is never read.",
+            "category": 1,
+            "code": 6133,
+            "reportsUnnecessary": true
+          },
+          {
+            "file": "../src/lib/helpers/utils.ts",
+            "start": 2892,
+            "length": 11,
+            "messageText": "'outputBytes' is declared but its value is never read.",
+            "category": 1,
+            "code": 6133,
+            "reportsUnnecessary": true
+          },
+          {
+            "file": "../src/lib/helpers/utils.ts",
+            "start": 3902,
             "length": 1,
             "messageText": "'x' is declared but its value is never read.",
             "category": 1,

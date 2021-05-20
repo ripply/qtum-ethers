@@ -31,6 +31,7 @@ export class QtumProvider extends providers.JsonRpcProvider {
       // Note: need to destructure return result here.
       return this._wrapTransaction(tx, ...hash);
     } catch (error) {
+      console.log('error', error)
       error.transaction = tx;
       error.transactionHash = tx.hash;
       throw error;

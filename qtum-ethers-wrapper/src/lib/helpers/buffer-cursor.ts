@@ -73,10 +73,6 @@ export class BufferCursor {
     this._writeStandard(this.writeInt32LE.name, val, 4);
   }
 
-  writeUInt32LEAlt(val: number): void {
-    this._writeStandard(this.writeUInt32LE.name, val, 5);
-  }
-
   writeUInt32BE(val: number): void {
     this._writeStandard(this.writeUInt32BE.name, val, 4);
   }
