@@ -1,5 +1,6 @@
 export declare const GLOBAL_VARS: {
     TX_INPUT_BASE: number;
+    TX_SCRIPTSIG: number;
     TX_OUTPUT_BASE: number;
     TX_OUTPUT_PUBKEYHASH: number;
     TX_EMPTY_SIZE: number;
@@ -10,4 +11,5 @@ export declare const GLOBAL_VARS: {
     CONTRACT_CREATION: number;
     P2PKH: number;
     DEPLOY_ERROR: number;
+    UTXO_VINDEX: number;
 };

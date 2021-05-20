@@ -757,8 +757,8 @@
         "affectsGlobalScope": false
       },
       "../src/lib/helpers/global-vars.ts": {
-        "version": "d7281fce98fc897c3a33d4e833e7e0a641852da8448ec2280db509ce45b53ce5",
-        "signature": "0904e568cc98af87c668146aa4f1e286681058f34b90bf3d06e2410a7c99d170",
+        "version": "7b148c0719508a14972a73d5998ce1f9edada036723db6183dbe6e0c094717b9",
+        "signature": "e50d4f6be979757e0f7608780507e001ba8715c8e8c273370bb485614fd9dbb0",
         "affectsGlobalScope": false
       },
       "../node_modules/@types/bn.js/index.d.ts": {
@@ -792,8 +792,8 @@
         "affectsGlobalScope": false
       },
       "../src/lib/helpers/utils.ts": {
-        "version": "3cef141b5954e9140705e1d9444eeda8b1dbcbb9689b6b41a7e6e95ba8690bc9",
-        "signature": "d17b0fd57f0f854f79b954589fc7edbe564c1e8017ff1bc25c0327eda6e2d10d",
+        "version": "d57b52f57d53c78bf8f7ad3b3d7803705e445564bc7ab8b417ac9fae205eb61b",
+        "signature": "00a1d906589c9efee519eca4759c33f34b90f0aa258baec08c10a0d6056ffc83",
         "affectsGlobalScope": false
       },
       "../src/lib/qtumprovider.ts": {
@@ -837,7 +837,7 @@
         "affectsGlobalScope": false
       },
       "../src/tests/contractfactory-wallet-provider.tests.ts": {
-        "version": "feba89f5c9eeedd2181b532d2f685426aafcd4f711a37a20af97d17bf9d4557d",
+        "version": "36a82b7181c2221b763781a06085e5b927ef9bda734275fc89b6f4ff551c2f46",
         "signature": "8afcd458d74f799e530e49738b908eb8e7d1916a9107d836d9cd3b335eb58c43",
         "affectsGlobalScope": true
       },
@@ -2228,108 +2228,7 @@
         ]
       ],
       "../src/lib/helpers/opcodes.ts",
-      [
-        "../src/lib/helpers/utils.ts",
-        [
-          {
-            "file": "../src/lib/helpers/utils.ts",
-            "start": 3002,
-            "length": 10,
-            "messageText": "'inputBytes' is declared but its value is never read.",
-            "category": 1,
-            "code": 6133,
-            "reportsUnnecessary": true
-          },
-          {
-            "file": "../src/lib/helpers/utils.ts",
-            "start": 3159,
-            "length": 11,
-            "messageText": "'outputBytes' is declared but its value is never read.",
-            "category": 1,
-            "code": 6133,
-            "reportsUnnecessary": true
-          },
-          {
-            "file": "../src/lib/helpers/utils.ts",
-            "start": 4169,
-            "length": 1,
-            "messageText": "'x' is declared but its value is never read.",
-            "category": 1,
-            "code": 6133,
-            "reportsUnnecessary": true
-          },
-          {
-            "file": "../src/lib/helpers/utils.ts",
-            "start": 19400,
-            "length": 7,
-            "code": 2345,
-            "category": 1,
-            "messageText": {
-              "messageText": "Argument of type 'BytesLike | undefined' is not assignable to parameter of type 'string'.",
-              "category": 1,
-              "code": 2345,
-              "next": [
-                {
-                  "messageText": "Type 'undefined' is not assignable to type 'string'.",
-                  "category": 1,
-                  "code": 2322
-                }
-              ]
-            }
-          },
-          {
-            "file": "../src/lib/helpers/utils.ts",
-            "start": 19496,
-            "length": 7,
-            "messageText": "Object is possibly 'undefined'.",
-            "category": 1,
-            "code": 2532
-          },
-          {
-            "file": "../src/lib/helpers/utils.ts",
-            "start": 19876,
-            "length": 7,
-            "code": 2345,
-            "category": 1,
-            "messageText": {
-              "messageText": "Argument of type 'BytesLike | undefined' is not assignable to parameter of type 'string'.",
-              "category": 1,
-              "code": 2345,
-              "next": [
-                {
-                  "messageText": "Type 'undefined' is not assignable to type 'string'.",
-                  "category": 1,
-                  "code": 2322
-                }
-              ]
-            }
-          },
-          {
-            "file": "../src/lib/helpers/utils.ts",
-            "start": 20075,
-            "length": 7,
-            "messageText": "Object is possibly 'undefined'.",
-            "category": 1,
-            "code": 2532
-          },
-          {
-            "file": "../src/lib/helpers/utils.ts",
-            "start": 20803,
-            "length": 5,
-            "messageText": "Object is possibly 'undefined'.",
-            "category": 1,
-            "code": 2532
-          },
-          {
-            "file": "../src/lib/helpers/utils.ts",
-            "start": 20911,
-            "length": 7,
-            "messageText": "Object is possibly 'undefined'.",
-            "category": 1,
-            "code": 2532
-          }
-        ]
-      ],
+      "../src/lib/helpers/utils.ts",
       "../src/lib/helpers/varuint-bitcoin.d.ts",
       "../src/lib/qtumcontractfactory.ts",
       "../src/lib/qtumprovider.ts",

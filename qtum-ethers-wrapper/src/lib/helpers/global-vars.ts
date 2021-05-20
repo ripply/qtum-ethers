@@ -1,5 +1,6 @@
 export const GLOBAL_VARS = {
     TX_INPUT_BASE: 32 + 4 + 1 + 4,
+    TX_SCRIPTSIG: 139,
     TX_OUTPUT_BASE: 8 + 1,
     TX_OUTPUT_PUBKEYHASH: 25,
     TX_EMPTY_SIZE: 4 + 1 + 1 + 4,
@@ -9,6 +10,7 @@ export const GLOBAL_VARS = {
     CONTRACT_CALL: 1,
     CONTRACT_CREATION: 2,
     P2PKH: 3,
-    DEPLOY_ERROR: 4
+    DEPLOY_ERROR: 4,
+    UTXO_VINDEX: 0
   }
   
