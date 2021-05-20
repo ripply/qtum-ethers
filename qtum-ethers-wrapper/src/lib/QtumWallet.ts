@@ -8,9 +8,7 @@ import { checkTransactionType, serializeTransaction } from './helpers/utils'
 import { GLOBAL_VARS } from './helpers/global-vars'
 import { IntermediateWallet } from './helpers/IntermediateWallet'
 
-
 const logger = new Logger("QtumWallet");
-
 const forwardErrors = [
     Logger.errors.INSUFFICIENT_FUNDS
 ];

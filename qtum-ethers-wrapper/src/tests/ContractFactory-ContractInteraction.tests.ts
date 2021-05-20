@@ -10,10 +10,13 @@ const { generateContractAddress } = require('../../build/main/lib/helpers/utils'
 const BYTECODE = "608060405234801561001057600080fd5b506040516020806100f2833981016040525160005560bf806100336000396000f30060806040526004361060485763ffffffff7c010000000000000000000000000000000000000000000000000000000060003504166360fe47b18114604d5780636d4ce63c146064575b600080fd5b348015605857600080fd5b5060626004356088565b005b348015606f57600080fd5b506076608d565b60408051918252519081900360200190f35b600055565b600054905600a165627a7a7230582049a087087e1fc6da0b68ca259d45a2e369efcbb50e93f9b7fa3e198de6402b810029"
 const ABI = [{ "inputs": [], "name": "get", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "uint256", "name": "x", "type": "uint256" }], "name": "set", "outputs": [], "stateMutability": "nonpayable", "type": "function" }]
 const provider = new QtumProvider("http://localhost:23889");
+
+// hash160PubKey/address -> 0xcca81b02942d8079a871e02ba03a3a4a8d7740d2
 const signer = new QtumWallet(
     "99dda7e1a59655c9e02de8592be3b914df7df320e72ce04ccf0427f9a366ec6e",
     provider
 );
+// hash160PubKey/address -> 0x30a41759e2fec594fbb90ea2b212c9ef8074e227
 const signerNoQtum = new QtumWallet(
     "61fd08e21110d908cf8dc20bb243a96e2dc0d29169b4fec09594c39e4384125a",
     provider
@@ -436,6 +439,7 @@ describe("QtumContractFactory", function () {
     });
     it("QtumContractFactory should fail as the deployer has no UTXOs to spend", async function () {
         const simpleStore = new QtumContractFactory(ABI, BYTECODE, signerNoQtum);
+        console.log(signerNoQtum.address)
         try {
             await simpleStore.deploy({
                 gasLimit: "0x2dc6c0", gasPrice: "0x28"
@@ -476,16 +480,22 @@ describe("QtumWallet", function () {
             gasLimit: "0x2dc6c0", gasPrice: "0x28", value: "0xfffff"
         });
         await deposit.wait()
-        console.log(deposit, 'deposit')
     });
     it("QtumWallet can connect to QRC20 ", async function () {
-        const simpleBank = new QtumContractFactory(QRC20_ABI, QRC20_BYTECODE, signer);
-        const deployment = await simpleBank.deploy({
+        const qrc20 = new ethers.Contract("0xc04d8b4f5137e5983b075e8560020523784c1c4a", QRC20_ABI, signer);
+        const deployment = await qrc20.deploy({
             gasLimit: "0x2dc6c0", gasPrice: "0x28"
         });
         expect(deployment.address).to.equal(`0x${generateContractAddress(deployment.deployTransaction.hash.split("0x")[1])}`)
         await deployment.deployed();
-        const name = await deployment.name({ gasLimit: "0x2dc6c0", gasPrice: "0x28" });
-        console.log(name)
+        const name = await qrc20.name({ gasLimit: "0x2dc6c0", gasPrice: "0x28" });
+        console.log(name, qrc20.address)
+    });
+})
+
+describe("QtumProvider", function () {
+    it("QtumProvider can grab UTXOs for an address", async function () {
+        const utxos = await provider.getUtxos("0x7926223070547D2D15b2eF5e7383E541c338FfE9", "1.0")
+        expect(true, "true")
     });
 })

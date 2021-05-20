@@ -29,7 +29,7 @@
     "build": "yarn build:main && yarn build:module",
     "build:main": "tsc -p tsconfig.json",
     "build:module": "tsc -p tsconfig.module.json",
-    "test": "mocha --exit --timeout 0 ./src/tests/ContractFactory-Wallet-Provider.tests.ts",
+    "test": "mocha --exit --timeout 0 ./src/tests/ContractFactory-ContractInteraction.tests.ts",
     "clean": "rm -rf build"
   },
   "devDependencies": {

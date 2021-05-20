@@ -1,16 +1,19 @@
 # Notes
 
-- To Fix
+- Issues
 
-Fee estimation before script is serialized(?)
+At the point of grabbing UTXO's from janus, the estimated TX size is unknown
 
-Finish writing unit tests
+WEI -> Satoshis
 
-Refactor
+Janus issue with estimateGas
 
-Set global variables
+Janus requires gasLimit and gasPrice for getters via eth_call
+
+Janus doesn't return a transaction receipt for p2pkh tx's
+
+This extension works with p2pkh scripts only
 
 Creating an abstract class for changing the Wallet address property didn't work as intended, so I created a clone of the Wallet that would be extended while changing the way the address is defined in 
 the constuctor.
 
-Issue with writeUint32LE after writing vouts to buffercursor on a bigger smart contract deployment

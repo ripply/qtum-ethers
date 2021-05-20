@@ -807,7 +807,7 @@
         "affectsGlobalScope": false
       },
       "../src/lib/qtumwallet.ts": {
-        "version": "9bbb61aeac4753f1689869bde91df6075c562759c179937ff5b561b28837e72f",
+        "version": "213f27ae09b574848d72ce845dddc8e4778f27a065ddeeb6fc30156bd76ebe2e",
         "signature": "27fc4fee2cb42aee0a89cb7ba8219451c07e13655c5f3daa58adbbe543167cc9",
         "affectsGlobalScope": false
       },
@@ -836,8 +836,8 @@
         "signature": "6d1e64c066b32332e8adec49808f6aba821e71151cba9253946ac40762dff5b1",
         "affectsGlobalScope": false
       },
-      "../src/tests/contractfactory-wallet-provider.tests.ts": {
-        "version": "36a82b7181c2221b763781a06085e5b927ef9bda734275fc89b6f4ff551c2f46",
+      "../src/tests/contractfactory-contractinteraction.tests.ts": {
+        "version": "0d0c214370b1a7f9dcd5d9ac887f03edc5b20f3cd5e5a1a9ac97ff45b6fdccc9",
         "signature": "8afcd458d74f799e530e49738b908eb8e7d1916a9107d836d9cd3b335eb58c43",
         "affectsGlobalScope": true
       },
@@ -2233,7 +2233,20 @@
       "../src/lib/qtumcontractfactory.ts",
       "../src/lib/qtumprovider.ts",
       "../src/lib/qtumwallet.ts",
-      "../src/tests/contractfactory-wallet-provider.tests.ts"
+      [
+        "../src/tests/contractfactory-contractinteraction.tests.ts",
+        [
+          {
+            "file": "../src/tests/contractfactory-contractinteraction.tests.ts",
+            "start": 19827,
+            "length": 5,
+            "messageText": "'utxos' is declared but its value is never read.",
+            "category": 1,
+            "code": 6133,
+            "reportsUnnecessary": true
+          }
+        ]
+      ]
     ]
   },
   "version": "4.2.4"
