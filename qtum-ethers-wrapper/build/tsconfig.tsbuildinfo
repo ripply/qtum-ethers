@@ -792,7 +792,7 @@
         "affectsGlobalScope": false
       },
       "../src/lib/helpers/utils.ts": {
-        "version": "06d47aed5f113aa275675cca09843a4f4f4dd30439820eb555f55202c2b501ab",
+        "version": "3cef141b5954e9140705e1d9444eeda8b1dbcbb9689b6b41a7e6e95ba8690bc9",
         "signature": "d17b0fd57f0f854f79b954589fc7edbe564c1e8017ff1bc25c0327eda6e2d10d",
         "affectsGlobalScope": false
       },
@@ -807,7 +807,7 @@
         "affectsGlobalScope": false
       },
       "../src/lib/qtumwallet.ts": {
-        "version": "e71d285eb1118663825c01cf34ee1fddb8f27f2bd68fe39a02e5ca65e51cbc68",
+        "version": "9bbb61aeac4753f1689869bde91df6075c562759c179937ff5b561b28837e72f",
         "signature": "27fc4fee2cb42aee0a89cb7ba8219451c07e13655c5f3daa58adbbe543167cc9",
         "affectsGlobalScope": false
       },
@@ -837,7 +837,7 @@
         "affectsGlobalScope": false
       },
       "../src/tests/contractfactory-wallet-provider.tests.ts": {
-        "version": "e54e85b1842bf0a0d4859f8471d1446b2a06d0abc3d45d8c4589cabf9a7a76c7",
+        "version": "feba89f5c9eeedd2181b532d2f685426aafcd4f711a37a20af97d17bf9d4557d",
         "signature": "8afcd458d74f799e530e49738b908eb8e7d1916a9107d836d9cd3b335eb58c43",
         "affectsGlobalScope": true
       },
@@ -1429,7 +1429,6 @@
       "../src/lib/qtumwallet.ts": [
         "../node_modules/@ethersproject/abstract-provider/lib/index.d.ts",
         "../node_modules/bignumber.js/bignumber.d.ts",
-        "../node_modules/ethers/lib/index.d.ts",
         "../node_modules/ethers/lib/utils.d.ts",
         "../src/lib/helpers/global-vars.ts",
         "../src/lib/helpers/intermediatewallet.ts",
@@ -2261,7 +2260,7 @@
           },
           {
             "file": "../src/lib/helpers/utils.ts",
-            "start": 19341,
+            "start": 19400,
             "length": 7,
             "code": 2345,
             "category": 1,
@@ -2280,7 +2279,7 @@
           },
           {
             "file": "../src/lib/helpers/utils.ts",
-            "start": 19437,
+            "start": 19496,
             "length": 7,
             "messageText": "Object is possibly 'undefined'.",
             "category": 1,
@@ -2288,7 +2287,7 @@
           },
           {
             "file": "../src/lib/helpers/utils.ts",
-            "start": 19817,
+            "start": 19876,
             "length": 7,
             "code": 2345,
             "category": 1,
@@ -2307,7 +2306,7 @@
           },
           {
             "file": "../src/lib/helpers/utils.ts",
-            "start": 20016,
+            "start": 20075,
             "length": 7,
             "messageText": "Object is possibly 'undefined'.",
             "category": 1,
@@ -2315,7 +2314,7 @@
           },
           {
             "file": "../src/lib/helpers/utils.ts",
-            "start": 20744,
+            "start": 20803,
             "length": 5,
             "messageText": "Object is possibly 'undefined'.",
             "category": 1,
@@ -2323,7 +2322,7 @@
           },
           {
             "file": "../src/lib/helpers/utils.ts",
-            "start": 20852,
+            "start": 20911,
             "length": 7,
             "messageText": "Object is possibly 'undefined'.",
             "category": 1,

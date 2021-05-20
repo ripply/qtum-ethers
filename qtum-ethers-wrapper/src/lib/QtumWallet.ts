@@ -1,11 +1,10 @@
-import { BigNumber as BigNumberEthers } from "ethers";
 import {
     resolveProperties,
     Logger,
 } from "ethers/lib/utils";
 import { TransactionRequest } from "@ethersproject/abstract-provider";
 import { BigNumber } from "bignumber.js"
-import { Tx, txToBuffer, p2pkhScriptSig, signp2pkh, addVins, addp2pkhVouts, addContractVouts, checkTransactionType, serializeTransaction } from './helpers/utils'
+import { checkTransactionType, serializeTransaction } from './helpers/utils'
 import { GLOBAL_VARS } from './helpers/global-vars'
 import { IntermediateWallet } from './helpers/IntermediateWallet'
 
@@ -83,5 +82,5 @@ export class QtumWallet extends IntermediateWallet {
         }
 
         return serializedTransaction;
-
     }
+}
