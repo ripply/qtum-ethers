@@ -792,7 +792,7 @@
         "affectsGlobalScope": false
       },
       "../src/lib/helpers/utils.ts": {
-        "version": "7f707ff1fe1f561778f68684272aebbe34c23fc212795d6bc85e4288b1ed9e70",
+        "version": "f445283ec16f96604d6653cac18c00037e85f6a7992196f0571dee48a0264a91",
         "signature": "970479d8f81afb09468e96b96cafdee59a98b86489445216a9937d5f5e8dda4b",
         "affectsGlobalScope": false
       },
@@ -837,8 +837,8 @@
         "affectsGlobalScope": false
       },
       "../src/tests/contractfactory-wallet-provider.tests.ts": {
-        "version": "839f824ec918d6883b235cc32b4c14ac88266f8c2a7a98dd9bc27d0a60f550df",
-        "signature": "03649f84fa5951c93d5620dc83e9c446b81b6baf2b312ebb92eb76eadfb2f773",
+        "version": "8cf75bd4cdfb5710ad34b247592fc04bb9833d103d28a2af1d1e644fc2f89c25",
+        "signature": "8afcd458d74f799e530e49738b908eb8e7d1916a9107d836d9cd3b335eb58c43",
         "affectsGlobalScope": true
       },
       "../node_modules/@types/mocha/index.d.ts": {

@@ -293,18 +293,16 @@ export function addVins(utxos: Array<ListUTXOs>, neededAmount: string, hash160Pu
     for (let i = 0; i < utxos.length; i++) {
         // investigate issue where amount has no decimal point as calculation panics
         // issue with this txid -> cd159803a85f0b2076a8beb5710b2a42a15d9a905f49a7c1ab4427d51e7cd4e3
-        if (utxos[i].txid !== "cd159803a85f0b2076a8beb5710b2a42a15d9a905f49a7c1ab4427d51e7cd4e3") {
-            let x: any = parseFloat(utxos[i].amount).toFixed(7)
-            // if (x % 1 == 0 ) {
-            //    let y = parseInt(x)
-            //    x = y.toFixed(7)
-            // }
-            balance += parseFloat(x);
-            inputs.push({ txid: Buffer.from(utxos[i].txid, 'hex'), vout: utxos[i].vout, hash: reverse(Buffer.from(utxos[i].txid, 'hex')), sequence: 0xffffffff, script: p2pkhScript(Buffer.from(hash160PubKey, "hex")), scriptSig: null });
-            amounts.push(parseFloat(x));
-            if (new BigNumber(neededAmount).isLessThanOrEqualTo(balance)) {
-                break;
-            }
+        let x: any = parseFloat(utxos[i].amount).toFixed(7)
+        // if (x % 1 == 0 ) {
+        //    let y = parseInt(x)
+        //    x = y.toFixed(7)
+        // }
+        balance += parseFloat(x);
+        inputs.push({ txid: Buffer.from(utxos[i].txid, 'hex'), vout: utxos[i].vout, hash: reverse(Buffer.from(utxos[i].txid, 'hex')), sequence: 0xffffffff, script: p2pkhScript(Buffer.from(hash160PubKey, "hex")), scriptSig: null });
+        amounts.push(parseFloat(x));
+        if (new BigNumber(neededAmount).isLessThanOrEqualTo(balance)) {
+            break;
         }
     }
     return [inputs, amounts];
@@ -313,11 +311,9 @@ export function addVins(utxos: Array<ListUTXOs>, neededAmount: string, hash160Pu
 export function addContractVouts(gasPrice: number, gasLimit: number, data: string, address: string, amounts: Array<any>, value: string, hash160PubKey: string, vins: Array<any>): (Array<any>) {
     let vouts = [];
     const returnAmount = amounts.reduce((a, b) => a + b);
-    console.log(amounts, returnAmount, new BigNumber(value).times(1e8).toNumber())
     const networkFee = new BigNumber(calcTxBytesToEstimateFee(vins, [contractTxScript(address === "" ? "" : address.split("0x")[1], gasLimit, gasPrice, data.split("0x")[1]), p2pkhScript(Buffer.from(hash160PubKey, "hex"))]).toString() + `e-3`).times(0.004).toFixed(7);
     const gas = new BigNumber(new BigNumber(gasPrice + `e-8`).toFixed(7)).times(gasLimit).toFixed(7)
     new BigNumber(returnAmount).isGreaterThanOrEqualTo(new BigNumber(gas).plus(networkFee).plus(value)) === true ? console.log(true) : console.log(false)
-    // console.log(new BigNumber(returnAmount), new BigNumber(gas).plus(networkFee), new BigNumber(returnAmount).isGreaterThanOrEqualTo(new BigNumber(gas).plus(networkFee).plus(value)), new BigNumber(gas).plus(networkFee) )
     vouts.push({
         script: contractTxScript(address === "" ? "" : address.split("0x")[1], gasLimit, gasPrice, data.split("0x")[1]),
         value: new BigNumber(value).times(1e8).toNumber()
