@@ -467,31 +467,31 @@ describe("QtumWallet", function () {
     //     const address = await signer.getAddress();
     //     expect(address).to.equal(signer.address)
     // });
-    it("QtumWallet can connect to SimpleBank and call a payable method", async function () {
-        const simpleBank = new QtumContractFactory(SIMPLEBANK_ABI, SIMPLEBANK_BYTECODE, signer);
-        const deployment = await simpleBank.deploy({
-            gasLimit: "0x2dc6c0", gasPrice: "0x28"
-        });
-        expect(deployment.address).to.equal(`0x${generateContractAddress(deployment.deployTransaction.hash.split("0x")[1])}`)
-        await deployment.deployed();
-        // console.log(deployment)
-        const deposit = await deployment.deposit({
-            gasLimit: "0x2dc6c0", gasPrice: "0x28", value: "0xfffff"
-        });
-        await deposit.wait()
-        console.log(deposit, 'deposit')
-    });
-    it("QtumWallet can connect to QRC20 ", async function () {
-        const simpleBank = new QtumContractFactory(QRC20_ABI, QRC20_BYTECODE, signer);
-        const deployment = await simpleBank.deploy({
-            gasLimit: "0x2dc6c0", gasPrice: "0x28"
-        });
-        console.log(`0x${generateContractAddress(deployment.deployTransaction.hash.split("0x")[1])}`)
-        expect(deployment.address).to.equal(`0x${generateContractAddress(deployment.deployTransaction.hash.split("0x")[1])}`)
-        await deployment.deployed();
-        // console.log(deployed.address)
-        // console.log(deployment)
-        const deposit = await deployment.name({ gasLimit: "0x2dc6c0", gasPrice: "0x28"});
-        console.log(deposit)
-    });
+    // it("QtumWallet can connect to SimpleBank and call a payable method", async function () {
+    //     const simpleBank = new QtumContractFactory(SIMPLEBANK_ABI, SIMPLEBANK_BYTECODE, signer);
+    //     const deployment = await simpleBank.deploy({
+    //         gasLimit: "0x2dc6c0", gasPrice: "0x28"
+    //     });
+    //     expect(deployment.address).to.equal(`0x${generateContractAddress(deployment.deployTransaction.hash.split("0x")[1])}`)
+    //     await deployment.deployed();
+    //     // console.log(deployment)
+    //     const deposit = await deployment.deposit({
+    //         gasLimit: "0x2dc6c0", gasPrice: "0x28", value: "0xfffff"
+    //     });
+    //     await deposit.wait()
+    //     console.log(deposit, 'deposit')
+    // });
+    // it("QtumWallet can connect to QRC20 ", async function () {
+    //     const simpleBank = new QtumContractFactory(QRC20_ABI, QRC20_BYTECODE, signer);
+    //     const deployment = await simpleBank.deploy({
+    //         gasLimit: "0x2dc6c0", gasPrice: "0x28"
+    //     });
+    //     console.log(`0x${generateContractAddress(deployment.deployTransaction.hash.split("0x")[1])}`)
+    //     expect(deployment.address).to.equal(`0x${generateContractAddress(deployment.deployTransaction.hash.split("0x")[1])}`)
+    //     await deployment.deployed();
+    //     // console.log(deployed.address)
+    //     // console.log(deployment)
+    //     const deposit = await deployment.name({ gasLimit: "0x2dc6c0", gasPrice: "0x28"});
+    //     console.log(deposit)
+    // });
 })

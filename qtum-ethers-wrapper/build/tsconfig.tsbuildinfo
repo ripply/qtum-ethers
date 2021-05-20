@@ -757,8 +757,8 @@
         "affectsGlobalScope": false
       },
       "../src/lib/helpers/global-vars.ts": {
-        "version": "daba5f06736ea0620c31b50d10e3b321a85b2551f4f068cdbd85ee08a6b11a52",
-        "signature": "b926369c4e265fd12275bcfabf0b017a4ab949181f56cba4686178b461172ca8",
+        "version": "d7281fce98fc897c3a33d4e833e7e0a641852da8448ec2280db509ce45b53ce5",
+        "signature": "0904e568cc98af87c668146aa4f1e286681058f34b90bf3d06e2410a7c99d170",
         "affectsGlobalScope": false
       },
       "../node_modules/@types/bn.js/index.d.ts": {
@@ -792,13 +792,13 @@
         "affectsGlobalScope": false
       },
       "../src/lib/helpers/utils.ts": {
-        "version": "f445283ec16f96604d6653cac18c00037e85f6a7992196f0571dee48a0264a91",
-        "signature": "970479d8f81afb09468e96b96cafdee59a98b86489445216a9937d5f5e8dda4b",
+        "version": "06d47aed5f113aa275675cca09843a4f4f4dd30439820eb555f55202c2b501ab",
+        "signature": "d17b0fd57f0f854f79b954589fc7edbe564c1e8017ff1bc25c0327eda6e2d10d",
         "affectsGlobalScope": false
       },
       "../src/lib/qtumprovider.ts": {
-        "version": "3233ef55378c3b0fca7acf98d10720421a678147397c4313b89aaadb2f79c7b1",
-        "signature": "39f63376b704fd884bb54e987466b14a86af88467752f23a065a2dc48a61b002",
+        "version": "5fa5cf346133b883099536b69a70c70e467cb0156a529098c89fab09097881d5",
+        "signature": "512c7d1b93ba140c39ace7650acf1addb584f5f626feaed1f9c28ba2dbe61e13",
         "affectsGlobalScope": false
       },
       "../src/lib/helpers/intermediatewallet.ts": {
@@ -807,8 +807,8 @@
         "affectsGlobalScope": false
       },
       "../src/lib/qtumwallet.ts": {
-        "version": "f67882dbca3dfa2e4db3bbe967870b8402261cfc00aa08ca754a6582629a64c3",
-        "signature": "b9ebffd65852feafcdc076e773400c4675f0ca07677488e50a96b4164e6308d4",
+        "version": "e71d285eb1118663825c01cf34ee1fddb8f27f2bd68fe39a02e5ca65e51cbc68",
+        "signature": "27fc4fee2cb42aee0a89cb7ba8219451c07e13655c5f3daa58adbbe543167cc9",
         "affectsGlobalScope": false
       },
       "../src/index.ts": {
@@ -837,7 +837,7 @@
         "affectsGlobalScope": false
       },
       "../src/tests/contractfactory-wallet-provider.tests.ts": {
-        "version": "8cf75bd4cdfb5710ad34b247592fc04bb9833d103d28a2af1d1e644fc2f89c25",
+        "version": "e54e85b1842bf0a0d4859f8471d1446b2a06d0abc3d45d8c4589cabf9a7a76c7",
         "signature": "8afcd458d74f799e530e49738b908eb8e7d1916a9107d836d9cd3b335eb58c43",
         "affectsGlobalScope": true
       },
@@ -1396,6 +1396,7 @@
         "../src/lib/helpers/utils.ts"
       ],
       "../src/lib/helpers/utils.ts": [
+        "../node_modules/@ethersproject/abstract-provider/lib/index.d.ts",
         "../node_modules/@ethersproject/signing-key/lib/index.d.ts",
         "../node_modules/@ethersproject/transactions/lib/index.d.ts",
         "../node_modules/@types/secp256k1/index.d.ts",
@@ -1938,6 +1939,7 @@
         "../node_modules/@ethersproject/wordlists/lib/index.d.ts"
       ],
       "../src/lib/helpers/utils.ts": [
+        "../node_modules/@ethersproject/abstract-provider/lib/index.d.ts",
         "../node_modules/@ethersproject/transactions/lib/index.d.ts",
         "../node_modules/ethers/lib/utils.d.ts"
       ],
@@ -2232,7 +2234,7 @@
         [
           {
             "file": "../src/lib/helpers/utils.ts",
-            "start": 2735,
+            "start": 3002,
             "length": 10,
             "messageText": "'inputBytes' is declared but its value is never read.",
             "category": 1,
@@ -2241,7 +2243,7 @@
           },
           {
             "file": "../src/lib/helpers/utils.ts",
-            "start": 2892,
+            "start": 3159,
             "length": 11,
             "messageText": "'outputBytes' is declared but its value is never read.",
             "category": 1,
@@ -2250,12 +2252,82 @@
           },
           {
             "file": "../src/lib/helpers/utils.ts",
-            "start": 3902,
+            "start": 4169,
             "length": 1,
             "messageText": "'x' is declared but its value is never read.",
             "category": 1,
             "code": 6133,
             "reportsUnnecessary": true
+          },
+          {
+            "file": "../src/lib/helpers/utils.ts",
+            "start": 19341,
+            "length": 7,
+            "code": 2345,
+            "category": 1,
+            "messageText": {
+              "messageText": "Argument of type 'BytesLike | undefined' is not assignable to parameter of type 'string'.",
+              "category": 1,
+              "code": 2345,
+              "next": [
+                {
+                  "messageText": "Type 'undefined' is not assignable to type 'string'.",
+                  "category": 1,
+                  "code": 2322
+                }
+              ]
+            }
+          },
+          {
+            "file": "../src/lib/helpers/utils.ts",
+            "start": 19437,
+            "length": 7,
+            "messageText": "Object is possibly 'undefined'.",
+            "category": 1,
+            "code": 2532
+          },
+          {
+            "file": "../src/lib/helpers/utils.ts",
+            "start": 19817,
+            "length": 7,
+            "code": 2345,
+            "category": 1,
+            "messageText": {
+              "messageText": "Argument of type 'BytesLike | undefined' is not assignable to parameter of type 'string'.",
+              "category": 1,
+              "code": 2345,
+              "next": [
+                {
+                  "messageText": "Type 'undefined' is not assignable to type 'string'.",
+                  "category": 1,
+                  "code": 2322
+                }
+              ]
+            }
+          },
+          {
+            "file": "../src/lib/helpers/utils.ts",
+            "start": 20016,
+            "length": 7,
+            "messageText": "Object is possibly 'undefined'.",
+            "category": 1,
+            "code": 2532
+          },
+          {
+            "file": "../src/lib/helpers/utils.ts",
+            "start": 20744,
+            "length": 5,
+            "messageText": "Object is possibly 'undefined'.",
+            "category": 1,
+            "code": 2532
+          },
+          {
+            "file": "../src/lib/helpers/utils.ts",
+            "start": 20852,
+            "length": 7,
+            "messageText": "Object is possibly 'undefined'.",
+            "category": 1,
+            "code": 2532
           }
         ]
       ],

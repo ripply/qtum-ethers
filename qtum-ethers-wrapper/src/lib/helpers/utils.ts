@@ -16,6 +16,7 @@ import { Transaction } from "@ethersproject/transactions";
 import { BigNumber as BigNumberEthers } from "ethers";
 import { decode } from "./hex-decoder";
 import { computePublicKey } from "@ethersproject/signing-key";
+import { TransactionRequest } from "@ethersproject/abstract-provider";
 
 const toBuffer = require('typedarray-to-buffer')
 const bitcoinjs = require("bitcoinjs-lib");
@@ -76,6 +77,16 @@ export interface Tx {
     locktime: number,
     vins: Array<TxVinWithNullScriptSig | TxVinWithoutNullScriptSig>,
     vouts: Array<TxVout>
+}
+
+export interface CheckTransactionType {
+    transactionType: number,
+    neededAmount: any
+}
+
+export interface SerializedTransaction {
+    serializedTransaction: string,
+    networkFee: string
 }
 function cloneBuffer(buffer: Buffer): Buffer {
     let result = Buffer.alloc(buffer.length);
@@ -308,36 +319,54 @@ export function addVins(utxos: Array<ListUTXOs>, neededAmount: string, hash160Pu
     return [inputs, amounts];
 }
 
-export function addContractVouts(gasPrice: number, gasLimit: number, data: string, address: string, amounts: Array<any>, value: string, hash160PubKey: string, vins: Array<any>): (Array<any>) {
+export function addContractVouts(gasPrice: number, gasLimit: number, data: string, address: string, amounts: Array<any>, value: string, hash160PubKey: string, vins: Array<any>): (Array<any> | string) {
     let vouts = [];
     const returnAmount = amounts.reduce((a, b) => a + b);
     const networkFee = new BigNumber(calcTxBytesToEstimateFee(vins, [contractTxScript(address === "" ? "" : address.split("0x")[1], gasLimit, gasPrice, data.split("0x")[1]), p2pkhScript(Buffer.from(hash160PubKey, "hex"))]).toString() + `e-3`).times(0.004).toFixed(7);
     const gas = new BigNumber(new BigNumber(gasPrice + `e-8`).toFixed(7)).times(gasLimit).toFixed(7)
-    new BigNumber(returnAmount).isGreaterThanOrEqualTo(new BigNumber(gas).plus(networkFee).plus(value)) === true ? console.log(true) : console.log(false)
     vouts.push({
         script: contractTxScript(address === "" ? "" : address.split("0x")[1], gasLimit, gasPrice, data.split("0x")[1]),
         value: new BigNumber(value).times(1e8).toNumber()
     })
-    vouts.push({
-        script: p2pkhScript(Buffer.from(hash160PubKey, "hex")),
-        value: new BigNumber(returnAmount).minus(gas).minus(value).minus(networkFee).times(1e8).toNumber()
-    })
-    return vouts;
+    // if spending amounts === amounts needed for gas/value/network fee, do not add a change vout
+    if (new BigNumber(returnAmount).isGreaterThan(new BigNumber(gas).plus(networkFee).plus(value))) {
+        vouts.push({
+            script: p2pkhScript(Buffer.from(hash160PubKey, "hex")),
+            value: new BigNumber(returnAmount).minus(gas).minus(value).minus(networkFee).times(1e8).toNumber()
+        });
+        return vouts;
+    }
+    // call qtum_getUTXOs to see if the account has enough to spend with the networkFee taken into account
+    else if (new BigNumber(returnAmount).isLessThan(new BigNumber(gas).plus(networkFee).plus(value))) {
+        return networkFee
+    }
+    else {
+        return vouts;
+    }
 }
 
-export function addp2pkhVouts(hash160Address: string, amounts: Array<any>, value: string, hash160PubKey: string, vins: Array<any>): (Array<any>) {
+export function addp2pkhVouts(hash160Address: string, amounts: Array<any>, value: string, hash160PubKey: string, vins: Array<any>): (Array<any> | string) {
     let vouts = [];
     const returnAmount = amounts.reduce((a, b) => a + b);
     const networkFee = new BigNumber(calcTxBytesToEstimateFee(vins, [p2pkhScript(Buffer.from(hash160Address, "hex")), p2pkhScript(Buffer.from(hash160PubKey, "hex"))]).toString() + `e-3`).times(0.004).toFixed(7);
     vouts.push({
         script: p2pkhScript(Buffer.from(hash160Address, "hex")),
         value: new BigNumber(value).times(1e8).toNumber()
-    })
-    vouts.push({
-        script: p2pkhScript(Buffer.from(hash160PubKey, "hex")),
-        value: new BigNumber(returnAmount).minus(value).minus(networkFee).times(1e8).toNumber()
-    })
-    return vouts;
+    });
+    if (new BigNumber(returnAmount).isGreaterThan(new BigNumber(value).plus(networkFee))) {
+        vouts.push({
+            script: p2pkhScript(Buffer.from(hash160PubKey, "hex")),
+            value: new BigNumber(returnAmount).minus(value).minus(networkFee).times(1e8).toNumber()
+        })
+        return vouts;
+    }
+    // call qtum_getUTXOs to see if the account has enough to spend with the networkFee taken into account
+    else if (new BigNumber(returnAmount).isLessThan(new BigNumber(networkFee).plus(networkFee).plus(value))) {
+        return networkFee;
+    }
+    else {
+        return vouts;
+    }
 }
 
 export function parseSignedTransaction(transaction: string): Transaction {
@@ -363,13 +392,14 @@ export function parseSignedTransaction(transaction: string): Transaction {
     // Check if first OP code is OP_DUP -> assume p2pkh script
     if (bitcoinjs.script.decompile(btcDecodedRawTx.outs[0].script)[0] === OPS.OP_DUP) {
         tx['to'] = `0x${bitcoinjs.script.decompile(btcDecodedRawTx.outs[0].script)[2].toString("hex")}`
-        tx['from'] = `0x${bitcoinjs.script.decompile(btcDecodedRawTx.outs[1].script)[2].toString("hex")}`
+        // If there is no change output, which is currently being used to identify the sender, how else can we find out the from address?
+        tx['from'] = btcDecodedRawTx.outs.length > 1 ? `0x${bitcoinjs.script.decompile(btcDecodedRawTx.outs[1].script)[2].toString("hex")}` : ""
         tx['value'] = BigNumberEthers.from(hexlify(btcDecodedRawTx.outs[0].value))
     }
     // Check if first OP code is OP_4 and length is > 5 -> assume contract call
     else if (bitcoinjs.script.decompile(btcDecodedRawTx.outs[0].script)[0] === OPS.OP_4 && bitcoinjs.script.decompile(btcDecodedRawTx.outs[0].script).length > 5) {
         tx['to'] = `0x${bitcoinjs.script.decompile(btcDecodedRawTx.outs[0].script)[4].toString("hex")}`
-        tx['from'] = `0x${bitcoinjs.script.decompile(btcDecodedRawTx.outs[1].script)[2].toString("hex")}`
+        tx['from'] = btcDecodedRawTx.outs.length > 1 ? `0x${bitcoinjs.script.decompile(btcDecodedRawTx.outs[1].script)[2].toString("hex")}` : ""
         tx['value'] = btcDecodedRawTx.outs[0].value > 0 ? BigNumberEthers.from(hexlify(btcDecodedRawTx.outs[0].value)) : BigNumberEthers.from("0x0")
         tx['data'] = bitcoinjs.script.decompile(btcDecodedRawTx.outs[0].script)[3].toString("hex")
         tx['value'] = BigNumberEthers.from(hexlify(btcDecodedRawTx.outs[0].value)).toNumber() === 0 ? BigNumberEthers.from("0x0") : BigNumberEthers.from(hexlify(btcDecodedRawTx.outs[0].value))
@@ -377,7 +407,7 @@ export function parseSignedTransaction(transaction: string): Transaction {
     // assume contract creation
     else {
         tx['to'] = ""
-        tx['from'] = `0x${bitcoinjs.script.decompile(btcDecodedRawTx.outs[1].script)[2].toString("hex")}`
+        tx['from'] = btcDecodedRawTx.outs.length > 1 ? `0x${bitcoinjs.script.decompile(btcDecodedRawTx.outs[1].script)[2].toString("hex")}` : ""
         tx['gasLimit'] = BigNumberEthers.from(hexlify(decodeCInt(bitcoinjs.script.decompile(btcDecodedRawTx.outs[0].script)[1])))
         tx['gasPrice'] = BigNumberEthers.from(hexlify(decodeCInt(bitcoinjs.script.decompile(btcDecodedRawTx.outs[0].script)[2])))
         tx['data'] = bitcoinjs.script.decompile(btcDecodedRawTx.outs[0].script)[3].toString("hex")
@@ -390,4 +420,72 @@ export function computeAddress(key: BytesLike | string): string {
     const sha256Hash = sha256().update(publicKey.split("0x")[1], "hex").digest("hex")
     const prefixlessAddress = ripemd160().update(sha256Hash, "hex").digest("hex")
     return `0x${prefixlessAddress}`;
+}
+
+export function checkTransactionType(tx: TransactionRequest): CheckTransactionType {
+    if (!!tx.to === false && (!!tx.value === false || BigNumberEthers.from(tx.value).toNumber() === 0) && !!tx.data === true) {
+        const needed = new BigNumber(BigNumberEthers.from(tx.gasPrice).toNumber().toString() + `e-8`).times(BigNumberEthers.from(tx.gasLimit).toNumber()).toFixed(7).toString()
+        return { transactionType: GLOBAL_VARS.CONTRACT_CALL, neededAmount: needed }
+    }
+    else if (!!tx.to === false && BigNumberEthers.from(tx.value).toNumber() > 0 && !!tx.data === true) {
+        return { transactionType: GLOBAL_VARS.DEPLOY_ERROR, neededAmount: "0" }
+    }
+    else if (!!tx.to === true && !!tx.data === true) {
+        const needed = !!tx.value === true ? new BigNumber(new BigNumber(BigNumberEthers.from(tx.gasPrice).toNumber() + `e-8`).toFixed(7)).times(BigNumberEthers.from(tx.gasLimit).toNumber()).plus(BigNumberEthers.from(tx.value).toNumber() + `e-8`).toFixed(7) : new BigNumber(new BigNumber(BigNumberEthers.from(tx.gasPrice).toNumber() + `e-8`).toFixed(7)).times(BigNumberEthers.from(tx.gasLimit).toNumber()).toFixed(7)
+        return { transactionType: GLOBAL_VARS.CONTRACT_CREATION, neededAmount: needed }
+    }
+    else {
+        const needed = new BigNumber(BigNumberEthers.from(tx.value).toNumber() + `e-8`).toFixed(7);
+        return { transactionType: GLOBAL_VARS.P2PKH, neededAmount: needed }
+    }
+}
+
+export function serializeTransaction(utxos: Array<any>, neededAmount: string, tx: TransactionRequest, transactionType: number, privateKey: string, publicKey: string): SerializedTransaction {
+    // Building the QTUM tx that will eventually be serialized.
+    let qtumTx: Tx = { version: 2, locktime: 0, vins: [], vouts: [] };
+    // @ts-ignore
+    const [vins, amounts] = addVins(utxos, neededAmount, tx.from.split("0x")[1]);
+    qtumTx.vins = vins;
+    console.log(tx, 'tx')
+    if (transactionType !== 3) {
+        if (transactionType === 2) {
+            let localVouts = addContractVouts(BigNumberEthers.from(tx.gasPrice).toNumber(), BigNumberEthers.from(tx.gasLimit).toNumber(), tx.data, "", amounts, new BigNumber(BigNumberEthers.from("0x0").toNumber() + `e-8`).toFixed(7), tx.from.split("0x")[1], qtumTx.vins);
+            if (typeof localVouts === 'string') {
+                return { serializedTransaction: "", networkFee: localVouts }
+            }
+            qtumTx.vouts = localVouts
+        }
+        else {
+            let localVouts = addContractVouts(BigNumberEthers.from(tx.gasPrice).toNumber(), BigNumberEthers.from(tx.gasLimit).toNumber(), tx.data, tx.to, amounts, !!tx.value === true ? new BigNumber(BigNumberEthers.from(tx.value).toNumber() + `e-8`).toNumber() : new BigNumber(BigNumberEthers.from("0x0").toNumber() + `e-8`).toFixed(7), tx.from.split("0x")[1], qtumTx.vins);
+            if (typeof localVouts === 'string') {
+                return { serializedTransaction: "", networkFee: localVouts }
+            }
+            qtumTx.vouts = localVouts
+        }
+        // Sign necessary vins
+        const updatedVins = qtumTx.vins.map((vin, index) => {
+            return { ...vin, ['scriptSig']: p2pkhScriptSig(signp2pkh(qtumTx, index, privateKey), publicKey.split("0x")[1]) }
+        })
+        qtumTx.vins = updatedVins
+        // Build the serialized transaction string.
+        const serialized = txToBuffer(qtumTx).toString('hex');
+        return { serializedTransaction: serialized, networkFee: "" };
+
+    } else {
+        let localVouts = addp2pkhVouts(tx.to.split("0x")[1], amounts, new BigNumber(BigNumberEthers.from(tx.value).toNumber() + `e-8`).toFixed(7), tx.from.split("0x")[1], qtumTx.vins);
+        if (typeof localVouts === 'string') {
+            return { serializedTransaction: "", networkFee: localVouts }
+        }
+        else {
+            qtumTx.vouts = localVouts
+            // Sign necessary vins
+            const updatedVins = qtumTx.vins.map((vin, index) => {
+                return { ...vin, ['scriptSig']: p2pkhScriptSig(signp2pkh(qtumTx, index, privateKey), publicKey.split("0x")[1]) }
+            })
+            qtumTx.vins = updatedVins
+            // Build the serialized transaction string.
+            const serialized = txToBuffer(qtumTx).toString('hex');
+            return { serializedTransaction: serialized, networkFee: "" };
+        }
+    }
 }

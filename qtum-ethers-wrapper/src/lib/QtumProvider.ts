@@ -31,13 +31,15 @@ export class QtumProvider extends providers.JsonRpcProvider {
       // Note: need to destructure return result here.
       return this._wrapTransaction(tx, ...hash);
     } catch (error) {
-      console.log('error', error)
       error.transaction = tx;
       error.transactionHash = tx.hash;
       throw error;
     }
   }
-
+  /**
+   * Function to handle grabbing UTXO's from janus
+   * prepareRequest in https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/json-rpc-provider.ts
+   */
   async getUtxos(from?: string, neededAmount?: number) {
     await this.getNetwork();
     const params = [from, neededAmount];

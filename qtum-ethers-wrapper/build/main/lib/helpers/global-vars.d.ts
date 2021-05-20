@@ -6,4 +6,8 @@ export declare const GLOBAL_VARS: {
     HASH_TYPE: number;
     MAX_FEE_RATE: number;
     AVG_FEE_RATE: number;
+    CONTRACT_CALL: number;
+    CONTRACT_CREATION: number;
+    P2PKH: number;
+    DEPLOY_ERROR: number;
 };
