@@ -79,10 +79,13 @@ export class BufferCursor {
 
   writeUInt64LE(value: any): void {
     if (!(value instanceof BN)) value = new BN(value);
-    this.writeBytes(value.toBuffer('le', 8));
+    this.writeBytes(value.toArrayLike(Buffer, 'le', 8))
   }
 
   writeBytes(buffer: any) {
+    if (buffer === undefined || buffer === null) {
+      throw new Error("Attempt to write null/undefined buffer");
+    }
     if (!buffer || !buffer.length) return;
     if (this._position + buffer.length > this._buffer.length)
       throw new RangeError('Index out of range');
@@ -98,6 +101,9 @@ export class BufferCursor {
   }
 
   _writeStandard(fn: string, val: number, len: number): void {
+    if (val === undefined || val === null) {
+      throw new Error("Attempt to write null/undefined value of length " + len);
+    }
     // @ts-ignore
     this._buffer[fn](val, this._position);
     this._position += len;

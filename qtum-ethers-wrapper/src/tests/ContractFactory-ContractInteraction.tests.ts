@@ -1,3 +1,4 @@
+// @ts-nocheck
 const { BigNumber } = require("@ethersproject/bignumber");
 const { expect } = require("chai");
 const { ethers } = require("ethers")

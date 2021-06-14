@@ -22,6 +22,10 @@ export class QtumWallet extends IntermediateWallet {
     async signTransaction(transaction: TransactionRequest): Promise<string> {
         const tx = await resolveProperties(transaction);
 
+        if (!transaction.gasPrice) {
+            transaction.gasPrice = "0x28";
+        }
+
         // Refactored to check TX type (call, create, p2pkh, deploy error) and calculate needed amount
         const { transactionType, neededAmount } = checkTransactionType(tx);
 

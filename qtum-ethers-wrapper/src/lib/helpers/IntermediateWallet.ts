@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { getAddress } from "@ethersproject/address";
 import { Provider, TransactionRequest } from "@ethersproject/abstract-provider";
 import { ExternallyOwnedAccount, Signer, TypedDataDomain, TypedDataField, TypedDataSigner } from "@ethersproject/abstract-signer";
@@ -36,8 +37,6 @@ export class IntermediateWallet extends Signer implements ExternallyOwnedAccount
     readonly _mnemonic: () => Mnemonic;
 
     constructor(privateKey: BytesLike | ExternallyOwnedAccount | SigningKey, provider?: Provider) {
-        logger.checkNew(new.target, IntermediateWallet);
-
         super();
 
         if (isAccount(privateKey)) {
