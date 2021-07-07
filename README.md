@@ -6,12 +6,13 @@ A module for using Qtum through an Ethers compliant library to make it simpler t
 
 Open a console and run 
 
-```npm install qtum-ethers```
+```npm install qtum-ethers-wrapper```
 
 # Example
 
 ```js
-const {QtumProvider, QtumWallet, QtumContractFactory} = require("qtum-ethers")
+import qtum_ethers from "qtum-ethers-wrapper";
+const {QtumProvider, QtumWallet, QtumContractFactory} = qtum_ethers;
 // point Qtum Provider at Janus node
 const provider = new QtumProvider("http://localhost:23889");
 // create a wallet
