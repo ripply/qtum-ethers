@@ -22,7 +22,7 @@
     "varuint-bitcoin": "1.1.0"
   },
   "name": "qtum-ethers-wrapper",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "./build/main/index.js",
   "license": "",
   "scripts": {
