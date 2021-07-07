@@ -849,11 +849,11 @@
     },
     "options": {
       "incremental": true,
-      "target": 99,
-      "outDir": "./module",
+      "target": 4,
+      "outDir": "./main",
       "rootDir": "../src",
       "moduleResolution": 2,
-      "module": 99,
+      "module": 1,
       "declaration": true,
       "inlineSourceMap": true,
       "esModuleInterop": true,
@@ -879,8 +879,8 @@
         "../node_modules/@types",
         "../src/types"
       ],
-      "project": "../tsconfig.module.json",
-      "configFilePath": "../tsconfig.module.json"
+      "project": "../tsconfig.json",
+      "configFilePath": "../tsconfig.json"
     },
     "referencedMap": {
       "../node_modules/@ethersproject/abi/lib/abi-coder.d.ts": [
