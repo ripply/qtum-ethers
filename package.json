@@ -23,7 +23,7 @@
   },
   "name": "qtum-ethers-wrapper",
   "version": "0.0.1",
-  "main": "./src/index.ts",
+  "main": "./build/main/index.js",
   "license": "",
   "scripts": {
     "build": "yarn build:main && yarn build:module",
