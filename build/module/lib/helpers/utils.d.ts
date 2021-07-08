@@ -65,7 +65,8 @@ export interface SerializedTransaction {
 }
 export declare function calcTxBytes(vins: Array<TxVinWithoutNullScriptSig | TxVinWithNullScriptSig>, vouts: Array<TxVout>): number;
 export declare function txToBuffer(tx: any): Buffer;
-export declare function signp2pkh(tx: any, vindex: number, privKey: string): Buffer;
+export declare function signp2pkh(tx: any, vindex: number, privKey: string): Promise<Buffer>;
+export declare function signp2pkhWith(tx: any, vindex: number, signer: Function): Promise<Buffer>;
 export declare function p2pkhScriptSig(sig: any, pubkey: any): Buffer;
 export declare function p2pkhScript(hash160PubKey: Buffer): Buffer;
 export declare function contractTxScript(contractAddress: string, gasLimit: number, gasPrice: number, encodedData: string): Buffer;
@@ -75,5 +76,7 @@ export declare function addContractVouts(gasPrice: number, gasLimit: number, dat
 export declare function addp2pkhVouts(hash160Address: string, amounts: Array<any>, value: string, hash160PubKey: string, vins: Array<any>): (Array<any> | string);
 export declare function parseSignedTransaction(transaction: string): Transaction;
 export declare function computeAddress(key: BytesLike | string): string;
+export declare function computeAddressFromPublicKey(publicKey: string): string;
 export declare function checkTransactionType(tx: TransactionRequest): CheckTransactionType;
-export declare function serializeTransaction(utxos: Array<any>, neededAmount: string, tx: TransactionRequest, transactionType: number, privateKey: string, publicKey: string): SerializedTransaction;
+export declare function serializeTransaction(utxos: Array<any>, neededAmount: string, tx: TransactionRequest, transactionType: number, privateKey: string, publicKey: string): Promise<SerializedTransaction>;
+export declare function serializeTransactionWith(utxos: Array<any>, neededAmount: string, tx: TransactionRequest, transactionType: number, signer: Function, publicKey: string): Promise<SerializedTransaction>;
