@@ -4,7 +4,7 @@ import {
 } from "ethers/lib/utils";
 import { TransactionRequest } from "@ethersproject/abstract-provider";
 import { BigNumber } from "bignumber.js"
-import { checkTransactionType, serializeTransaction } from './helpers/utils'
+import { checkTransactionType, serializeTransaction, SerializedTransaction } from './helpers/utils'
 import { GLOBAL_VARS } from './helpers/global-vars'
 import { IntermediateWallet } from './helpers/IntermediateWallet'
 
@@ -15,6 +15,14 @@ const forwardErrors = [
 
 
 export class QtumWallet extends IntermediateWallet {
+
+    constructor(privateKey: any, provider?: any) {
+        super(privateKey, provider);
+    }
+
+    protected async serializeTransaction(utxos: Array<any>, neededAmount: string, tx: TransactionRequest, transactionType: number): Promise<SerializedTransaction> {
+        return await serializeTransaction(utxos, neededAmount, tx, transactionType, this.privateKey, this.publicKey);
+    }
 
     /**
      * Override to build a raw QTUM transaction signing UTXO's
@@ -58,7 +66,7 @@ export class QtumWallet extends IntermediateWallet {
             );
         }
 
-        const { serializedTransaction, networkFee } = serializeTransaction(utxos, neededAmount, tx, transactionType, this.privateKey, this.publicKey);
+        const { serializedTransaction, networkFee } = await this.serializeTransaction(utxos, neededAmount, tx, transactionType);
 
         if (networkFee !== "") {
             try {
@@ -79,7 +87,7 @@ export class QtumWallet extends IntermediateWallet {
                     }
                 );
             }
-            const serialized = serializeTransaction(utxos, neededAmount, tx, transactionType, this.publicKey, this.privateKey);
+            const serialized = await this.serializeTransaction(utxos, neededAmount, tx, transactionType);
             return serialized.serializedTransaction;
         }
 
