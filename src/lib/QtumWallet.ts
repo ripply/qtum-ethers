@@ -50,10 +50,12 @@ export class QtumWallet extends IntermediateWallet {
 
         let utxos = [];
         try {
+            console.log("getUTXOS", neededAmount)
             // @ts-ignore
             utxos = await this.provider.getUtxos(tx.from, neededAmount);
             // Grab vins for transaction object.
         } catch (error: any) {
+            console.error("error getting utxos", error);
             if (forwardErrors.indexOf(error.code) >= 0) {
                 throw error;
             }
@@ -72,10 +74,12 @@ export class QtumWallet extends IntermediateWallet {
             try {
                 // Try again with the network fee included
                 const updatedNeededAmount = new BigNumber(neededAmount).plus(networkFee);
+                console.log("getUTXOS 2", neededAmount)
                 // @ts-ignore
                 utxos = await this.provider.getUtxos(tx.from, updatedNeededAmount);
                 // Grab vins for transaction object.
             } catch (error: any) {
+                console.error("error getting utxos", error);
                 if (forwardErrors.indexOf(error.code) >= 0) {
                     throw error;
                 }
@@ -88,9 +92,17 @@ export class QtumWallet extends IntermediateWallet {
                 );
             }
             const serialized = await this.serializeTransaction(utxos, neededAmount, tx, transactionType);
+            console.log("signTransaction 2", serialized)
+            console.log("neededAmount", neededAmount)
+            console.log("networkFee", networkFee)
+            console.log("utxos", utxos)
+            if (serialized.serializedTransaction === "") {
+                throw new Error("Failed to generate vouts");
+            }
             return serialized.serializedTransaction;
         }
 
+        console.log("signTransaction 1", serializedTransaction)
         return serializedTransaction;
     }
 }

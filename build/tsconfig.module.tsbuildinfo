@@ -792,7 +792,7 @@
         "affectsGlobalScope": false
       },
       "../src/lib/helpers/utils.ts": {
-        "version": "ad462c05cc3d30cb54eb9a0d1e9036263360a582a82dae75eeaad0d126b2daa9",
+        "version": "57a71f5cb0005655678f8dfc844b684b0710cae54a6af414c25504247d3414eb",
         "signature": "bc784db9f3855f51bdb304809db6f59b52c10bdec77fefa7244d5610847e9092",
         "affectsGlobalScope": false
       },
@@ -812,7 +812,7 @@
         "affectsGlobalScope": false
       },
       "../src/lib/QtumWallet.ts": {
-        "version": "0ed7d06a9c2816191fa0dc472827f36bff3909bd31f5c316c421a2f54adf7505",
+        "version": "f3aa52315c4f1fed4d719ddfa49f212599f923be8316b8d1e9bcf73824328405",
         "signature": "465860b83c37c624a92fcd59c3bb2e429d71bafb3d626e9e1559bf532032eada",
         "affectsGlobalScope": false
       },
