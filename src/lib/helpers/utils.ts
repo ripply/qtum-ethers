@@ -271,6 +271,7 @@ export function p2pkhScriptSig(sig: any, pubkey: any): Buffer {
 // Refer to:
 // https://github.com/bitcoinjs/bitcoinjs-lib/blob/master/src/payments/p2pkh.js#L58
 export function p2pkhScript(hash160PubKey: Buffer): Buffer {
+    console.log("p2pkhScript", hash160PubKey.toString("hex"))
     return bitcoinjs.script.compile([
         OPS.OP_DUP,
         OPS.OP_HASH160,
@@ -291,7 +292,7 @@ export function contractTxScript(contractAddress: string, gasLimit: number, gasP
             OPS.OP_CREATE,
         ])
     } else {
-        console.log("contractTxScript gasPrice", gasPrice)
+        console.log("contractTxScript gasPrice", gasPrice, gasLimit, encodeCInt(gasPrice))
         return bitcoinjs.script.compile([
             OPS.OP_4,
             encodeCInt(gasLimit),
@@ -452,7 +453,7 @@ export function computeAddressFromPublicKey(publicKey: string): string {
 
 export function checkTransactionType(tx: TransactionRequest): CheckTransactionType {
     if (!!tx.to === false && (!!tx.value === false || BigNumberEthers.from(tx.value).toNumber() === 0) && !!tx.data === true) {
-        const needed = new BigNumber(BigNumberEthers.from(tx.gasPrice).toNumber().toString() + `e-8`).times(BigNumberEthers.from(tx.gasLimit).toNumber()).toFixed(7).toString()
+        const needed = new BigNumber(BigNumberEthers.from(tx.gasPrice).toString() + `e-8`).times(BigNumberEthers.from(tx.gasLimit).toNumber()).toFixed(7).toString()
         console.log("checkTransactionType 1", needed, tx)
         return { transactionType: GLOBAL_VARS.CONTRACT_CREATION, neededAmount: needed }
     }
@@ -493,6 +494,7 @@ export async function serializeTransactionWith(utxos: Array<any>, neededAmount: 
                 console.log("serializeTransaction no vouts 1", localVouts)
                 return { serializedTransaction: "", networkFee: localVouts }
             }
+            console.log("serializedTransaction type 3", tx, BigNumberEthers.from(tx.gasPrice).toNumber())
             qtumTx.vouts = localVouts
         }
         else {
@@ -502,6 +504,7 @@ export async function serializeTransactionWith(utxos: Array<any>, neededAmount: 
                 console.log("serializeTransaction no vouts 2", localVouts)
                 return { serializedTransaction: "", networkFee: localVouts }
             }
+            console.log("serializedTransaction type !2", tx, BigNumberEthers.from(tx.gasPrice).toNumber())
             qtumTx.vouts = localVouts
         }
         // Sign necessary vins
