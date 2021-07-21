@@ -29,7 +29,7 @@ export class QtumProvider extends providers.JsonRpcProvider {
         signedTransaction: hexTx,
       });
       // Note: need to destructure return result here.
-      return this._wrapTransaction(tx, ...hash);
+      return this._wrapTransaction(tx, hash);
     } catch (error) {
       error.transaction = tx;
       error.transactionHash = tx.hash;

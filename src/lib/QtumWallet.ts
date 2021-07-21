@@ -88,6 +88,9 @@ export class QtumWallet extends IntermediateWallet {
                 );
             }
             const serialized = await this.serializeTransaction(utxos, neededAmount, tx, transactionType);
+            if (serialized.serializedTransaction === "") {
+                throw new Error("Failed to generate vouts");
+            }
             return serialized.serializedTransaction;
         }
 

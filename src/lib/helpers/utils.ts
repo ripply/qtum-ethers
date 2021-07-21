@@ -450,18 +450,18 @@ export function computeAddressFromPublicKey(publicKey: string): string {
 
 export function checkTransactionType(tx: TransactionRequest): CheckTransactionType {
     if (!!tx.to === false && (!!tx.value === false || BigNumberEthers.from(tx.value).toNumber() === 0) && !!tx.data === true) {
-        const needed = new BigNumber(BigNumberEthers.from(tx.gasPrice).toNumber().toString() + `e-8`).times(BigNumberEthers.from(tx.gasLimit).toNumber()).toFixed(7).toString()
+        const needed = new BigNumber(BigNumberEthers.from(tx.gasPrice).toString() + `e-8`).times(BigNumberEthers.from(tx.gasLimit).toNumber()).toFixed(7).toString()
         return { transactionType: GLOBAL_VARS.CONTRACT_CREATION, neededAmount: needed }
     }
     else if (!!tx.to === false && BigNumberEthers.from(tx.value).toNumber() > 0 && !!tx.data === true) {
         return { transactionType: GLOBAL_VARS.DEPLOY_ERROR, neededAmount: "0" }
     }
     else if (!!tx.to === true && !!tx.data === true) {
-        const needed = !!tx.value === true ? new BigNumber(new BigNumber(BigNumberEthers.from(tx.gasPrice).toNumber() + `e-8`).toFixed(7)).times(BigNumberEthers.from(tx.gasLimit).toNumber()).plus(BigNumberEthers.from(tx.value).toNumber() + `e-8`).toFixed(7) : new BigNumber(new BigNumber(BigNumberEthers.from(tx.gasPrice).toNumber() + `e-8`).toFixed(7)).times(BigNumberEthers.from(tx.gasLimit).toNumber()).toFixed(7)
+        const needed = !!tx.value === true ? new BigNumber(new BigNumber(BigNumberEthers.from(tx.gasPrice).toString() + `e-8`).toFixed(7)).times(BigNumberEthers.from(tx.gasLimit).toNumber()).plus(BigNumberEthers.from(tx.value).toString() + `e-8`).toFixed(7) : new BigNumber(new BigNumber(BigNumberEthers.from(tx.gasPrice).toString() + `e-8`).toFixed(7)).times(BigNumberEthers.from(tx.gasLimit).toNumber()).toFixed(7)
         return { transactionType: GLOBAL_VARS.CONTRACT_CALL, neededAmount: needed }
     }
     else {
-        const needed = new BigNumber(BigNumberEthers.from(tx.value).toNumber() + `e-8`).toFixed(7);
+        const needed = new BigNumber(BigNumberEthers.from(tx.value).toString() + `e-8`).toFixed(7);
         return { transactionType: GLOBAL_VARS.P2PKH, neededAmount: needed }
     }
 }
