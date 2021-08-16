@@ -343,6 +343,11 @@ export function addContractVouts(gasPrice: number, gasLimit: number, data: strin
     let vouts = [];
     const returnAmount = amounts.reduce((a, b) => a + b);
     const networkFee = new BigNumber(calcTxBytesToEstimateFee(vins, [contractTxScript(address === "" ? "" : address.split("0x")[1], gasLimit, gasPrice, data.split("0x")[1]), p2pkhScript(Buffer.from(hash160PubKey, "hex"))]).toString() + `e-3`).times(0.004).toFixed(7);
+    const roundedGasPrice = new BigNumber(new BigNumber(gasPrice + `e-8`).toFixed(7)).toNumber();
+    const originalGasPrice = new BigNumber(new BigNumber(gasPrice + `e-8`).toFixed()).toNumber();
+    if (roundedGasPrice != originalGasPrice) {
+        throw new Error("Precision lost in gasPrice: " + (originalGasPrice - roundedGasPrice))
+    }
     const gas = new BigNumber(new BigNumber(gasPrice + `e-8`).toFixed(7)).times(gasLimit).toFixed(7)
     vouts.push({
         script: contractTxScript(address === "" ? "" : address.split("0x")[1], gasLimit, gasPrice, data.split("0x")[1]),
@@ -473,11 +478,20 @@ export async function serializeTransaction(utxos: Array<any>, neededAmount: stri
     return await serializeTransactionWith(utxos, neededAmount, tx, transactionType, signer, publicKey);
 }
 
+function dropPrecisionLessThanOneSatoshi(wei: string): string {
+    const inWei = BigNumberEthers.from(wei).toNumber();
+    const inSatoshiString = new BigNumber(inWei + `e-8`).toFixed(7);
+    const inWeiStringDroppedPrecision = new BigNumber(inSatoshiString + `e+8`).toString();
+    return inWeiStringDroppedPrecision;
+}
+
 export async function serializeTransactionWith(utxos: Array<any>, neededAmount: string, tx: TransactionRequest, transactionType: number, signer: Function, publicKey: string): Promise<SerializedTransaction> {
     // Building the QTUM tx that will eventually be serialized.
     let qtumTx: Tx = { version: 2, locktime: 0, vins: [], vouts: [] };
     // @ts-ignore
     const [vins, amounts] = addVins(utxos, neededAmount, tx.from.split("0x")[1]);
+    // reduce precision in gasPrice to 1 satoshi
+    tx.gasPrice = dropPrecisionLessThanOneSatoshi(BigNumberEthers.from(tx.gasPrice).toString());
     qtumTx.vins = vins;
     if (transactionType !== 3) {
         if (transactionType === 2) {
