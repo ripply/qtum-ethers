@@ -792,31 +792,36 @@
         "affectsGlobalScope": false
       },
       "../src/lib/helpers/utils.ts": {
-        "version": "d57b52f57d53c78bf8f7ad3b3d7803705e445564bc7ab8b417ac9fae205eb61b",
-        "signature": "00a1d906589c9efee519eca4759c33f34b90f0aa258baec08c10a0d6056ffc83",
+        "version": "eceea7b7099784dfe97fbfbdee6ba92893aa4d8b005ccaae3774f507f93e766a",
+        "signature": "bc784db9f3855f51bdb304809db6f59b52c10bdec77fefa7244d5610847e9092",
         "affectsGlobalScope": false
       },
-      "../src/lib/qtumprovider.ts": {
-        "version": "5fa5cf346133b883099536b69a70c70e467cb0156a529098c89fab09097881d5",
+      "../src/lib/QtumProvider.ts": {
+        "version": "1dc769ed07e603d1bb799324a8bfe8bdac193871c052117cab38f084091695a6",
         "signature": "512c7d1b93ba140c39ace7650acf1addb584f5f626feaed1f9c28ba2dbe61e13",
         "affectsGlobalScope": false
       },
-      "../src/lib/helpers/intermediatewallet.ts": {
+      "../src/lib/QtumFunctionProvider.ts": {
+        "version": "b5af4c7fd8124201839e3974e4aee456a120ba9bf506e638e731dcb6d6c3b484",
+        "signature": "c5f4f8638f766685b0e52a173e377a3ac6272cadfd4ffd272bb6bc2e40bfc369",
+        "affectsGlobalScope": false
+      },
+      "../src/lib/helpers/IntermediateWallet.ts": {
         "version": "91abd400819e8b3158205043d035f5e7b3030c4eaf974ba87314192ab51246e9",
         "signature": "848e83ecf60ad0fd28c2165e0d7cb2ff1f5f1419e42b4412ef66b9cb970a1f8b",
         "affectsGlobalScope": false
       },
-      "../src/lib/qtumwallet.ts": {
-        "version": "968d5418b171a11a574c207e5bb3b7b713bc7ce03af2afcc520bbfc325eb2dd3",
-        "signature": "27fc4fee2cb42aee0a89cb7ba8219451c07e13655c5f3daa58adbbe543167cc9",
+      "../src/lib/QtumWallet.ts": {
+        "version": "a800a0267f388eaaea1c867a0515f2366e8ac613d5fc13c2691c677da13b2608",
+        "signature": "465860b83c37c624a92fcd59c3bb2e429d71bafb3d626e9e1559bf532032eada",
         "affectsGlobalScope": false
       },
       "../src/index.ts": {
-        "version": "4e68126b4fc8f68967564ceb968f27e9441747e1b46a32c379c793a538d3fd2b",
-        "signature": "0dd61c418d47e9ab964bf6c666456fcfc495bea439a95cb6de1771470a4d42cd",
+        "version": "958e97d1f7dd68e52b8d5bf54b55065a5f262ecb4b473841bb758e0d3333fccb",
+        "signature": "37917e2e7a57252b761453f7e4e98d4a28ba23018c384c1af2107afb32149c65",
         "affectsGlobalScope": false
       },
-      "../src/lib/qtumcontractfactory.ts": {
+      "../src/lib/QtumContractFactory.ts": {
         "version": "04c87904c4233759c392acd6c1d25d759eb7041f67c6a2f27dcc15392606656d",
         "signature": "4358c48912773e958a932208edfb5c4128d0c398aa21e04f46a532c610db38a5",
         "affectsGlobalScope": false
@@ -836,7 +841,7 @@
         "signature": "6d1e64c066b32332e8adec49808f6aba821e71151cba9253946ac40762dff5b1",
         "affectsGlobalScope": false
       },
-      "../src/tests/contractfactory-contractinteraction.tests.ts": {
+      "../src/tests/ContractFactory-ContractInteraction.tests.ts": {
         "version": "7145d60dfa76228c0b181e6ac2b96b0b6352cfe60cfe31ca2260bfef2293d93a",
         "signature": "8afcd458d74f799e530e49738b908eb8e7d1916a9107d836d9cd3b335eb58c43",
         "affectsGlobalScope": true
@@ -1371,14 +1376,37 @@
         "../node_modules/@ethersproject/web/lib/index.d.ts"
       ],
       "../src/index.ts": [
-        "../src/lib/helpers/utils.ts",
-        "../src/lib/qtumprovider.ts",
-        "../src/lib/qtumwallet.ts"
+        "../src/lib/QtumFunctionProvider.ts",
+        "../src/lib/QtumProvider.ts",
+        "../src/lib/QtumWallet.ts",
+        "../src/lib/helpers/utils.ts"
       ],
-      "../src/lib/helpers/buffer-cursor.ts": [
-        "../node_modules/@types/bn.js/index.d.ts"
+      "../src/lib/QtumContractFactory.ts": [
+        "../node_modules/@ethersproject/abi/lib/index.d.ts",
+        "../node_modules/@ethersproject/abstract-provider/lib/index.d.ts",
+        "../node_modules/@ethersproject/address/lib/index.d.ts",
+        "../node_modules/@ethersproject/logger/lib/index.d.ts",
+        "../node_modules/ethers/lib/index.d.ts",
+        "../node_modules/ethers/lib/utils.d.ts",
+        "../src/lib/helpers/utils.ts"
       ],
-      "../src/lib/helpers/intermediatewallet.ts": [
+      "../src/lib/QtumFunctionProvider.ts": [
+        "../src/lib/QtumProvider.ts"
+      ],
+      "../src/lib/QtumProvider.ts": [
+        "../node_modules/ethers/lib/index.d.ts",
+        "../node_modules/ethers/lib/utils.d.ts",
+        "../src/lib/helpers/utils.ts"
+      ],
+      "../src/lib/QtumWallet.ts": [
+        "../node_modules/@ethersproject/abstract-provider/lib/index.d.ts",
+        "../node_modules/bignumber.js/bignumber.d.ts",
+        "../node_modules/ethers/lib/utils.d.ts",
+        "../src/lib/helpers/IntermediateWallet.ts",
+        "../src/lib/helpers/global-vars.ts",
+        "../src/lib/helpers/utils.ts"
+      ],
+      "../src/lib/helpers/IntermediateWallet.ts": [
         "../node_modules/@ethersproject/abstract-provider/lib/index.d.ts",
         "../node_modules/@ethersproject/abstract-signer/lib/index.d.ts",
         "../node_modules/@ethersproject/address/lib/index.d.ts",
@@ -1394,6 +1422,9 @@
         "../node_modules/@ethersproject/transactions/lib/index.d.ts",
         "../node_modules/@ethersproject/wordlists/lib/index.d.ts",
         "../src/lib/helpers/utils.ts"
+      ],
+      "../src/lib/helpers/buffer-cursor.ts": [
+        "../node_modules/@types/bn.js/index.d.ts"
       ],
       "../src/lib/helpers/utils.ts": [
         "../node_modules/@ethersproject/abstract-provider/lib/index.d.ts",
@@ -1411,28 +1442,6 @@
         "../src/lib/helpers/hex-decoder.ts",
         "../src/lib/helpers/opcodes.ts",
         "../src/lib/helpers/varuint-bitcoin.d.ts"
-      ],
-      "../src/lib/qtumcontractfactory.ts": [
-        "../node_modules/@ethersproject/abi/lib/index.d.ts",
-        "../node_modules/@ethersproject/abstract-provider/lib/index.d.ts",
-        "../node_modules/@ethersproject/address/lib/index.d.ts",
-        "../node_modules/@ethersproject/logger/lib/index.d.ts",
-        "../node_modules/ethers/lib/index.d.ts",
-        "../node_modules/ethers/lib/utils.d.ts",
-        "../src/lib/helpers/utils.ts"
-      ],
-      "../src/lib/qtumprovider.ts": [
-        "../node_modules/ethers/lib/index.d.ts",
-        "../node_modules/ethers/lib/utils.d.ts",
-        "../src/lib/helpers/utils.ts"
-      ],
-      "../src/lib/qtumwallet.ts": [
-        "../node_modules/@ethersproject/abstract-provider/lib/index.d.ts",
-        "../node_modules/bignumber.js/bignumber.d.ts",
-        "../node_modules/ethers/lib/utils.d.ts",
-        "../src/lib/helpers/global-vars.ts",
-        "../src/lib/helpers/intermediatewallet.ts",
-        "../src/lib/helpers/utils.ts"
       ]
     },
     "exportedModulesMap": {
@@ -1924,11 +1933,27 @@
         "../node_modules/@ethersproject/web/lib/index.d.ts"
       ],
       "../src/index.ts": [
-        "../src/lib/helpers/utils.ts",
-        "../src/lib/qtumprovider.ts",
-        "../src/lib/qtumwallet.ts"
+        "../src/lib/QtumFunctionProvider.ts",
+        "../src/lib/QtumProvider.ts",
+        "../src/lib/QtumWallet.ts",
+        "../src/lib/helpers/utils.ts"
       ],
-      "../src/lib/helpers/intermediatewallet.ts": [
+      "../src/lib/QtumContractFactory.ts": [
+        "../node_modules/ethers/lib/index.d.ts"
+      ],
+      "../src/lib/QtumFunctionProvider.ts": [
+        "../src/lib/QtumProvider.ts"
+      ],
+      "../src/lib/QtumProvider.ts": [
+        "../node_modules/ethers/lib/index.d.ts",
+        "../node_modules/ethers/lib/utils.d.ts"
+      ],
+      "../src/lib/QtumWallet.ts": [
+        "../node_modules/@ethersproject/abstract-provider/lib/index.d.ts",
+        "../src/lib/helpers/IntermediateWallet.ts",
+        "../src/lib/helpers/utils.ts"
+      ],
+      "../src/lib/helpers/IntermediateWallet.ts": [
         "../node_modules/@ethersproject/abstract-provider/lib/index.d.ts",
         "../node_modules/@ethersproject/abstract-signer/lib/index.d.ts",
         "../node_modules/@ethersproject/bytes/lib/index.d.ts",
@@ -1941,17 +1966,6 @@
         "../node_modules/@ethersproject/abstract-provider/lib/index.d.ts",
         "../node_modules/@ethersproject/transactions/lib/index.d.ts",
         "../node_modules/ethers/lib/utils.d.ts"
-      ],
-      "../src/lib/qtumcontractfactory.ts": [
-        "../node_modules/ethers/lib/index.d.ts"
-      ],
-      "../src/lib/qtumprovider.ts": [
-        "../node_modules/ethers/lib/index.d.ts",
-        "../node_modules/ethers/lib/utils.d.ts"
-      ],
-      "../src/lib/qtumwallet.ts": [
-        "../node_modules/@ethersproject/abstract-provider/lib/index.d.ts",
-        "../src/lib/helpers/intermediatewallet.ts"
       ]
     },
     "semanticDiagnosticsPerFile": [
@@ -2111,19 +2125,20 @@
       "../node_modules/typescript/lib/lib.es5.d.ts",
       "../node_modules/typescript/lib/lib.esnext.intl.d.ts",
       "../src/index.ts",
+      "../src/lib/QtumContractFactory.ts",
+      "../src/lib/QtumFunctionProvider.ts",
+      "../src/lib/QtumProvider.ts",
+      "../src/lib/QtumWallet.ts",
+      "../src/lib/helpers/IntermediateWallet.ts",
       "../src/lib/helpers/bip66.d.ts",
       "../src/lib/helpers/bitcoinjs-lib.d.ts",
       "../src/lib/helpers/buffer-cursor.ts",
       "../src/lib/helpers/global-vars.ts",
       "../src/lib/helpers/hex-decoder.ts",
-      "../src/lib/helpers/intermediatewallet.ts",
       "../src/lib/helpers/opcodes.ts",
       "../src/lib/helpers/utils.ts",
       "../src/lib/helpers/varuint-bitcoin.d.ts",
-      "../src/lib/qtumcontractfactory.ts",
-      "../src/lib/qtumprovider.ts",
-      "../src/lib/qtumwallet.ts",
-      "../src/tests/contractfactory-contractinteraction.tests.ts"
+      "../src/tests/ContractFactory-ContractInteraction.tests.ts"
     ]
   },
   "version": "4.2.4"

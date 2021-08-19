@@ -3,7 +3,21 @@ import { encode } from 'bip66';
 import { OPS } from "./opcodes";
 import { GLOBAL_VARS } from "./global-vars";
 import { BufferCursor } from './buffer-cursor';
-import { ecdsaSign } from 'secp256k1';
+//@ts-ignore
+import { ecdsaSign, sign } from 'secp256k1';
+let secp256k1Sign = ecdsaSign
+if (!ecdsaSign && sign) {
+    // support version 3 secp256k1 library (used by metamask)
+    //@ts-ignore
+    secp256k1Sign = function(buffer, privateKey) {
+        // v3 uses different version of Buffer, fake that these are compatabile
+        //@ts-ignore
+        buffer._isBuffer = true;
+        //@ts-ignore
+        privateKey._isBuffer = true;
+        return sign(buffer, privateKey);
+    }
+}
 import { encode as encodeCInt, decode as decodeCInt } from "bitcoinjs-lib/src/script_number"
 import { sha256, ripemd160 } from "hash.js"
 import { BigNumber } from "bignumber.js"
@@ -20,6 +34,21 @@ import { TransactionRequest } from "@ethersproject/abstract-provider";
 
 const toBuffer = require('typedarray-to-buffer')
 const bitcoinjs = require("bitcoinjs-lib");
+
+// metamask BigNumber uses a different version so the API doesn't match up
+[
+    "lessThanOrEqualTo",
+    "greaterThan",
+    "lessThan",
+].forEach((methodName) => {
+    // adds is ____ to prototype to reference existing method for api compat
+    const is = "is" + methodName.charAt(0).toUpperCase() + methodName.slice(1);
+    // @ts-ignore
+    if (!BigNumber.prototype[is] && BigNumber.prototype[methodName]) {
+        // @ts-ignore
+        BigNumber.prototype[is] = BigNumber.prototype[methodName];
+    }
+})
 
 export interface ListUTXOs {
     address: string,
@@ -201,7 +230,13 @@ function encodeSig(signature: Uint8Array, hashType: number): Buffer {
 
 /////////////////////////////////////////
 
-export function signp2pkh(tx: any, vindex: number, privKey: string): Buffer {
+export async function signp2pkh(tx: any, vindex: number, privKey: string): Promise<Buffer> {
+    return await signp2pkhWith(tx, vindex, (hash: Uint8Array) => {
+        return secp256k1Sign(hash, arrayify(privKey));
+    });
+}
+
+export async function signp2pkhWith(tx: any, vindex: number, signer: Function): Promise<Buffer> {
     let clone = cloneTx(tx);
     // clean up relevant script
     let filteredPrevOutScript = clone.vins[vindex].script.filter((op: any) => op !== OPS.OP_CODESEPARATOR);
@@ -224,7 +259,7 @@ export function signp2pkh(tx: any, vindex: number, privKey: string): Buffer {
     let secondHash = sha256().update(firstHash).digest();
 
     // sign hash
-    let sig = ecdsaSign(new Uint8Array(secondHash), arrayify(privKey));
+    let sig = await signer(new Uint8Array(secondHash));
 
     // encode sig
     return encodeSig(sig.signature, GLOBAL_VARS.HASH_TYPE);
@@ -308,6 +343,11 @@ export function addContractVouts(gasPrice: number, gasLimit: number, data: strin
     let vouts = [];
     const returnAmount = amounts.reduce((a, b) => a + b);
     const networkFee = new BigNumber(calcTxBytesToEstimateFee(vins, [contractTxScript(address === "" ? "" : address.split("0x")[1], gasLimit, gasPrice, data.split("0x")[1]), p2pkhScript(Buffer.from(hash160PubKey, "hex"))]).toString() + `e-3`).times(0.004).toFixed(7);
+    const roundedGasPrice = new BigNumber(new BigNumber(gasPrice + `e-8`).toFixed(7)).toNumber();
+    const originalGasPrice = new BigNumber(new BigNumber(gasPrice + `e-8`).toFixed()).toNumber();
+    if (roundedGasPrice != originalGasPrice) {
+        throw new Error("Precision lost in gasPrice: " + (originalGasPrice - roundedGasPrice))
+    }
     const gas = new BigNumber(new BigNumber(gasPrice + `e-8`).toFixed(7)).times(gasLimit).toFixed(7)
     vouts.push({
         script: contractTxScript(address === "" ? "" : address.split("0x")[1], gasLimit, gasPrice, data.split("0x")[1]),
@@ -401,6 +441,13 @@ export function parseSignedTransaction(transaction: string): Transaction {
 
 export function computeAddress(key: BytesLike | string): string {
     const publicKey = computePublicKey(key);
+    return computeAddressFromPublicKey(publicKey);
+}
+
+export function computeAddressFromPublicKey(publicKey: string): string {
+    if (!publicKey.startsWith("0x")) {
+        publicKey = "0x" + publicKey;
+    }
     const sha256Hash = sha256().update(publicKey.split("0x")[1], "hex").digest("hex")
     const prefixlessAddress = ripemd160().update(sha256Hash, "hex").digest("hex")
     return `0x${prefixlessAddress}`;
@@ -408,27 +455,43 @@ export function computeAddress(key: BytesLike | string): string {
 
 export function checkTransactionType(tx: TransactionRequest): CheckTransactionType {
     if (!!tx.to === false && (!!tx.value === false || BigNumberEthers.from(tx.value).toNumber() === 0) && !!tx.data === true) {
-        const needed = new BigNumber(BigNumberEthers.from(tx.gasPrice).toNumber().toString() + `e-8`).times(BigNumberEthers.from(tx.gasLimit).toNumber()).toFixed(7).toString()
+        const needed = new BigNumber(BigNumberEthers.from(tx.gasPrice).toString() + `e-8`).times(BigNumberEthers.from(tx.gasLimit).toNumber()).toFixed(7).toString()
         return { transactionType: GLOBAL_VARS.CONTRACT_CREATION, neededAmount: needed }
     }
     else if (!!tx.to === false && BigNumberEthers.from(tx.value).toNumber() > 0 && !!tx.data === true) {
         return { transactionType: GLOBAL_VARS.DEPLOY_ERROR, neededAmount: "0" }
     }
     else if (!!tx.to === true && !!tx.data === true) {
-        const needed = !!tx.value === true ? new BigNumber(new BigNumber(BigNumberEthers.from(tx.gasPrice).toNumber() + `e-8`).toFixed(7)).times(BigNumberEthers.from(tx.gasLimit).toNumber()).plus(BigNumberEthers.from(tx.value).toNumber() + `e-8`).toFixed(7) : new BigNumber(new BigNumber(BigNumberEthers.from(tx.gasPrice).toNumber() + `e-8`).toFixed(7)).times(BigNumberEthers.from(tx.gasLimit).toNumber()).toFixed(7)
+        const needed = !!tx.value === true ? new BigNumber(new BigNumber(BigNumberEthers.from(tx.gasPrice).toString() + `e-8`).toFixed(7)).times(BigNumberEthers.from(tx.gasLimit).toNumber()).plus(BigNumberEthers.from(tx.value).toString() + `e-8`).toFixed(7) : new BigNumber(new BigNumber(BigNumberEthers.from(tx.gasPrice).toString() + `e-8`).toFixed(7)).times(BigNumberEthers.from(tx.gasLimit).toNumber()).toFixed(7)
         return { transactionType: GLOBAL_VARS.CONTRACT_CALL, neededAmount: needed }
     }
     else {
-        const needed = new BigNumber(BigNumberEthers.from(tx.value).toNumber() + `e-8`).toFixed(7);
+        const needed = new BigNumber(BigNumberEthers.from(tx.value).toString() + `e-8`).toFixed(7);
         return { transactionType: GLOBAL_VARS.P2PKH, neededAmount: needed }
     }
 }
 
-export function serializeTransaction(utxos: Array<any>, neededAmount: string, tx: TransactionRequest, transactionType: number, privateKey: string, publicKey: string): SerializedTransaction {
+export async function serializeTransaction(utxos: Array<any>, neededAmount: string, tx: TransactionRequest, transactionType: number, privateKey: string, publicKey: string): Promise<SerializedTransaction> {
+    const signer = (hash: Uint8Array) => {
+        return secp256k1Sign(hash, arrayify(privateKey));
+    };
+    return await serializeTransactionWith(utxos, neededAmount, tx, transactionType, signer, publicKey);
+}
+
+function dropPrecisionLessThanOneSatoshi(wei: string): string {
+    const inWei = BigNumberEthers.from(wei).toNumber();
+    const inSatoshiString = new BigNumber(inWei + `e-8`).toFixed(7);
+    const inWeiStringDroppedPrecision = new BigNumber(inSatoshiString + `e+8`).toString();
+    return inWeiStringDroppedPrecision;
+}
+
+export async function serializeTransactionWith(utxos: Array<any>, neededAmount: string, tx: TransactionRequest, transactionType: number, signer: Function, publicKey: string): Promise<SerializedTransaction> {
     // Building the QTUM tx that will eventually be serialized.
     let qtumTx: Tx = { version: 2, locktime: 0, vins: [], vouts: [] };
     // @ts-ignore
     const [vins, amounts] = addVins(utxos, neededAmount, tx.from.split("0x")[1]);
+    // reduce precision in gasPrice to 1 satoshi
+    tx.gasPrice = dropPrecisionLessThanOneSatoshi(BigNumberEthers.from(tx.gasPrice).toString());
     qtumTx.vins = vins;
     if (transactionType !== 3) {
         if (transactionType === 2) {
@@ -448,9 +511,10 @@ export function serializeTransaction(utxos: Array<any>, neededAmount: string, tx
             qtumTx.vouts = localVouts
         }
         // Sign necessary vins
-        const updatedVins = qtumTx.vins.map((vin, index) => {
-            return { ...vin, ['scriptSig']: p2pkhScriptSig(signp2pkh(qtumTx, index, privateKey), publicKey.split("0x")[1]) }
-        })
+        const updatedVins = [];
+        for (let i = 0; i < qtumTx.vins.length; i++) {
+            updatedVins.push({ ...qtumTx.vins[i], ['scriptSig']: p2pkhScriptSig(await signp2pkhWith(qtumTx, i, signer), publicKey.split("0x")[1]) })
+        }
         qtumTx.vins = updatedVins
         // Build the serialized transaction string.
         const serialized = txToBuffer(qtumTx).toString('hex');
@@ -465,9 +529,10 @@ export function serializeTransaction(utxos: Array<any>, neededAmount: string, tx
         else {
             qtumTx.vouts = localVouts
             // Sign necessary vins
-            const updatedVins = qtumTx.vins.map((vin, index) => {
-                return { ...vin, ['scriptSig']: p2pkhScriptSig(signp2pkh(qtumTx, index, privateKey), publicKey.split("0x")[1]) }
-            })
+            const updatedVins = [];
+            for (let i = 0; i < qtumTx.vins.length; i++) {
+                updatedVins.push({ ...qtumTx.vins[i], ['scriptSig']: p2pkhScriptSig(await signp2pkhWith(qtumTx, i, signer), publicKey.split("0x")[1]) });
+            }
             qtumTx.vins = updatedVins
             // Build the serialized transaction string.
             const serialized = txToBuffer(qtumTx).toString('hex');
