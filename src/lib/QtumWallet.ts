@@ -4,6 +4,7 @@ import {
 } from "ethers/lib/utils";
 import { TransactionRequest } from "@ethersproject/abstract-provider";
 import { BigNumber } from "bignumber.js"
+import { BigNumber as BigNumberEthers } from "ethers";
 import { checkTransactionType, serializeTransaction, SerializedTransaction } from './helpers/utils'
 import { GLOBAL_VARS } from './helpers/global-vars'
 import { IntermediateWallet } from './helpers/IntermediateWallet'
@@ -21,18 +22,24 @@ export class QtumWallet extends IntermediateWallet {
     }
 
     protected async serializeTransaction(utxos: Array<any>, neededAmount: string, tx: TransactionRequest, transactionType: number): Promise<SerializedTransaction> {
-        return await serializeTransaction(utxos, neededAmount, tx, transactionType, this.privateKey, this.publicKey);
+        return await serializeTransaction(utxos, neededAmount, tx, transactionType, this.privateKey, this.compressedPublicKey);
     }
 
     /**
      * Override to build a raw QTUM transaction signing UTXO's
      */
     async signTransaction(transaction: TransactionRequest): Promise<string> {
-        const tx = await resolveProperties(transaction);
-
         if (!transaction.gasPrice) {
-            transaction.gasPrice = "0x28";
+            // 40 satoshi in WEI
+            // 40 => 40000000000
+            transaction.gasPrice = "0x9502f9000";
         }
+
+        // convert gasPrice into satoshi
+        let a = new BigNumber(BigNumberEthers.from(transaction.gasPrice).toString() + 'e-9');
+        transaction.gasPrice = a.toNumber();
+
+        const tx = await resolveProperties(transaction);
 
         // Refactored to check TX type (call, create, p2pkh, deploy error) and calculate needed amount
         const { transactionType, neededAmount } = checkTransactionType(tx);

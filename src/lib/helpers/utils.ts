@@ -258,6 +258,9 @@ export async function signp2pkhWith(tx: any, vindex: number, signer: Function): 
     let firstHash = sha256().update(buffer).digest();
     let secondHash = sha256().update(firstHash).digest();
 
+    // sign on next tick so we don't block UI
+    await new Promise((resolve) => setImmediate(resolve));
+
     // sign hash
     let sig = await signer(new Uint8Array(secondHash));
 

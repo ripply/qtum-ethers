@@ -12,8 +12,9 @@ import { SigningKey } from "@ethersproject/signing-key";
 import { decryptJsonWallet, decryptJsonWalletSync, encryptKeystore, ProgressCallback } from "@ethersproject/json-wallets";
 import { recoverAddress, serialize, UnsignedTransaction } from "@ethersproject/transactions";
 import { Wordlist } from "@ethersproject/wordlists";
-import { computeAddress} from "./utils"
+import { computeAddress, computeAddressFromPublicKey} from "./utils"
 import { Logger } from "@ethersproject/logger";
+import wif from 'wif';
 export const version = "wallet/5.1.0";
 const logger = new Logger(version);
 
@@ -83,12 +84,22 @@ export class IntermediateWallet extends Signer implements ExternallyOwnedAccount
                     }
                 }
 
+                try {
+                    if (!privateKey.startsWith("0x")) {
+                        let decodedKey = wif.decode(privateKey);
+                        privateKey = '0x' + decodedKey.privateKey.toString("hex");
+                    }
+                } catch (e) {
+                    // not WIF format
+                }
+
                 const signingKey = new SigningKey(privateKey);
+                console.log("signingKey", signingKey)
                 defineReadOnly(this, "_signingKey", () => signingKey);
             }
 
             defineReadOnly(this, "_mnemonic", (): Mnemonic => null);
-            defineReadOnly(this, "address", computeAddress(this.publicKey));
+            defineReadOnly(this, "address", computeAddressFromPublicKey(this.compressedPublicKey));
         }
 
         /* istanbul ignore if */
@@ -102,6 +113,7 @@ export class IntermediateWallet extends Signer implements ExternallyOwnedAccount
     get mnemonic(): Mnemonic { return this._mnemonic(); }
     get privateKey(): string { return this._signingKey().privateKey; }
     get publicKey(): string { return this._signingKey().publicKey; }
+    get compressedPublicKey(): string { return this._signingKey().compressedPublicKey; }
 
     getAddress(): Promise<string> {
         return Promise.resolve(this.address);
