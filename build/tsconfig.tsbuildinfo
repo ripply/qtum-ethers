@@ -792,7 +792,7 @@
         "affectsGlobalScope": false
       },
       "../src/lib/helpers/utils.ts": {
-        "version": "eceea7b7099784dfe97fbfbdee6ba92893aa4d8b005ccaae3774f507f93e766a",
+        "version": "159178b881a03fc1ffb5100572d1b7fa63b7255e6c70b71beb2d521fb227a092",
         "signature": "bc784db9f3855f51bdb304809db6f59b52c10bdec77fefa7244d5610847e9092",
         "affectsGlobalScope": false
       },
@@ -807,12 +807,12 @@
         "affectsGlobalScope": false
       },
       "../src/lib/helpers/IntermediateWallet.ts": {
-        "version": "91abd400819e8b3158205043d035f5e7b3030c4eaf974ba87314192ab51246e9",
-        "signature": "848e83ecf60ad0fd28c2165e0d7cb2ff1f5f1419e42b4412ef66b9cb970a1f8b",
+        "version": "34f36359d41750586d78c8bbe4f17c49b7f048cad37aaf6043f0f112eae53882",
+        "signature": "1faeb25718f4f65649937286fad4bc0f40694dec053c485b0b1f89ac96f0b8e5",
         "affectsGlobalScope": false
       },
       "../src/lib/QtumWallet.ts": {
-        "version": "a800a0267f388eaaea1c867a0515f2366e8ac613d5fc13c2691c677da13b2608",
+        "version": "64513f30bb83698801463a6a68ca0e9550e9674d8df17f0078b4522ca8300642",
         "signature": "465860b83c37c624a92fcd59c3bb2e429d71bafb3d626e9e1559bf532032eada",
         "affectsGlobalScope": false
       },
@@ -1401,6 +1401,7 @@
       "../src/lib/QtumWallet.ts": [
         "../node_modules/@ethersproject/abstract-provider/lib/index.d.ts",
         "../node_modules/bignumber.js/bignumber.d.ts",
+        "../node_modules/ethers/lib/index.d.ts",
         "../node_modules/ethers/lib/utils.d.ts",
         "../src/lib/helpers/IntermediateWallet.ts",
         "../src/lib/helpers/global-vars.ts",
