@@ -806,6 +806,11 @@
         "signature": "c5f4f8638f766685b0e52a173e377a3ac6272cadfd4ffd272bb6bc2e40bfc369",
         "affectsGlobalScope": false
       },
+      "../src/lib/QtumContractFactory.ts": {
+        "version": "04c87904c4233759c392acd6c1d25d759eb7041f67c6a2f27dcc15392606656d",
+        "signature": "4358c48912773e958a932208edfb5c4128d0c398aa21e04f46a532c610db38a5",
+        "affectsGlobalScope": false
+      },
       "../src/lib/helpers/IntermediateWallet.ts": {
         "version": "91abd400819e8b3158205043d035f5e7b3030c4eaf974ba87314192ab51246e9",
         "signature": "848e83ecf60ad0fd28c2165e0d7cb2ff1f5f1419e42b4412ef66b9cb970a1f8b",
@@ -817,13 +822,8 @@
         "affectsGlobalScope": false
       },
       "../src/index.ts": {
-        "version": "958e97d1f7dd68e52b8d5bf54b55065a5f262ecb4b473841bb758e0d3333fccb",
-        "signature": "37917e2e7a57252b761453f7e4e98d4a28ba23018c384c1af2107afb32149c65",
-        "affectsGlobalScope": false
-      },
-      "../src/lib/QtumContractFactory.ts": {
-        "version": "04c87904c4233759c392acd6c1d25d759eb7041f67c6a2f27dcc15392606656d",
-        "signature": "4358c48912773e958a932208edfb5c4128d0c398aa21e04f46a532c610db38a5",
+        "version": "44bcea5fc6f94204fc746188d99f8b6b8c0772cdc4b2ab7c4a5acf1e6dab36f4",
+        "signature": "4c59a4cec29812b5da7c3a8103c7b00ad7a4a7468f82a68733c4e6573bf08019",
         "affectsGlobalScope": false
       },
       "../src/lib/helpers/bip66.d.ts": {
@@ -1376,6 +1376,7 @@
         "../node_modules/@ethersproject/web/lib/index.d.ts"
       ],
       "../src/index.ts": [
+        "../src/lib/QtumContractFactory.ts",
         "../src/lib/QtumFunctionProvider.ts",
         "../src/lib/QtumProvider.ts",
         "../src/lib/QtumWallet.ts",
@@ -1933,6 +1934,7 @@
         "../node_modules/@ethersproject/web/lib/index.d.ts"
       ],
       "../src/index.ts": [
+        "../src/lib/QtumContractFactory.ts",
         "../src/lib/QtumFunctionProvider.ts",
         "../src/lib/QtumProvider.ts",
         "../src/lib/QtumWallet.ts",
