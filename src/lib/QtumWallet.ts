@@ -36,8 +36,8 @@ export class QtumWallet extends IntermediateWallet {
         }
 
         // convert gasPrice into satoshi
-        let a = new BigNumber(BigNumberEthers.from(transaction.gasPrice).toString() + 'e-9');
-        transaction.gasPrice = a.toNumber();
+        let gasPrice = new BigNumber(BigNumberEthers.from(transaction.gasPrice).toString() + 'e-9');
+        transaction.gasPrice = gasPrice.toNumber();
 
         const tx = await resolveProperties(transaction);
 
