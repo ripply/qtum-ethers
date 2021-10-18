@@ -812,12 +812,12 @@
         "affectsGlobalScope": false
       },
       "../src/lib/helpers/IntermediateWallet.ts": {
-        "version": "34f36359d41750586d78c8bbe4f17c49b7f048cad37aaf6043f0f112eae53882",
+        "version": "f76a6721e80d90e985a9f70124e96a6f22d0edf11c1be0a854812fcf5ee65260",
         "signature": "1faeb25718f4f65649937286fad4bc0f40694dec053c485b0b1f89ac96f0b8e5",
         "affectsGlobalScope": false
       },
       "../src/lib/QtumWallet.ts": {
-        "version": "64513f30bb83698801463a6a68ca0e9550e9674d8df17f0078b4522ca8300642",
+        "version": "ff0a774b5cb5e9a036b9c8cc945a30cc2f6d50d620208e24a40cb7a024f2344d",
         "signature": "465860b83c37c624a92fcd59c3bb2e429d71bafb3d626e9e1559bf532032eada",
         "affectsGlobalScope": false
       },
