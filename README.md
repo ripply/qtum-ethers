@@ -1,6 +1,12 @@
 # Qtum Ethers
 A module for using Qtum through an Ethers compliant library to make it simpler to use Qtum
 
+# Upgrading from 0.0.3
+public key address generation now follows QTUM behavior, the same private keys will now generate different addresses
+
+adds support for importing WIF private keys
+
+gas price is now specified in WEI, not Satoshis
 
 # Installation
 
@@ -29,7 +35,8 @@ const simpleStore = new QtumContractFactory(ABI, BYTECODE, signer);
 // simpleStore deployment example, returns address
 async function deployToken() {
 	const deployment = await simpleStore.deploy({
-    	gasLimit: "0x2dc6c0", gasPrice: "0x28"
+		gasLimit: "0x2dc6c0",
+		gasPrice: "0x9502f9000" // in WEI, not Satoshis
 	});
 	await deployment.deployed();
 	return deployment.address
@@ -50,8 +57,6 @@ async function transferToken(from, to, value) {
 - Issues
 
 At the point of grabbing UTXO's from janus, the estimated TX size is unknown
-
-WEI -> Satoshis
 
 Janus issue with estimateGas
 
