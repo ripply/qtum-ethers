@@ -19,7 +19,8 @@
     "typedarray-to-buffer": "^4.0.0",
     "typeforce": "^1.18.0",
     "typescript": "^4.1.2",
-    "varuint-bitcoin": "1.1.0"
+    "varuint-bitcoin": "1.1.0",
+    "wif": "^2.0.6"
   },
   "name": "qtum-ethers-wrapper",
   "version": "0.0.3",

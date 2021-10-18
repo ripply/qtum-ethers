@@ -15,6 +15,7 @@ export declare class IntermediateWallet extends Signer implements ExternallyOwne
     get mnemonic(): Mnemonic;
     get privateKey(): string;
     get publicKey(): string;
+    get compressedPublicKey(): string;
     getAddress(): Promise<string>;
     connect(provider: Provider): IntermediateWallet;
     signTransaction(transaction: TransactionRequest): Promise<string>;
