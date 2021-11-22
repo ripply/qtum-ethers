@@ -841,8 +841,13 @@
         "signature": "6d1e64c066b32332e8adec49808f6aba821e71151cba9253946ac40762dff5b1",
         "affectsGlobalScope": false
       },
+      "../src/tests/Adoption.tests.ts": {
+        "version": "fdc7201f3e9b225ad6055ed3031dc5849ba5ea8dd32b128828e40cd147ee92d0",
+        "signature": "e7ee052b24df860909bf77eabf8208d32420217eda8650ed8225f0def7b54de1",
+        "affectsGlobalScope": true
+      },
       "../src/tests/ContractFactory-ContractInteraction.tests.ts": {
-        "version": "7145d60dfa76228c0b181e6ac2b96b0b6352cfe60cfe31ca2260bfef2293d93a",
+        "version": "b11edb1911ad818b229474b1919c58b728b34c33e91c62682fb4a7246fe5edfd",
         "signature": "8afcd458d74f799e530e49738b908eb8e7d1916a9107d836d9cd3b335eb58c43",
         "affectsGlobalScope": true
       },
@@ -2141,6 +2146,7 @@
       "../src/lib/helpers/opcodes.ts",
       "../src/lib/helpers/utils.ts",
       "../src/lib/helpers/varuint-bitcoin.d.ts",
+      "../src/tests/Adoption.tests.ts",
       "../src/tests/ContractFactory-ContractInteraction.tests.ts"
     ]
   },
