@@ -12,7 +12,7 @@ const BYTECODE = "608060405234801561001057600080fd5b506040516020806100f283398101
 const ABI = [{ "inputs": [], "name": "get", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "uint256", "name": "x", "type": "uint256" }], "name": "set", "outputs": [], "stateMutability": "nonpayable", "type": "function" }]
 const provider = new QtumProvider("http://localhost:23889");
 
-// hash160PubKey/address -> 0xcca81b02942d8079a871e02ba03a3a4a8d7740d2
+// hash160PubKey/address -> 0xcdf409a70058bfc54ada1ee3422f1ef28d0d267d
 const signer = new QtumWallet(
     "99dda7e1a59655c9e02de8592be3b914df7df320e72ce04ccf0427f9a366ec6e",
     provider
@@ -397,17 +397,20 @@ const QRC20_BYTECODE = "608060405267016345785d8a000060005534801561001c57600080fd
 describe("QtumContractFactory", function () {
     it("QtumContractFactory should deploy correctly given the deployer has enough QTUM to cover gas", async function () {
         const simpleStore = new QtumContractFactory(ABI, BYTECODE, signer);
+        console.log("deploying")
         const deployment = await simpleStore.deploy({
-            gasLimit: "0x2dc6c0", gasPrice: "0x28"
+            gasLimit: "0x2dc6c0", gasPrice: "0x9502F9000"
         });
+        console.log("deployed")
         expect(deployment.address).to.equal(`0x${generateContractAddress(deployment.deployTransaction.hash.split("0x")[1])}`)
         await deployment.deployed();
+        console.log("deployed2")
         const getVal = await deployment.get({
-            gasLimit: "0x2dc6c0", gasPrice: "0x28"
+            gasLimit: "0x2dc6c0", gasPrice: "0x9502F9000"
         });
         expect(BigNumber.from(getVal).toNumber()).to.equal(BigNumber.from("0x00").toNumber());
         const setVal = await deployment.set(1001, {
-            gasLimit: "0x2dc6c0", gasPrice: "0x28"
+            gasLimit: "0x2dc6c0", gasPrice: "0x9502F9000"
         });
         await setVal.wait()
         expect(BigNumber.from(getVal).toNumber()).to.equal(BigNumber.from("0x00").toNumber());
@@ -418,12 +421,12 @@ describe("QtumContractFactory", function () {
         if (!!connectedSimpleStore.signer) {
             const deployment = await connectedSimpleStore.deploy({
                 gasLimit: "0x2dc6c0",
-                gasPrice: "0x28",
+                gasPrice: "0x9502F9000",
             });
             expect(!!deployment.address, "true");
             await deployment.deployed();
             const getVal = await deployment.get({
-                gasLimit: "0x2dc6c0", gasPrice: "0x28"
+                gasLimit: "0x2dc6c0", gasPrice: "0x9502F9000"
             });
             expect(BigNumber.from(getVal).toNumber()).to.equal(BigNumber.from("0x00").toNumber());
         }
@@ -432,7 +435,7 @@ describe("QtumContractFactory", function () {
         const simpleStore = new QtumContractFactory(ABI, BYTECODE, signer);
         try {
             await simpleStore.deploy({
-                gasLimit: "0x2dc6c0", gasPrice: "0x28", value: "0xffffff"
+                gasLimit: "0x2dc6c0", gasPrice: "0x9502F9000", value: "0xffffff"
             });
         } catch (err) {
             expect(err.reason).to.equal("You cannot send QTUM while deploying a contract. Try deploying again without a value.")
@@ -443,7 +446,7 @@ describe("QtumContractFactory", function () {
         console.log(signerNoQtum.address)
         try {
             await simpleStore.deploy({
-                gasLimit: "0x2dc6c0", gasPrice: "0x28"
+                gasLimit: "0x2dc6c0", gasPrice: "0x9502F9000"
             });
         } catch (err) {
             expect(err.reason).to.equal("Needed amount of UTXO's exceed the total you own.")
@@ -460,7 +463,7 @@ describe("QtumWallet", function () {
             to: "0x7926223070547D2D15b2eF5e7383E541c338FfE9",
             from: signer.address,
             gasLimit: "0x3d090",
-            gasPrice: "0x28",
+            gasPrice: "0x9502F9000",
             value: "0xfffff",
             data: "",
         });
@@ -473,24 +476,38 @@ describe("QtumWallet", function () {
     it("QtumWallet can connect to SimpleBank and call a payable method", async function () {
         const simpleBank = new QtumContractFactory(SIMPLEBANK_ABI, SIMPLEBANK_BYTECODE, signer);
         const deployment = await simpleBank.deploy({
-            gasLimit: "0x2dc6c0", gasPrice: "0x28"
+            gasLimit: "0x2dc6c0", gasPrice: "0x9502F9000"
         });
         expect(deployment.address).to.equal(`0x${generateContractAddress(deployment.deployTransaction.hash.split("0x")[1])}`)
         await deployment.deployed();
         const deposit = await deployment.deposit({
-            gasLimit: "0x2dc6c0", gasPrice: "0x28", value: "0xfffff"
+            gasLimit: "0x2dc6c0", gasPrice: "0x9502F9000", value: "0xfffff"
         });
         await deposit.wait()
     });
     it("QtumWallet can connect to QRC20 ", async function () {
-        const qrc20 = new ethers.Contract("0xc04d8b4f5137e5983b075e8560020523784c1c4a", QRC20_ABI, signer);
+        const qrc20 = new QtumContractFactory(QRC20_ABI, QRC20_BYTECODE, signer);
         const deployment = await qrc20.deploy({
-            gasLimit: "0x2dc6c0", gasPrice: "0x28"
+            gasLimit: "0x2dc6c0", gasPrice: "0x9502F9000"
         });
         expect(deployment.address).to.equal(`0x${generateContractAddress(deployment.deployTransaction.hash.split("0x")[1])}`)
-        await deployment.deployed();
-        const name = await qrc20.name({ gasLimit: "0x2dc6c0", gasPrice: "0x28" });
-        console.log(name, qrc20.address)
+        const tx = await deployment.deployed();
+        const qrc200 = new ethers.Contract(tx.address, QRC20_ABI, signer);
+        const name = await qrc200.name({ gasPrice: "0x9502F9000" });
+        console.log(name, tx.address)
+        expect(name).to.equal("QRC TEST");
+    });
+    it("QtumWallet can transfer QRC20 ", async function () {
+        const qrc20 = new QtumContractFactory(QRC20_ABI, QRC20_BYTECODE, signer);
+        const deployment = await qrc20.deploy({
+            gasLimit: "0x2dc6c0", gasPrice: "0x9502F9000"
+        });
+        expect(deployment.address).to.equal(`0x${generateContractAddress(deployment.deployTransaction.hash.split("0x")[1])}`)
+        const tx = await deployment.deployed();
+        const qrc200 = new ethers.Contract(tx.address, QRC20_ABI, signer);
+        await qrc200.transfer("0x30a41759e2fec594fbb90ea2b212c9ef8074e227", 1, { gasPrice: "0x9502F9000" });
+        // console.log(name, tx.address)
+        // expect(name).to.equal("QRC TEST");
     });
 })
 

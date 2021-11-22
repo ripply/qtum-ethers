@@ -19,8 +19,14 @@ Open a console and run
 ```js
 import qtum_ethers from "qtum-ethers-wrapper";
 const {QtumProvider, QtumWallet, QtumContractFactory} = qtum_ethers;
-// point Qtum Provider at Janus node
-const provider = new QtumProvider("http://localhost:23889");
+// point Qtum Provider at Janus node https://github.com/qtumproject/janus/
+const mainnetProvider = new QtumProvider("https://janus.qiswap.com/api/");
+const testnetProvider = new QtumProvider("https://testnet-janus.qiswap.com/api/");
+// or deploy your own node locally with a regtest network
+// see for a pre-built docker image https://hub.docker.com/r/ripply/janus
+const regtestProvider = new QtumProvider("http://localhost:23889");
+
+const provider = testnetProvider;
 // create a wallet
 const privkey = "99dda7e1a59655c9e02de8592be3b914df7df320e72ce04ccf0427f9a366ec6e"
 const signer = new QtumWallet(
@@ -44,9 +50,9 @@ async function deployToken() {
 // connect to QRC20 token and interact with it 
 async function transferToken(from, to, value) {
 	const qrc20 = new ethers.Contract("0xc04d8b4f5137e5983b075e8560020523784c1c4a", QRC_ABI, signer)
-	const deployment = qrc20.deploy({gasLimit: "0x2dc6c0", gasPrice: "0x28"})
+	const deployment = qrc20.deploy({gasLimit: "0x2dc6c0", gasPrice: "0x9502f9000"})
 	await deployment.deployed();
-    const name = await qrc20.transfer(from, to, value, { gasLimit: "0x2dc6c0", gasPrice: "0x28"});
+    const name = await qrc20.transfer(from, to, value, { gasLimit: "0x2dc6c0", gasPrice: "0x9502f9000"});
 }
 
 ```
