@@ -397,14 +397,11 @@ const QRC20_BYTECODE = "608060405267016345785d8a000060005534801561001c57600080fd
 describe("QtumContractFactory", function () {
     it("QtumContractFactory should deploy correctly given the deployer has enough QTUM to cover gas", async function () {
         const simpleStore = new QtumContractFactory(ABI, BYTECODE, signer);
-        console.log("deploying")
         const deployment = await simpleStore.deploy({
             gasLimit: "0x2dc6c0", gasPrice: "0x9502F9000"
         });
-        console.log("deployed")
         expect(deployment.address).to.equal(`0x${generateContractAddress(deployment.deployTransaction.hash.split("0x")[1])}`)
         await deployment.deployed();
-        console.log("deployed2")
         const getVal = await deployment.get({
             gasLimit: "0x2dc6c0", gasPrice: "0x9502F9000"
         });

@@ -76,9 +76,10 @@ export class QtumWallet extends IntermediateWallet {
         const { serializedTransaction, networkFee } = await this.serializeTransaction(utxos, neededAmount, tx, transactionType);
 
         if (networkFee !== "") {
+            let updatedNeededAmount;
             try {
                 // Try again with the network fee included
-                const updatedNeededAmount = new BigNumber(neededAmount).plus(networkFee);
+                updatedNeededAmount = new BigNumber(neededAmount).plus(networkFee);
                 // @ts-ignore
                 utxos = await this.provider.getUtxos(tx.from, updatedNeededAmount);
                 // Grab vins for transaction object.
@@ -94,7 +95,7 @@ export class QtumWallet extends IntermediateWallet {
                     }
                 );
             }
-            const serialized = await this.serializeTransaction(utxos, neededAmount, tx, transactionType);
+            const serialized = await this.serializeTransaction(utxos, updatedNeededAmount.toString(), tx, transactionType);
             if (serialized.serializedTransaction === "") {
                 throw new Error("Failed to generate vouts");
             }
