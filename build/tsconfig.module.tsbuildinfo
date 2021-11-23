@@ -817,7 +817,7 @@
         "affectsGlobalScope": false
       },
       "../src/lib/QtumWallet.ts": {
-        "version": "ff0a774b5cb5e9a036b9c8cc945a30cc2f6d50d620208e24a40cb7a024f2344d",
+        "version": "dffc3971868154a44f47c8beabdfd0bc8ed159257c2efeb241b5a01d54f0cb21",
         "signature": "465860b83c37c624a92fcd59c3bb2e429d71bafb3d626e9e1559bf532032eada",
         "affectsGlobalScope": false
       },
@@ -847,7 +847,7 @@
         "affectsGlobalScope": true
       },
       "../src/tests/ContractFactory-ContractInteraction.tests.ts": {
-        "version": "b11edb1911ad818b229474b1919c58b728b34c33e91c62682fb4a7246fe5edfd",
+        "version": "e37354d77b88a9ee21fe4ee15fd2b4187e3436633b89041ddda6f6518918354b",
         "signature": "8afcd458d74f799e530e49738b908eb8e7d1916a9107d836d9cd3b335eb58c43",
         "affectsGlobalScope": true
       },
