@@ -26,6 +26,16 @@
   "version": "0.1.1",
   "main": "./build/main/index.js",
   "license": "",
+  "homepage": "https://github.com/earlgreytech/qtum-ethers",
+  "repository": {
+      "type": "git",
+      "url": "git@github.com:earlgreytech/qtum-ethers"
+  },
+  "keywords": [
+    "Ethereum",
+    "ethers",
+    "QTUM"
+  ],
   "scripts": {
     "build": "yarn build:main && yarn build:module",
     "build:main": "tsc -p tsconfig.json",
