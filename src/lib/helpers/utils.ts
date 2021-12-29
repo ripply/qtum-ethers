@@ -32,7 +32,7 @@ import { decode } from "./hex-decoder";
 import { computePublicKey } from "@ethersproject/signing-key";
 import { TransactionRequest } from "@ethersproject/abstract-provider";
 
-const toBuffer = require('typedarray-to-buffer')
+// const toBuffer = require('typedarray-to-buffer')
 const bitcoinjs = require("bitcoinjs-lib");
 
 // metamask BigNumber uses a different version so the API doesn't match up
@@ -239,9 +239,11 @@ export async function signp2pkh(tx: any, vindex: number, privKey: string): Promi
 export async function signp2pkhWith(tx: any, vindex: number, signer: Function): Promise<Buffer> {
     let clone = cloneTx(tx);
     // clean up relevant script
-    let filteredPrevOutScript = clone.vins[vindex].script.filter((op: any) => op !== OPS.OP_CODESEPARATOR);
+    // TODO: Implement proper handling of OP_CODESEPARATOR, this was filtering 'ab' from the script entirely preventing pubkeyhash with ab addresses from generating proper tx
+    // Since all scripts are generated locally in this library, temporarily not having this implemented is OK as no scripts will have this opcode
+    // let filteredPrevOutScript = clone.vins[vindex].script.filter((op: any) => op !== OPS.OP_CODESEPARATOR);
     // Uint8Array issue here
-    clone.vins[vindex].script = toBuffer(filteredPrevOutScript);
+    // clone.vins[vindex].script = toBuffer(filteredPrevOutScript);
     // zero out scripts of other inputs
     for (let i = 0; i < clone.vins.length; i++) {
         if (i === vindex) continue;
