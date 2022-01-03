@@ -792,12 +792,12 @@
         "affectsGlobalScope": false
       },
       "../src/lib/helpers/utils.ts": {
-        "version": "a7d54c69680722a7d12c24b83aea82f7556d20d9d05a75ee8709da8a59794641",
+        "version": "9c8582c96d1cf8c793f0d70e72426ba6e0ae660d42e6b7f67988c7faee373371",
         "signature": "bc784db9f3855f51bdb304809db6f59b52c10bdec77fefa7244d5610847e9092",
         "affectsGlobalScope": false
       },
       "../src/lib/QtumProvider.ts": {
-        "version": "1dc769ed07e603d1bb799324a8bfe8bdac193871c052117cab38f084091695a6",
+        "version": "8cc7cef780a2018ef13f342e1bdeac51a37bd3cfb669f28263046de3340f6ea5",
         "signature": "512c7d1b93ba140c39ace7650acf1addb584f5f626feaed1f9c28ba2dbe61e13",
         "affectsGlobalScope": false
       },
