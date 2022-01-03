@@ -332,6 +332,9 @@ export function addVins(utxos: Array<ListUTXOs>, neededAmount: string, hash160Pu
     let inputs = [];
     let amounts = [];
     for (let i = 0; i < utxos.length; i++) {
+        if (utxos[i].safe === undefined || !utxos[i].safe) {
+            continue;
+        }
         // investigate issue where amount has no decimal point as calculation panics
         let x: any = parseFloat(utxos[i].amount).toFixed(7)
         balance += parseFloat(x);

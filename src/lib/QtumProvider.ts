@@ -42,7 +42,7 @@ export class QtumProvider extends providers.JsonRpcProvider {
    */
   async getUtxos(from?: string, neededAmount?: number) {
     await this.getNetwork();
-    const params = [from, neededAmount];
+    const params = [from, neededAmount, "p2pkh"];
     return await this.perform("qtum_qetUTXOs", params);
   }
 
