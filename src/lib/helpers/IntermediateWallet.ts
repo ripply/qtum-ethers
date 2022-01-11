@@ -13,6 +13,7 @@ import { decryptJsonWallet, decryptJsonWalletSync, encryptKeystore, ProgressCall
 import { recoverAddress, serialize, UnsignedTransaction } from "@ethersproject/transactions";
 import { Wordlist } from "@ethersproject/wordlists";
 import { computeAddress, computeAddressFromPublicKey} from "./utils"
+import { computeAddress as computeEthereumAddress } from "@ethersproject/transactions";
 import { Logger } from "@ethersproject/logger";
 import wif from 'wif';
 export const version = "wallet/5.1.0";
@@ -43,10 +44,14 @@ export class IntermediateWallet extends Signer implements ExternallyOwnedAccount
         if (isAccount(privateKey)) {
             const signingKey = new SigningKey(privateKey.privateKey);
             defineReadOnly(this, "_signingKey", () => signingKey);
-            defineReadOnly(this, "address", computeAddress(this.publicKey));
+            defineReadOnly(this, "address", computeAddress(this.publicKey, true));
 
-            if (this.address !== getAddress(privateKey.address)) {
-                logger.throwArgumentError("privateKey/address mismatch", "privateKey", "[REDACTED]");
+            if (getAddress(this.address) !== getAddress(privateKey.qtumAddress || privateKey.address)) {
+                if (getAddress(computeEthereumAddress(this.publicKey)) === getAddress(privateKey.qtumAddress || privateKey.address)) {
+                    logger.throwArgumentError("privateKey/address mismatch: Your address is being generated the ethereum way, please use QTUM address generation scheme", "privateKey", "[REDACTED]");
+                } else {
+                    logger.throwArgumentError("privateKey/address mismatch", "privateKey", "[REDACTED]");
+                }
             }
 
             if (hasMnemonic(privateKey)) {
@@ -60,7 +65,7 @@ export class IntermediateWallet extends Signer implements ExternallyOwnedAccount
                 ));
                 const mnemonic = this.mnemonic;
                 const node = HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale).derivePath(mnemonic.path);
-                if (computeAddress(node.privateKey) !== this.address) {
+                if (computeAddress(node.privateKey, true) !== this.address) {
                     logger.throwArgumentError("mnemonic/address mismatch", "privateKey", "[REDACTED]");
                 }
             } else {

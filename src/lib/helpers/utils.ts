@@ -447,8 +447,8 @@ export function parseSignedTransaction(transaction: string): Transaction {
     return tx
 }
 
-export function computeAddress(key: BytesLike | string): string {
-    const publicKey = computePublicKey(key);
+export function computeAddress(key: BytesLike | string, compressed?: boolean): string {
+    const publicKey = computePublicKey(key, compressed);
     return computeAddressFromPublicKey(publicKey);
 }
 
