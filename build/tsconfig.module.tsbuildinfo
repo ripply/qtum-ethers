@@ -792,8 +792,8 @@
         "affectsGlobalScope": false
       },
       "../src/lib/helpers/utils.ts": {
-        "version": "9c8582c96d1cf8c793f0d70e72426ba6e0ae660d42e6b7f67988c7faee373371",
-        "signature": "bc784db9f3855f51bdb304809db6f59b52c10bdec77fefa7244d5610847e9092",
+        "version": "178091b62dd0e57c2a7185eb3c8d37ac117da3ac30e70013e3f240d0bffc4145",
+        "signature": "ee7171d1123f13fcd9a178ba3d6000927f551ce6186378d61f50b2b890bd2dde",
         "affectsGlobalScope": false
       },
       "../src/lib/QtumProvider.ts": {
@@ -812,13 +812,13 @@
         "affectsGlobalScope": false
       },
       "../src/lib/helpers/IntermediateWallet.ts": {
-        "version": "f76a6721e80d90e985a9f70124e96a6f22d0edf11c1be0a854812fcf5ee65260",
+        "version": "f5ced9ae522c799ed37155b8c8bb69bf7a448fcf07e04d423dcb0ffbe7293fe5",
         "signature": "1faeb25718f4f65649937286fad4bc0f40694dec053c485b0b1f89ac96f0b8e5",
         "affectsGlobalScope": false
       },
       "../src/lib/QtumWallet.ts": {
-        "version": "dffc3971868154a44f47c8beabdfd0bc8ed159257c2efeb241b5a01d54f0cb21",
-        "signature": "465860b83c37c624a92fcd59c3bb2e429d71bafb3d626e9e1559bf532032eada",
+        "version": "a1d5391dfa58fc2acf4eabd9424a4c99d15999df99857c8a3fc4a23159d7cf16",
+        "signature": "c540a58a6b5f1b522370efc822f7186521fe732dd7344ebfa875768f4a903f85",
         "affectsGlobalScope": false
       },
       "../src/index.ts": {
@@ -1406,6 +1406,13 @@
       ],
       "../src/lib/QtumWallet.ts": [
         "../node_modules/@ethersproject/abstract-provider/lib/index.d.ts",
+        "../node_modules/@ethersproject/bytes/lib/index.d.ts",
+        "../node_modules/@ethersproject/hdnode/lib/index.d.ts",
+        "../node_modules/@ethersproject/json-wallets/lib/index.d.ts",
+        "../node_modules/@ethersproject/keccak256/lib/index.d.ts",
+        "../node_modules/@ethersproject/properties/lib/index.d.ts",
+        "../node_modules/@ethersproject/random/lib/index.d.ts",
+        "../node_modules/@ethersproject/wordlists/lib/index.d.ts",
         "../node_modules/bignumber.js/bignumber.d.ts",
         "../node_modules/ethers/lib/index.d.ts",
         "../node_modules/ethers/lib/utils.d.ts",
@@ -1958,6 +1965,9 @@
       ],
       "../src/lib/QtumWallet.ts": [
         "../node_modules/@ethersproject/abstract-provider/lib/index.d.ts",
+        "../node_modules/@ethersproject/bytes/lib/index.d.ts",
+        "../node_modules/@ethersproject/json-wallets/lib/index.d.ts",
+        "../node_modules/@ethersproject/wordlists/lib/index.d.ts",
         "../src/lib/helpers/IntermediateWallet.ts",
         "../src/lib/helpers/utils.ts"
       ],

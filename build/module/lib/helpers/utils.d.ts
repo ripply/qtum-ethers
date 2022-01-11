@@ -75,7 +75,7 @@ export declare function addVins(utxos: Array<ListUTXOs>, neededAmount: string, h
 export declare function addContractVouts(gasPrice: number, gasLimit: number, data: string, address: string, amounts: Array<any>, value: string, hash160PubKey: string, vins: Array<any>): (Array<any> | string);
 export declare function addp2pkhVouts(hash160Address: string, amounts: Array<any>, value: string, hash160PubKey: string, vins: Array<any>): (Array<any> | string);
 export declare function parseSignedTransaction(transaction: string): Transaction;
-export declare function computeAddress(key: BytesLike | string): string;
+export declare function computeAddress(key: BytesLike | string, compressed?: boolean): string;
 export declare function computeAddressFromPublicKey(publicKey: string): string;
 export declare function checkTransactionType(tx: TransactionRequest): CheckTransactionType;
 export declare function serializeTransaction(utxos: Array<any>, neededAmount: string, tx: TransactionRequest, transactionType: number, privateKey: string, publicKey: string): Promise<SerializedTransaction>;
