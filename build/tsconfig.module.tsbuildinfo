@@ -757,8 +757,8 @@
         "affectsGlobalScope": false
       },
       "../src/lib/helpers/global-vars.ts": {
-        "version": "7b148c0719508a14972a73d5998ce1f9edada036723db6183dbe6e0c094717b9",
-        "signature": "e50d4f6be979757e0f7608780507e001ba8715c8e8c273370bb485614fd9dbb0",
+        "version": "b0108d4fbc382c485e75f4b51a471445f453f828c6569594d59ebe07ad4929d1",
+        "signature": "3c7a96e931acc93996a659bcad39418495c722845bf0c6ccf4a5d7d09ca1487c",
         "affectsGlobalScope": false
       },
       "../node_modules/@types/bn.js/index.d.ts": {
@@ -792,8 +792,8 @@
         "affectsGlobalScope": false
       },
       "../src/lib/helpers/utils.ts": {
-        "version": "178091b62dd0e57c2a7185eb3c8d37ac117da3ac30e70013e3f240d0bffc4145",
-        "signature": "ee7171d1123f13fcd9a178ba3d6000927f551ce6186378d61f50b2b890bd2dde",
+        "version": "b9ce8a7717e69af4241a2a12bab7ad6960e01f5ba932c83f56ba696e7d2495ab",
+        "signature": "da5c8292df21932a07f7d967d364c124d02442dde3b282ecbeb49919d361c888",
         "affectsGlobalScope": false
       },
       "../src/lib/QtumProvider.ts": {
@@ -817,8 +817,8 @@
         "affectsGlobalScope": false
       },
       "../src/lib/QtumWallet.ts": {
-        "version": "a1d5391dfa58fc2acf4eabd9424a4c99d15999df99857c8a3fc4a23159d7cf16",
-        "signature": "c540a58a6b5f1b522370efc822f7186521fe732dd7344ebfa875768f4a903f85",
+        "version": "482ccf4af584893decfa53840d111ab16db1a6b4b4c421621926289c90655144",
+        "signature": "2430362dd4ee234e9193d69693d390da6d938be756f354666c01cfd3b650ab36",
         "affectsGlobalScope": false
       },
       "../src/index.ts": {
@@ -1968,8 +1968,7 @@
         "../node_modules/@ethersproject/bytes/lib/index.d.ts",
         "../node_modules/@ethersproject/json-wallets/lib/index.d.ts",
         "../node_modules/@ethersproject/wordlists/lib/index.d.ts",
-        "../src/lib/helpers/IntermediateWallet.ts",
-        "../src/lib/helpers/utils.ts"
+        "../src/lib/helpers/IntermediateWallet.ts"
       ],
       "../src/lib/helpers/IntermediateWallet.ts": [
         "../node_modules/@ethersproject/abstract-provider/lib/index.d.ts",
@@ -1983,6 +1982,7 @@
       "../src/lib/helpers/utils.ts": [
         "../node_modules/@ethersproject/abstract-provider/lib/index.d.ts",
         "../node_modules/@ethersproject/transactions/lib/index.d.ts",
+        "../node_modules/ethers/lib/index.d.ts",
         "../node_modules/ethers/lib/utils.d.ts"
       ]
     },

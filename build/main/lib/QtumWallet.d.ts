@@ -1,5 +1,4 @@
 import { Provider, TransactionRequest } from "@ethersproject/abstract-provider";
-import { SerializedTransaction } from './helpers/utils';
 import { IntermediateWallet } from './helpers/IntermediateWallet';
 import { ProgressCallback } from "@ethersproject/json-wallets";
 import { Bytes } from "@ethersproject/bytes";
@@ -9,7 +8,7 @@ export declare const SLIP_BIP44_PATH = "m/44'/2301'/0'/0/0";
 export declare const defaultPath = "m/44'/2301'/0'/0/0";
 export declare class QtumWallet extends IntermediateWallet {
     constructor(privateKey: any, provider?: any);
-    protected serializeTransaction(utxos: Array<any>, neededAmount: string, tx: TransactionRequest, transactionType: number): Promise<SerializedTransaction>;
+    protected serializeTransaction(utxos: Array<any>, neededAmount: string, tx: TransactionRequest, transactionType: number): Promise<string>;
     /**
      * Override to build a raw QTUM transaction signing UTXO's
      */
