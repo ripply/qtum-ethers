@@ -27,7 +27,7 @@ import {
     hexlify
 } from "ethers/lib/utils";
 import { Transaction } from "@ethersproject/transactions";
-import { BigNumber as BigNumberEthers } from "ethers";
+import { BigNumber as BigNumberEthers, BigNumberish } from "ethers";
 import { decode } from "./hex-decoder";
 import { computePublicKey } from "@ethersproject/signing-key";
 import { TransactionRequest } from "@ethersproject/abstract-provider";
@@ -59,6 +59,7 @@ export interface ListUTXOs {
     spendable: boolean,
     solvable: boolean,
     label: string,
+    type: string,
     confirmations: number,
     scriptPubKey: string,
     redeemScript: string
@@ -113,11 +114,6 @@ export interface CheckTransactionType {
     neededAmount: any
 }
 
-export interface SerializedTransaction {
-    serializedTransaction: string,
-    networkFee: string
-}
-
 function cloneBuffer(buffer: Buffer): Buffer {
     let result = Buffer.alloc(buffer.length);
     buffer.copy(result);
@@ -147,29 +143,18 @@ function cloneTx(tx: any): CloneTx {
 
 // refer to https://en.bitcoin.it/wiki/Transaction#General_format_of_a_Bitcoin_transaction_.28inside_a_block.29
 export function calcTxBytes(vins: Array<TxVinWithoutNullScriptSig | TxVinWithNullScriptSig>, vouts: Array<TxVout>): number {
-    return 4 + encodingLength(vins.length) +
+    return GLOBAL_VARS.TX_OVERHEAD_NVERSION +
+        encodingLength(vins.length) +
         vins
             .map(vin => (vin.scriptSig ? vin.scriptSig.byteLength : vin.script.byteLength))
-            .reduce((sum, len) => sum + 40 + encodingLength(len) + len, 0) +
+            .reduce((sum, len) => sum + GLOBAL_VARS.TX_INPUT_OUTPOINT + encodingLength(len) + len + GLOBAL_VARS.TX_INPUT_NSEQUENCE, 0) +
         encodingLength(vouts.length) +
         vouts
             .map(vout => vout.script.byteLength)
-            .reduce((sum, len) => sum + 8 + encodingLength(len) + len, 0) + 4
-}
-function calcTxBytesToEstimateFee(vins: Array<TxVinWithoutNullScriptSig | TxVinWithNullScriptSig>, vouts: Array<any>): number {
-    return GLOBAL_VARS.TX_EMPTY_SIZE +
-        vins.reduce(function (a) { return a + inputBytesToEstimateFee() }, 0) +
-        vouts.reduce(function (a, x) { return a + outputBytesToEstimateFee(x) }, 0)
+            .reduce((sum, len) => sum + GLOBAL_VARS.TX_OUTPUT_NVALUE + encodingLength(len) + len, 0) +
+        GLOBAL_VARS.TX_OVERHEAD_NLOCKTIME
 }
 
-// Argument here would be irrelevant considering the assumption that all vins are p2pkh
-function inputBytesToEstimateFee(): number {
-    return GLOBAL_VARS.TX_INPUT_BASE + GLOBAL_VARS.TX_SCRIPTSIG
-}
-
-function outputBytesToEstimateFee(script: Buffer): number {
-    return GLOBAL_VARS.TX_OUTPUT_BASE + script.byteLength
-}
 export function txToBuffer(tx: any): Buffer {
     let neededBytes = calcTxBytes(tx.vins, tx.vouts);
     let buffer = Buffer.alloc(neededBytes);
@@ -285,6 +270,10 @@ export function p2pkhScript(hash160PubKey: Buffer): Buffer {
     ]);
 }
 
+const scriptMap = {
+    p2pkh: p2pkhScript,
+}
+
 export function contractTxScript(contractAddress: string, gasLimit: number, gasPrice: number, encodedData: string): Buffer {
     // If contractAddress is missing, assume it's a create script, else assume its a call contract interaction
     if (contractAddress === "") {
@@ -327,78 +316,229 @@ export function generateContractAddress(txid: string) {
     return secondHash;
 }
 
-export function addVins(utxos: Array<ListUTXOs>, neededAmount: string, hash160PubKey: string): (Array<any>) {
-    let balance = 0.0;
+export async function addVins(outputs: Array<any>, utxos: Array<ListUTXOs>, neededAmount: string, total: string, gasPriceString: string, hash160PubKey: string): Promise<Array<any>> {
+    const gasPrice = BigNumberEthers.from(gasPriceString);
+    const totalNeeded = BigNumberEthers.from(total);
+    const filterDust = false;
+
     let inputs = [];
     let amounts = [];
+    let change;
+    let inputsAmount = BigNumberEthers.from(0);
+    const neededAmountBN = BigNumberEthers.from(new BigNumber(neededAmount + `e+8`).toString());
     for (let i = 0; i < utxos.length; i++) {
-        if (utxos[i].safe === undefined || !utxos[i].safe) {
-            continue;
+        // @ts-ignore
+        utxos[i].amountNumber = parseFloat(parseFloat(utxos[i].amount).toFixed(8));
+    }
+    const spendableUtxos = utxos.filter((utxo) => {
+        if (utxo.safe === undefined || !utxo.safe) {
+            // unsafe to spend utxo
+            return false;
         }
+        if (filterDust) {
+            // @ts-ignore
+            const utxoValue = parseFloat(utxo.amountNumber + `e+8`);
+            const minimumValueToNotBeDust = getMinNonDustValue(utxo, gasPrice);
+            return utxoValue >= minimumValueToNotBeDust;
+        }
+        return true;
+    });
+    let vbytes = BigNumberEthers.from(GLOBAL_VARS.TX_OVERHEAD_BASE);
+    const spendVSizeLookupMap = {
+        p2pkh: BigNumberEthers.from(GLOBAL_VARS.TX_INPUT_BASE + GLOBAL_VARS.TX_INPUT_SCRIPTSIG_P2PKH).toNumber(),
+    }
+    const changeType = 'p2pkh';
+    const outputVSizeLookupMap = {
+        p2pkh: BigNumberEthers.from(GLOBAL_VARS.TX_OUTPUT_BASE + GLOBAL_VARS.TX_OUTPUT_SCRIPTPUBKEY_P2PKH).toNumber(),
+        p2wpkh: BigNumberEthers.from(GLOBAL_VARS.TX_OUTPUT_BASE + GLOBAL_VARS.TX_OUTPUT_SCRIPTPUBKEY_P2WPKH).toNumber(),
+        p2sh2of3: BigNumberEthers.from(GLOBAL_VARS.TX_OUTPUT_BASE + GLOBAL_VARS.TX_OUTPUT_SCRIPTPUBKEY_P2SH2OF3).toNumber(),
+        p2wsh2of3: BigNumberEthers.from(GLOBAL_VARS.TX_OUTPUT_BASE + GLOBAL_VARS.TX_OUTPUT_SCRIPTPUBKEY_P2WSH2OF3).toNumber(),
+        p2tr: BigNumberEthers.from(GLOBAL_VARS.TX_OUTPUT_BASE + GLOBAL_VARS.TX_OUTPUT_SCRIPTPUBKEY_P2TR).toNumber(),
+    }
+    for (let i = 0; i < outputs.length; i++) {
+        const output = outputs[i];
+        let outputVSize: any = output;
+        if (typeof output === "string") {
+            if (!outputVSizeLookupMap.hasOwnProperty(output.toLowerCase())) {
+                throw new Error("Unsupported output script type: " + output.toLowerCase());
+            } else {
+                // @ts-ignore
+                outputVSize = outputVSizeLookupMap[output.toLowerCase()];
+            }
+        } else if (output.hasOwnProperty('script') && output.hasOwnProperty('value')) {
+            // longer script sizes require up to 3 vbytes to encode
+            const scriptEncodingLength = encodingLength(output.script.byteLength) - 1;
+            outputVSize = BigNumberEthers.from(GLOBAL_VARS.TX_OUTPUT_BASE + scriptEncodingLength + output.script.byteLength).toNumber();
+        } else {
+            outputVSize = BigNumberEthers.from(outputVSize).toNumber();
+        }
+
+        vbytes = vbytes.add(outputVSize);
+    }
+    let needMoreInputs = true;
+    let i = 0;
+    for (i = 0; i < spendableUtxos.length; i++) {
+        const spendableUtxo = spendableUtxos[i];
         // investigate issue where amount has no decimal point as calculation panics
-        let x: any = parseFloat(utxos[i].amount).toFixed(7)
-        balance += parseFloat(x);
-        inputs.push({ txid: Buffer.from(utxos[i].txid, 'hex'), vout: utxos[i].vout, hash: reverse(Buffer.from(utxos[i].txid, 'hex')), sequence: 0xffffffff, script: p2pkhScript(Buffer.from(hash160PubKey, "hex")), scriptSig: null });
-        amounts.push(parseFloat(x));
-        if (new BigNumber(neededAmount).isLessThanOrEqualTo(balance)) {
+        // @ts-ignore
+        const amount = spendableUtxo.amountNumber;
+        const utxoValue = parseFloat(amount + `e+8`);
+        // balance += utxoValue;
+        let script = Buffer.from(spendableUtxo.scriptPubKey);
+        // all scripts will be p2pkh for now
+        const typ: string = spendableUtxo.type || '';
+        if (typ.toLowerCase() === "p2pkh") {
+            script = p2pkhScript(Buffer.from(hash160PubKey, "hex"));
+        }
+        if (!spendVSizeLookupMap.hasOwnProperty(typ.toLowerCase())) {
+            throw new Error("Unsupported spendable script type: " + typ.toLowerCase());
+        }
+        inputs.push({
+            txid: Buffer.from(spendableUtxo.txid, 'hex'),
+            vout: spendableUtxo.vout,
+            hash: reverse(Buffer.from(spendableUtxo.txid, 'hex')),
+            sequence: 0xffffffff,
+            script: script,
+            scriptSig: null
+        });
+        // @ts-ignore
+        const outputVSize: number = spendVSizeLookupMap[typ.toLowerCase()];
+        vbytes = vbytes.add(outputVSize);
+        const fee = BigNumberEthers.from(vbytes).mul(gasPrice);
+
+        inputsAmount = inputsAmount.add(utxoValue);
+        amounts.push(utxoValue);
+
+        if (neededAmountBN.eq(inputsAmount)) {
+            if (i === spendableUtxos.length - 1) {
+                // reached end
+                // have exactly the needed amount
+                // spending all utxo values
+                // when caller computes change, it won't generate a change address
+                needMoreInputs = false;
+            } else {
+                // not sending all
+                // confirm that there is enough in inputs to cover network fees
+                const neededAmountPlusFees = neededAmountBN.add(fee);
+                const neededAmountPlusFeesAndChange = neededAmountPlusFees.add(outputVSizeLookupMap[changeType]);
+                if (inputsAmount.eq(neededAmountPlusFees)) {
+                    // no change output required, matches exactly
+                    needMoreInputs = false;
+                } else if (inputsAmount.lt(neededAmountPlusFees)) {
+                    // not enough to cover total to send + fees, we need another input
+                } else if (inputsAmount.gte(neededAmountPlusFeesAndChange)) {
+                    // has enough to cover with a change output
+                    needMoreInputs = false;
+                    change = inputsAmount.sub(neededAmountPlusFeesAndChange);
+                } else {
+                    // not enough to cover with a change output, we need another input
+                }
+            }
+        } else if (neededAmountBN.lt(inputsAmount)) {
+            // have enough, check that there is enough change to cover fees
+            const totalNeededPlusFees = totalNeeded.add(fee);
+            const totalNeededPlusFeesAndChange = totalNeededPlusFees.add(outputVSizeLookupMap[changeType]);
+            if (inputsAmount.eq(totalNeededPlusFees)) {
+                // no change output required, matches exactly
+                needMoreInputs = false;
+            } else if (inputsAmount.lt(totalNeededPlusFees)) {
+                // not enough to cover total to send + fees, we need another input
+            } else if (inputsAmount.gte(totalNeededPlusFeesAndChange)) {
+                // has enough to cover with a change output
+                needMoreInputs = false;
+                change = inputsAmount.sub(totalNeededPlusFeesAndChange);
+            } else {
+                // not enough to cover with a change output, we need another input
+            }
+        } else {
+            // neededAmountBN.gt(inputsAmount)
+        }
+
+        if (!needMoreInputs) {
             break;
         }
+
+        if (i % 100 === 0) {
+            // lots of UTXOs, don't block UI
+            await new Promise((resolve) => setImmediate(resolve));
+        }
     }
-    return [inputs, amounts];
+
+    if (needMoreInputs) {
+        const missing = neededAmountBN.sub(inputsAmount).toNumber()
+        throw new Error("Need " + missing + " more satoshi");
+    }
+
+    const fee = BigNumberEthers.from(vbytes).mul(gasPrice);
+    const availableAmount = inputsAmount.sub(fee).toNumber()
+
+    return [inputs, amounts, availableAmount, fee, change, changeType];
 }
 
-export function addContractVouts(gasPrice: number, gasLimit: number, data: string, address: string, amounts: Array<any>, value: string, hash160PubKey: string, vins: Array<any>): (Array<any> | string) {
-    let vouts = [];
-    const returnAmount = amounts.reduce((a, b) => a + b);
-    const networkFee = new BigNumber(calcTxBytesToEstimateFee(vins, [contractTxScript(address === "" ? "" : address.split("0x")[1], gasLimit, gasPrice, data.split("0x")[1]), p2pkhScript(Buffer.from(hash160PubKey, "hex"))]).toString() + `e-3`).times(0.004).toFixed(7);
-    const roundedGasPrice = new BigNumber(new BigNumber(gasPrice + `e-8`).toFixed(7)).toNumber();
+export function getMinNonDustValue(input: ListUTXOs, feePerByte: BigNumberish): number {
+    // "Dust" is defined in terms of dustRelayFee,
+    // which has units satoshis-per-kilobyte.
+    // If you'd pay more in fees than the value of the output
+    // to spend something, then we consider it dust.
+    // A typical spendable non-segwit txout is 34 bytes big, and will
+    // need a CTxIn of at least 148 bytes to spend:
+    // so dust is a spendable txout less than
+    // 182*dustRelayFee/1000 (in satoshis).
+    // 546 satoshis at the default rate of 3000 sat/kB.
+    // A typical spendable segwit txout is 31 bytes big, and will
+    // need a CTxIn of at least 67 bytes to spend:
+    // so dust is a spendable txout less than
+    // 98*dustRelayFee/1000 (in satoshis).
+    // 294 satoshis at the default rate of 3000 sat/kB.
+    let size = 0;
+    switch (input.type) {
+        case "P2PKH":
+            // size = 8 + encodingLength(input.scriptPubKey.length) + input.scriptPubKey.length
+            size = GLOBAL_VARS.TX_OUTPUT_SCRIPTPUBKEY_P2PKH;
+            size += 32 + 4 + 1 + 107 + 4; // 148
+            break;
+        // @ts-ignore
+        case "P2PK":
+            // TODO: Implement support
+            // size = 8 + encodingLength(input.scriptPubKey.length) + input.scriptPubKey.length
+            size += 32 + 4 + 1 + 107 + 4; // 148
+            // fallthrough, unsupported script type
+        // @ts-ignore
+        case "P2SH":
+            // TODO: Implement support
+            // size = 8 + encodingLength(input.scriptPubKey.length) + input.scriptPubKey.length
+            size += 32 + 4 + 1 + 107 + 4; // 148
+            // fallthrough, unsupported script type
+        // @ts-ignore
+        case "P2WH":
+            // TODO: Implement support
+            // size = 8 + encodingLength(input.scriptPubKey.length) + input.scriptPubKey.length
+            size += 32 + 4 + 1 + (107 / GLOBAL_VARS.WITNESS_SCALE_FACTOR) + 4; // 68
+            // fallthrough, unsupported script type
+        default:
+            throw new Error("Unsupported output script type: " + input.type);
+    }
+
+    return BigNumberEthers.from(feePerByte).mul(size).toNumber();
+}
+
+function checkLostPrecisionInGasPrice(gasPrice: number) {
+    const roundedGasPrice = new BigNumber(new BigNumber(gasPrice + `e-8`).toFixed(8)).toNumber();
     const originalGasPrice = new BigNumber(new BigNumber(gasPrice + `e-8`).toFixed()).toNumber();
     if (roundedGasPrice != originalGasPrice) {
         throw new Error("Precision lost in gasPrice: " + (originalGasPrice - roundedGasPrice))
     }
-    const gas = new BigNumber(new BigNumber(gasPrice + `e-8`).toFixed(7)).times(gasLimit).toFixed(7)
-    vouts.push({
-        script: contractTxScript(address === "" ? "" : address.split("0x")[1], gasLimit, gasPrice, data.split("0x")[1]),
-        value: new BigNumber(value).times(1e8).toNumber()
-    })
-    // if spending amounts === amounts needed for gas/value/network fee, do not add a change vout
-    if (new BigNumber(returnAmount).isGreaterThan(new BigNumber(gas).plus(networkFee).plus(value))) {
-        vouts.push({
-            script: p2pkhScript(Buffer.from(hash160PubKey, "hex")),
-            value: new BigNumber(returnAmount).minus(gas).minus(value).minus(networkFee).times(1e8).toNumber()
-        });
-        return vouts;
-    }
-    // call qtum_getUTXOs to see if the account has enough to spend with the networkFee and some (for adding more inputs, it costs $$$!) taken into account
-    else if (new BigNumber(returnAmount).isLessThan(new BigNumber(gas).plus(networkFee).plus(value))) {
-        return new BigNumber(networkFee).plus(0.0019400).toFixed(7)
-    }
-    else {
-        return vouts;
-    }
 }
 
-export function addp2pkhVouts(hash160Address: string, amounts: Array<any>, value: string, hash160PubKey: string, vins: Array<any>): (Array<any> | string) {
-    let vouts = [];
-    const returnAmount = amounts.reduce((a, b) => a + b);
-    const networkFee = new BigNumber(calcTxBytesToEstimateFee(vins, [p2pkhScript(Buffer.from(hash160Address, "hex")), p2pkhScript(Buffer.from(hash160PubKey, "hex"))]).toString() + `e-3`).times(0.004).toFixed(7);
-    vouts.push({
-        script: p2pkhScript(Buffer.from(hash160Address, "hex")),
-        value: new BigNumber(value).times(1e8).toNumber()
-    });
-    if (new BigNumber(returnAmount).isGreaterThan(new BigNumber(value).plus(networkFee))) {
-        vouts.push({
-            script: p2pkhScript(Buffer.from(hash160PubKey, "hex")),
-            value: new BigNumber(returnAmount).minus(value).minus(networkFee).times(1e8).toNumber()
-        })
-        return vouts;
-    }
-    // call qtum_getUTXOs to see if the account has enough to spend with the networkFee and some (for adding more inputs, it costs $$$!) taken into account
-    else if (new BigNumber(returnAmount).isLessThan(new BigNumber(networkFee).plus(networkFee).plus(value))) {
-        return new BigNumber(networkFee).plus(0.0019400).toFixed(7)
-    }
-    else {
-        return vouts;
+function getContractVout(gasPrice: number, gasLimit: number, data: string, address: string, value: string): TxVout {
+    return {
+        script: contractTxScript(
+            address === "" ? "" : address.split("0x")[1],
+            gasLimit,
+            gasPrice,
+            data.split("0x")[1]
+        ),
+        value: new BigNumber(value).times(1e8).toNumber(),
     }
 }
 
@@ -463,23 +603,24 @@ export function computeAddressFromPublicKey(publicKey: string): string {
 
 export function checkTransactionType(tx: TransactionRequest): CheckTransactionType {
     if (!!tx.to === false && (!!tx.value === false || BigNumberEthers.from(tx.value).toNumber() === 0) && !!tx.data === true) {
-        const needed = new BigNumber(BigNumberEthers.from(tx.gasPrice).toString() + `e-8`).times(BigNumberEthers.from(tx.gasLimit).toNumber()).toFixed(7).toString()
+        const needed = new BigNumber(BigNumberEthers.from(tx.gasPrice).toString() + `e-8`).times(BigNumberEthers.from(tx.gasLimit).toNumber()).toFixed(8).toString()
         return { transactionType: GLOBAL_VARS.CONTRACT_CREATION, neededAmount: needed }
     }
     else if (!!tx.to === false && BigNumberEthers.from(tx.value).toNumber() > 0 && !!tx.data === true) {
         return { transactionType: GLOBAL_VARS.DEPLOY_ERROR, neededAmount: "0" }
     }
     else if (!!tx.to === true && !!tx.data === true) {
-        const needed = !!tx.value === true ? new BigNumber(new BigNumber(BigNumberEthers.from(tx.gasPrice).toString() + `e-8`).toFixed(7)).times(BigNumberEthers.from(tx.gasLimit).toNumber()).plus(BigNumberEthers.from(tx.value).toString() + `e-8`).toFixed(7) : new BigNumber(new BigNumber(BigNumberEthers.from(tx.gasPrice).toString() + `e-8`).toFixed(7)).times(BigNumberEthers.from(tx.gasLimit).toNumber()).toFixed(7)
+        const needed = !!tx.value === true ? new BigNumber(new BigNumber(BigNumberEthers.from(tx.gasPrice).toString() + `e-8`).toFixed(8)).times(BigNumberEthers.from(tx.gasLimit).toNumber()).plus(BigNumberEthers.from(tx.value).toString() + `e-8`).toFixed(8) : new BigNumber(new BigNumber(BigNumberEthers.from(tx.gasPrice).toString() + `e-8`).toFixed(8)).times(BigNumberEthers.from(tx.gasLimit).toNumber()).toFixed(8)
         return { transactionType: GLOBAL_VARS.CONTRACT_CALL, neededAmount: needed }
     }
     else {
-        const needed = new BigNumber(BigNumberEthers.from(tx.value).toString() + `e-8`).toFixed(7);
+        const gas = new BigNumber(BigNumberEthers.from(tx.gasPrice).toString() + `e-9`).times(BigNumberEthers.from(tx.gasLimit).toNumber());
+        const needed = new BigNumber(BigNumberEthers.from(tx.value).toString() + `e-8`).plus(gas).toFixed(8);
         return { transactionType: GLOBAL_VARS.P2PKH, neededAmount: needed }
     }
 }
 
-export async function serializeTransaction(utxos: Array<any>, neededAmount: string, tx: TransactionRequest, transactionType: number, privateKey: string, publicKey: string): Promise<SerializedTransaction> {
+export async function serializeTransaction(utxos: Array<any>, neededAmount: string, tx: TransactionRequest, transactionType: number, privateKey: string, publicKey: string): Promise<string> {
     const signer = (hash: Uint8Array) => {
         return secp256k1Sign(hash, arrayify(privateKey));
     };
@@ -488,63 +629,113 @@ export async function serializeTransaction(utxos: Array<any>, neededAmount: stri
 
 function dropPrecisionLessThanOneSatoshi(wei: string): string {
     const inWei = BigNumberEthers.from(wei).toNumber();
-    const inSatoshiString = new BigNumber(inWei + `e-8`).toFixed(7);
+    const inSatoshiString = new BigNumber(inWei + `e-8`).toFixed(8);
     const inWeiStringDroppedPrecision = new BigNumber(inSatoshiString + `e+8`).toString();
     return inWeiStringDroppedPrecision;
 }
 
-export async function serializeTransactionWith(utxos: Array<any>, neededAmount: string, tx: TransactionRequest, transactionType: number, signer: Function, publicKey: string): Promise<SerializedTransaction> {
+export async function serializeTransactionWith(utxos: Array<any>, neededAmount: string, tx: TransactionRequest, transactionType: number, signer: Function, publicKey: string): Promise<string> {
     // Building the QTUM tx that will eventually be serialized.
     let qtumTx: Tx = { version: 2, locktime: 0, vins: [], vouts: [] };
-    // @ts-ignore
-    const [vins, amounts] = addVins(utxos, neededAmount, tx.from.split("0x")[1]);
     // reduce precision in gasPrice to 1 satoshi
     tx.gasPrice = dropPrecisionLessThanOneSatoshi(BigNumberEthers.from(tx.gasPrice).toString());
-    qtumTx.vins = vins;
-    if (transactionType !== 3) {
-        if (transactionType === 2) {
-            // @ts-ignore
-            let localVouts = addContractVouts(BigNumberEthers.from(tx.gasPrice).toNumber(), BigNumberEthers.from(tx.gasLimit).toNumber(), tx.data, "", amounts, new BigNumber(BigNumberEthers.from("0x0").toNumber() + `e-8`).toFixed(7), tx.from.split("0x")[1], qtumTx.vins);
-            if (typeof localVouts === 'string') {
-                return { serializedTransaction: "", networkFee: localVouts }
-            }
-            qtumTx.vouts = localVouts
-        }
-        else {
-            // @ts-ignore
-            let localVouts = addContractVouts(BigNumberEthers.from(tx.gasPrice).toNumber(), BigNumberEthers.from(tx.gasLimit).toNumber(), tx.data, tx.to, amounts, !!tx.value === true ? new BigNumber(BigNumberEthers.from(tx.value).toNumber() + `e-8`).toNumber() : new BigNumber(BigNumberEthers.from("0x0").toNumber() + `e-8`).toFixed(7), tx.from.split("0x")[1], qtumTx.vins);
-            if (typeof localVouts === 'string') {
-                return { serializedTransaction: "", networkFee: localVouts }
-            }
-            qtumTx.vouts = localVouts
-        }
-        // Sign necessary vins
-        const updatedVins = [];
-        for (let i = 0; i < qtumTx.vins.length; i++) {
-            updatedVins.push({ ...qtumTx.vins[i], ['scriptSig']: p2pkhScriptSig(await signp2pkhWith(qtumTx, i, signer), publicKey.split("0x")[1]) })
-        }
-        qtumTx.vins = updatedVins
-        // Build the serialized transaction string.
-        const serialized = txToBuffer(qtumTx).toString('hex');
-        return { serializedTransaction: serialized, networkFee: "" };
+    const total = BigNumberEthers.from(new BigNumber(neededAmount + `e+8`).toString());
+    // in ethereum, the way to send your entire balance is to solve a simple equation:
+    // amount to send in wei = entire balance in wei - (gas limit * gas price)
+    // in order to properly be able to spend all UTXOs we need compute
+    // we need to filter outputs that are dust
+    // something is considered dust
+    checkLostPrecisionInGasPrice(BigNumberEthers.from(tx.gasPrice).toNumber());
+    const satoshiPerKb = BigNumberEthers.from(tx.gasPrice).mul(10);
 
+    const vouts: any = [];
+    if (transactionType === GLOBAL_VARS.CONTRACT_CREATION) {
+        const contractCreateVout = getContractVout(
+            BigNumberEthers.from(tx.gasPrice).toNumber(),
+            BigNumberEthers.from(tx.gasLimit).toNumber(),
+            // @ts-ignore
+            tx.data,
+            "",
+            // OP_CREATE cannot send QTUM when deploying contract
+            new BigNumber(BigNumberEthers.from("0x0").toNumber() + `e-8`).toFixed(8),
+        );
+        vouts.push(contractCreateVout);
+        qtumTx.vouts.push(contractCreateVout);
+    } else if (transactionType === GLOBAL_VARS.CONTRACT_CALL) {
+        const contractVoutValue = !!tx.value === true ?
+            new BigNumber(BigNumberEthers.from(tx.value).toNumber() + `e-8`).toNumber() :
+            new BigNumber(BigNumberEthers.from("0x0").toNumber() + `e-8`).toFixed(8);
+        const contractCallVout = getContractVout(
+            BigNumberEthers.from(tx.gasPrice).toNumber(),
+            BigNumberEthers.from(tx.gasLimit).toNumber(),
+            // @ts-ignore
+            tx.data,
+            tx.to,
+            contractVoutValue,
+        );
+        vouts.push(contractCallVout);
+        qtumTx.vouts.push(contractCallVout);
+    } else if (transactionType === GLOBAL_VARS.P2PKH) {
+        vouts.push('p2pkh')
+    } else if (transactionType === GLOBAL_VARS.DEPLOY_ERROR) {
+        // user requested sending QTUM with OP_CREATE which will result in the QTUM being lost
+        throw new Error("Cannot send QTUM to contract when deploying a contract");
     } else {
-        // @ts-ignore
-        let localVouts = addp2pkhVouts(tx.to.split("0x")[1], amounts, new BigNumber(BigNumberEthers.from(tx.value).toNumber() + `e-8`).toFixed(7), tx.from.split("0x")[1], qtumTx.vins);
-        if (typeof localVouts === 'string') {
-            return { serializedTransaction: "", networkFee: localVouts }
-        }
-        else {
-            qtumTx.vouts = localVouts
-            // Sign necessary vins
-            const updatedVins = [];
-            for (let i = 0; i < qtumTx.vins.length; i++) {
-                updatedVins.push({ ...qtumTx.vins[i], ['scriptSig']: p2pkhScriptSig(await signp2pkhWith(qtumTx, i, signer), publicKey.split("0x")[1]) });
-            }
-            qtumTx.vins = updatedVins
-            // Build the serialized transaction string.
-            const serialized = txToBuffer(qtumTx).toString('hex');
-            return { serializedTransaction: serialized, networkFee: "" };
-        }
+        throw new Error("Internal error: unknown transaction type: " + transactionType);
     }
+
+    // @ts-ignore
+    const hash160PubKey = tx.from.split("0x")[1];
+    // @ts-ignore
+    const [vins, amounts, availableAmount, fee, changeAmount, changeType] = await addVins(
+        vouts,
+        utxos,
+        neededAmount,
+        total.toString(),
+        satoshiPerKb.toString(),
+        hash160PubKey,
+    );
+
+    if (vins.length === 0) {
+        throw new Error("Couldn't find any vins");
+    }
+
+    qtumTx.vins = vins;
+
+    if (transactionType === GLOBAL_VARS.P2PKH) {
+        // @ts-ignore
+        const hash160Address = tx.to.split("0x")[1];
+        let value: number;
+        if (changeAmount) {
+            // not using all
+            value = new BigNumber(BigNumberEthers.from(tx.value).toNumber()).toNumber()
+        } else {
+            value = new BigNumber(availableAmount).toNumber();
+        }
+
+        const p2pkhVout = {
+            script: p2pkhScript(Buffer.from(hash160Address, "hex")),
+            value: value
+        };
+        qtumTx.vouts.push(p2pkhVout);
+    }
+
+    // add change if needed
+    if (changeAmount) {
+        qtumTx.vouts.push({
+            // @ts-ignore
+            script: scriptMap[changeType](Buffer.from(hash160PubKey, "hex")),
+            value: changeAmount.toNumber()
+        })
+    }
+
+    // Sign necessary vins
+    const updatedVins = [];
+    for (let i = 0; i < qtumTx.vins.length; i++) {
+        updatedVins.push({ ...qtumTx.vins[i], ['scriptSig']: p2pkhScriptSig(await signp2pkhWith(qtumTx, i, signer), publicKey.split("0x")[1]) })
+    }
+    qtumTx.vins = updatedVins
+    // Build the serialized transaction string.
+    const serialized = txToBuffer(qtumTx).toString('hex');
+    return serialized;
 }

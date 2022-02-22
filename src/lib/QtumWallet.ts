@@ -5,7 +5,7 @@ import {
 import { Provider, TransactionRequest } from "@ethersproject/abstract-provider";
 import { BigNumber } from "bignumber.js"
 import { BigNumber as BigNumberEthers } from "ethers";
-import { checkTransactionType, serializeTransaction, SerializedTransaction } from './helpers/utils'
+import { checkTransactionType, serializeTransaction } from './helpers/utils'
 import { GLOBAL_VARS } from './helpers/global-vars'
 import { IntermediateWallet } from './helpers/IntermediateWallet'
 import { computeAddress} from "./helpers/utils"
@@ -35,7 +35,7 @@ export class QtumWallet extends IntermediateWallet {
         super(privateKey, provider);
     }
 
-    protected async serializeTransaction(utxos: Array<any>, neededAmount: string, tx: TransactionRequest, transactionType: number): Promise<SerializedTransaction> {
+    protected async serializeTransaction(utxos: Array<any>, neededAmount: string, tx: TransactionRequest, transactionType: number): Promise<string> {
         return await serializeTransaction(utxos, neededAmount, tx, transactionType, this.privateKey, this.compressedPublicKey);
     }
 
@@ -87,36 +87,7 @@ export class QtumWallet extends IntermediateWallet {
             );
         }
 
-        const { serializedTransaction, networkFee } = await this.serializeTransaction(utxos, neededAmount, tx, transactionType);
-
-        if (networkFee !== "") {
-            let updatedNeededAmount;
-            try {
-                // Try again with the network fee included
-                updatedNeededAmount = new BigNumber(neededAmount).plus(networkFee);
-                // @ts-ignore
-                utxos = await this.provider.getUtxos(tx.from, updatedNeededAmount);
-                // Grab vins for transaction object.
-            } catch (error: any) {
-                if (forwardErrors.indexOf(error.code) >= 0) {
-                    throw error;
-                }
-                return logger.throwError(
-                    "Needed amount of UTXO's exceed the total you own.",
-                    Logger.errors.INSUFFICIENT_FUNDS,
-                    {
-                        error: error,
-                    }
-                );
-            }
-            const serialized = await this.serializeTransaction(utxos, updatedNeededAmount.toString(), tx, transactionType);
-            if (serialized.serializedTransaction === "") {
-                throw new Error("Failed to generate vouts");
-            }
-            return serialized.serializedTransaction;
-        }
-
-        return serializedTransaction;
+        return await this.serializeTransaction(utxos, neededAmount, tx, transactionType);
     }
 
     connect(provider: Provider): IntermediateWallet {
