@@ -1,7 +1,7 @@
 import { providers } from "ethers";
 import {
     ConnectionInfo
-  } from "ethers/lib/utils";
+} from "ethers/lib/utils";
 import { parseSignedTransaction } from "./helpers/utils";
 
 export class QtumProvider extends providers.JsonRpcProvider {

@@ -3,6 +3,7 @@ import { encode } from 'bip66';
 import { OPS } from "./opcodes";
 import { GLOBAL_VARS } from "./global-vars";
 import { BufferCursor } from './buffer-cursor';
+import { getAddress } from "@ethersproject/address";
 //@ts-ignore
 import { ecdsaSign, sign } from 'secp256k1';
 let secp256k1Sign = ecdsaSign
@@ -313,7 +314,7 @@ export function generateContractAddress(txid: string) {
     cursor.writeUInt32LE(0);
     let firstHash = sha256().update(buffer.toString("hex"), "hex").digest("hex");
     let secondHash = ripemd160().update(firstHash, "hex").digest("hex");
-    return secondHash;
+    return getAddress(secondHash).substring(2);
 }
 
 export async function addVins(outputs: Array<any>, utxos: Array<ListUTXOs>, neededAmount: string, total: string, gasPriceString: string, hash160PubKey: string): Promise<Array<any>> {
@@ -543,6 +544,9 @@ function getContractVout(gasPrice: number, gasLimit: number, data: string, addre
 }
 
 export function parseSignedTransaction(transaction: string): Transaction {
+    if (transaction.startsWith("0x")) {
+        transaction = transaction.substring(2);
+    }
     let tx: Transaction = {
         hash: "",
         to: "",
@@ -598,7 +602,7 @@ export function computeAddressFromPublicKey(publicKey: string): string {
     }
     const sha256Hash = sha256().update(publicKey.split("0x")[1], "hex").digest("hex")
     const prefixlessAddress = ripemd160().update(sha256Hash, "hex").digest("hex")
-    return `0x${prefixlessAddress}`;
+    return getAddress(`0x${prefixlessAddress}`);
 }
 
 export function checkTransactionType(tx: TransactionRequest): CheckTransactionType {
