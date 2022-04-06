@@ -4,6 +4,7 @@ import { OPS } from "./opcodes";
 import { GLOBAL_VARS } from "./global-vars";
 import { BufferCursor } from './buffer-cursor';
 import { getAddress } from "@ethersproject/address";
+
 //@ts-ignore
 import { ecdsaSign, sign } from 'secp256k1';
 let secp256k1Sign = ecdsaSign
@@ -317,33 +318,20 @@ export function generateContractAddress(txid: string) {
     return getAddress(secondHash).substring(2);
 }
 
-export async function addVins(outputs: Array<any>, utxos: Array<ListUTXOs>, neededAmount: string, total: string, gasPriceString: string, hash160PubKey: string): Promise<Array<any>> {
+export async function addVins(outputs: Array<any>, spendableUtxos: Array<ListUTXOs>, neededAmount: string, needChange: boolean, gasPriceString: string, hash160PubKey: string): Promise<Array<any>> {
+    // minimum gas price is 40 satoshi
+    // minimum sat/kb is 4000
     const gasPrice = BigNumberEthers.from(gasPriceString);
-    const totalNeeded = BigNumberEthers.from(total);
-    const filterDust = false;
+    const minimumSatoshiPerByte = 400;
+    if (gasPrice.lt(BigNumberEthers.from(minimumSatoshiPerByte))) {
+        throw new Error("Gas price lower than minimum relay fee: " + gasPriceString + " => " + gasPrice.toString() + " < " + minimumSatoshiPerByte);
+    }
 
     let inputs = [];
     let amounts = [];
     let change;
     let inputsAmount = BigNumberEthers.from(0);
     const neededAmountBN = BigNumberEthers.from(new BigNumber(neededAmount + `e+8`).toString());
-    for (let i = 0; i < utxos.length; i++) {
-        // @ts-ignore
-        utxos[i].amountNumber = parseFloat(parseFloat(utxos[i].amount).toFixed(8));
-    }
-    const spendableUtxos = utxos.filter((utxo) => {
-        if (utxo.safe === undefined || !utxo.safe) {
-            // unsafe to spend utxo
-            return false;
-        }
-        if (filterDust) {
-            // @ts-ignore
-            const utxoValue = parseFloat(utxo.amountNumber + `e+8`);
-            const minimumValueToNotBeDust = getMinNonDustValue(utxo, gasPrice);
-            return utxoValue >= minimumValueToNotBeDust;
-        }
-        return true;
-    });
     let vbytes = BigNumberEthers.from(GLOBAL_VARS.TX_OVERHEAD_BASE);
     const spendVSizeLookupMap = {
         p2pkh: BigNumberEthers.from(GLOBAL_VARS.TX_INPUT_BASE + GLOBAL_VARS.TX_INPUT_SCRIPTSIG_P2PKH).toNumber(),
@@ -421,7 +409,9 @@ export async function addVins(outputs: Array<any>, utxos: Array<ListUTXOs>, need
                 // not sending all
                 // confirm that there is enough in inputs to cover network fees
                 const neededAmountPlusFees = neededAmountBN.add(fee);
-                const neededAmountPlusFeesAndChange = neededAmountPlusFees.add(outputVSizeLookupMap[changeType]);
+                const changeVBytes = outputVSizeLookupMap[changeType];
+                const changeFee = BigNumberEthers.from(changeVBytes).mul(gasPrice).toNumber();
+                const neededAmountPlusFeesAndChange = needChange ? neededAmountPlusFees.add(changeFee) : neededAmountPlusFees;
                 if (inputsAmount.eq(neededAmountPlusFees)) {
                     // no change output required, matches exactly
                     needMoreInputs = false;
@@ -430,6 +420,7 @@ export async function addVins(outputs: Array<any>, utxos: Array<ListUTXOs>, need
                 } else if (inputsAmount.gte(neededAmountPlusFeesAndChange)) {
                     // has enough to cover with a change output
                     needMoreInputs = false;
+                    vbytes = vbytes.add(changeVBytes);
                     change = inputsAmount.sub(neededAmountPlusFeesAndChange);
                 } else {
                     // not enough to cover with a change output, we need another input
@@ -437,17 +428,26 @@ export async function addVins(outputs: Array<any>, utxos: Array<ListUTXOs>, need
             }
         } else if (neededAmountBN.lt(inputsAmount)) {
             // have enough, check that there is enough change to cover fees
-            const totalNeededPlusFees = totalNeeded.add(fee);
-            const totalNeededPlusFeesAndChange = totalNeededPlusFees.add(outputVSizeLookupMap[changeType]);
+            const totalNeededPlusFees = neededAmountBN.add(fee);
+            const changeVBytes = outputVSizeLookupMap[changeType];
+            const changeFee = BigNumberEthers.from(changeVBytes).mul(gasPrice).toNumber();
+            const totalNeededPlusFeesAndChange = needChange ? totalNeededPlusFees.add(changeFee) : totalNeededPlusFees;
             if (inputsAmount.eq(totalNeededPlusFees)) {
                 // no change output required, matches exactly
                 needMoreInputs = false;
             } else if (inputsAmount.lt(totalNeededPlusFees)) {
                 // not enough to cover total to send + fees, we need another input
             } else if (inputsAmount.gte(totalNeededPlusFeesAndChange)) {
-                // has enough to cover with a change output
-                needMoreInputs = false;
-                change = inputsAmount.sub(totalNeededPlusFeesAndChange);
+                if (needChange) {
+                    // has enough to cover with a change output
+                    needMoreInputs = false;
+                    vbytes = vbytes.add(changeVBytes);
+                    change = inputsAmount.sub(totalNeededPlusFeesAndChange);
+                    // throw new Error("Change output...2");
+                } else {
+                    // no change output requested
+                    // bump the output by the change
+                }
             } else {
                 // not enough to cover with a change output, we need another input
             }
@@ -467,7 +467,7 @@ export async function addVins(outputs: Array<any>, utxos: Array<ListUTXOs>, need
 
     if (needMoreInputs) {
         const missing = neededAmountBN.sub(inputsAmount).toNumber()
-        throw new Error("Need " + missing + " more satoshi");
+        throw new Error("Need " + missing + " more satoshi, we have " + inputsAmount.toString());
     }
 
     const fee = BigNumberEthers.from(vbytes).mul(gasPrice);
@@ -618,17 +618,17 @@ export function checkTransactionType(tx: TransactionRequest): CheckTransactionTy
         return { transactionType: GLOBAL_VARS.CONTRACT_CALL, neededAmount: needed }
     }
     else {
-        const gas = new BigNumber(BigNumberEthers.from(tx.gasPrice).toString() + `e-9`).times(BigNumberEthers.from(tx.gasLimit).toNumber());
+        const gas = new BigNumber(BigNumberEthers.from(tx.gasPrice).toString() + `e-8`).times(BigNumberEthers.from(tx.gasLimit).toNumber());
         const needed = new BigNumber(BigNumberEthers.from(tx.value).toString() + `e-8`).plus(gas).toFixed(8);
         return { transactionType: GLOBAL_VARS.P2PKH, neededAmount: needed }
     }
 }
 
-export async function serializeTransaction(utxos: Array<any>, neededAmount: string, tx: TransactionRequest, transactionType: number, privateKey: string, publicKey: string): Promise<string> {
+export async function serializeTransaction(utxos: Array<any>, fetchUtxos: Function, neededAmount: string, tx: TransactionRequest, transactionType: number, privateKey: string, publicKey: string, filterDust: boolean): Promise<string> {
     const signer = (hash: Uint8Array) => {
         return secp256k1Sign(hash, arrayify(privateKey));
     };
-    return await serializeTransactionWith(utxos, neededAmount, tx, transactionType, signer, publicKey);
+    return await serializeTransactionWith(utxos, fetchUtxos, neededAmount, tx, transactionType, signer, publicKey, filterDust);
 }
 
 function dropPrecisionLessThanOneSatoshi(wei: string): string {
@@ -638,21 +638,28 @@ function dropPrecisionLessThanOneSatoshi(wei: string): string {
     return inWeiStringDroppedPrecision;
 }
 
-export async function serializeTransactionWith(utxos: Array<any>, neededAmount: string, tx: TransactionRequest, transactionType: number, signer: Function, publicKey: string): Promise<string> {
+export async function serializeTransactionWith(utxos: Array<any>, fetchUtxos: Function, neededAmount: string, tx: TransactionRequest, transactionType: number, signer: Function, publicKey: string, filterDust: boolean): Promise<string> {
     // Building the QTUM tx that will eventually be serialized.
     let qtumTx: Tx = { version: 2, locktime: 0, vins: [], vouts: [] };
     // reduce precision in gasPrice to 1 satoshi
     tx.gasPrice = dropPrecisionLessThanOneSatoshi(BigNumberEthers.from(tx.gasPrice).toString());
-    const total = BigNumberEthers.from(new BigNumber(neededAmount + `e+8`).toString());
     // in ethereum, the way to send your entire balance is to solve a simple equation:
     // amount to send in wei = entire balance in wei - (gas limit * gas price)
     // in order to properly be able to spend all UTXOs we need compute
     // we need to filter outputs that are dust
     // something is considered dust
     checkLostPrecisionInGasPrice(BigNumberEthers.from(tx.gasPrice).toNumber());
-    const satoshiPerKb = BigNumberEthers.from(tx.gasPrice).mul(10);
+    // 40 satoshi gasPrice => 400 satoshi/byte which is the minimum relay fee
+    const satoshiPerByte = BigNumberEthers.from(tx.gasPrice).mul(10);
+
+    const gas = BigNumberEthers.from(new BigNumber(tx.gasPrice).times(BigNumberEthers.from(tx.gasLimit).toNumber()).toString());
+    const nonContractTx = transactionType === GLOBAL_VARS.P2PKH;
+    let neededAmountBN = BigNumberEthers.from(new BigNumber(neededAmount + `e+8`).toString());
+    const neededAmountMinusGasBN = nonContractTx ? neededAmountBN.sub(gas) : neededAmountBN;
+    const spendableUtxos = filterUtxos(utxos, satoshiPerByte, filterDust);
 
     const vouts: any = [];
+    let needChange = true;
     if (transactionType === GLOBAL_VARS.CONTRACT_CREATION) {
         const contractCreateVout = getContractVout(
             BigNumberEthers.from(tx.gasPrice).toNumber(),
@@ -681,6 +688,24 @@ export async function serializeTransactionWith(utxos: Array<any>, neededAmount: 
         qtumTx.vouts.push(contractCallVout);
     } else if (transactionType === GLOBAL_VARS.P2PKH) {
         vouts.push('p2pkh')
+        // need to correct neededAmount
+        // check if sending all
+        let inputsAmount = BigNumberEthers.from(0);
+        let i = 0;
+        for (i = 0; i < spendableUtxos.length; i++) {
+            const spendableUtxo = spendableUtxos[i];
+            // investigate issue where amount has no decimal point as calculation panics
+            // @ts-ignore
+            const amount = spendableUtxo.amountNumber;
+            const utxoValue = parseFloat(amount + `e+8`);
+            inputsAmount = inputsAmount.add(utxoValue);
+        }
+
+        needChange = !inputsAmount.eq(neededAmountBN);
+        if (needChange) {
+            neededAmountBN = neededAmountMinusGasBN;
+            neededAmount = new BigNumber(neededAmountBN.toString() + `e-8`).toString();
+        }
     } else if (transactionType === GLOBAL_VARS.DEPLOY_ERROR) {
         // user requested sending QTUM with OP_CREATE which will result in the QTUM being lost
         throw new Error("Cannot send QTUM to contract when deploying a contract");
@@ -690,15 +715,37 @@ export async function serializeTransactionWith(utxos: Array<any>, neededAmount: 
 
     // @ts-ignore
     const hash160PubKey = tx.from.split("0x")[1];
+
     // @ts-ignore
-    const [vins, amounts, availableAmount, fee, changeAmount, changeType] = await addVins(
-        vouts,
-        utxos,
-        neededAmount,
-        total.toString(),
-        satoshiPerKb.toString(),
-        hash160PubKey,
-    );
+    let vins, amounts, availableAmount, fee, changeAmount, changeType; 
+    try {
+        // @ts-ignore
+        [vins, amounts, availableAmount, fee, changeAmount, changeType] = await addVins(
+            vouts,
+            spendableUtxos,
+            neededAmount,
+            needChange,
+            satoshiPerByte.toString(),
+            hash160PubKey,
+        );
+    } catch (e) {
+        if (!neededAmountBN.eq(neededAmountMinusGasBN) || ((typeof e.message) === 'string' && e.message.indexOf('more satoshi') === -1)) {
+            throw e;
+        }
+        // needs more satoshi, provide more inputs
+        // we probably need to filter dust here since the above non-filtered dust failed, there should be more inputs here
+        const allSpendableUtxos = filterUtxos(await fetchUtxos(), satoshiPerByte, filterDust);
+        const neededAmountMinusGas = new BigNumber(neededAmountMinusGasBN.toString() + `e-8`).toString();
+        // @ts-ignore
+        [vins, amounts, availableAmount, fee, changeAmount, changeType] = await addVins(
+            vouts,
+            allSpendableUtxos,
+            neededAmountMinusGas,
+            needChange,
+            satoshiPerByte.toString(),
+            hash160PubKey,
+        );
+    }
 
     if (vins.length === 0) {
         throw new Error("Couldn't find any vins");
@@ -742,4 +789,24 @@ export async function serializeTransactionWith(utxos: Array<any>, neededAmount: 
     // Build the serialized transaction string.
     const serialized = txToBuffer(qtumTx).toString('hex');
     return serialized;
+}
+
+function filterUtxos(utxos: Array<any>, satoshiPerByte: BigNumberish, filterDust: boolean): Array<any> {
+    for (let i = 0; i < utxos.length; i++) {
+        // @ts-ignore
+        utxos[i].amountNumber = parseFloat(parseFloat(utxos[i].amount).toFixed(8));
+    }
+    return utxos.filter((utxo) => {
+        if (utxo.safe === undefined || !utxo.safe) {
+            // unsafe to spend utxo
+            return false;
+        }
+        if (filterDust) {
+            // @ts-ignore
+            const utxoValue = parseFloat(utxo.amountNumber + `e+8`);
+            const minimumValueToNotBeDust = getMinNonDustValue(utxo, satoshiPerByte);
+            return utxoValue >= minimumValueToNotBeDust;
+        }
+        return true;
+    });
 }
