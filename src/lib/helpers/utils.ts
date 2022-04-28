@@ -23,13 +23,16 @@ if (!ecdsaSign && sign) {
 import { encode as encodeCInt, decode as decodeCInt } from "bitcoinjs-lib/src/script_number"
 import { sha256, ripemd160 } from "hash.js"
 import { BigNumber } from "bignumber.js"
+// 1 satoshi is e-8 so we need bignumber to not set an exponent for numbers greater than that
+// since we use exponents to do multiplication
+// BigNumber.config({ EXPONENTIAL_AT: 10 })
 import {
     arrayify,
     BytesLike,
     hexlify
 } from "ethers/lib/utils";
 import { Transaction } from "@ethersproject/transactions";
-import { BigNumber as BigNumberEthers, BigNumberish } from "ethers";
+import { BigNumber as BigNumberEthers, BigNumberish, logger } from "ethers";
 import { decode } from "./hex-decoder";
 import { computePublicKey } from "@ethersproject/signing-key";
 import { TransactionRequest } from "@ethersproject/abstract-provider";
@@ -331,7 +334,7 @@ export async function addVins(outputs: Array<any>, spendableUtxos: Array<ListUTX
     let amounts = [];
     let change;
     let inputsAmount = BigNumberEthers.from(0);
-    const neededAmountBN = BigNumberEthers.from(new BigNumber(neededAmount + `e+8`).toString());
+    const neededAmountBN = BigNumberEthers.from(new BigNumber(qtumToSatoshi(neededAmount)).toString());
     let vbytes = BigNumberEthers.from(GLOBAL_VARS.TX_OVERHEAD_BASE);
     const spendVSizeLookupMap = {
         p2pkh: BigNumberEthers.from(GLOBAL_VARS.TX_INPUT_BASE + GLOBAL_VARS.TX_INPUT_SCRIPTSIG_P2PKH).toNumber(),
@@ -371,7 +374,7 @@ export async function addVins(outputs: Array<any>, spendableUtxos: Array<ListUTX
         // investigate issue where amount has no decimal point as calculation panics
         // @ts-ignore
         const amount = spendableUtxo.amountNumber;
-        const utxoValue = parseFloat(amount + `e+8`);
+        const utxoValue = parseFloat(shiftBy(amount, 8));
         // balance += utxoValue;
         let script = Buffer.from(spendableUtxo.scriptPubKey);
         // all scripts will be p2pkh for now
@@ -523,9 +526,56 @@ export function getMinNonDustValue(input: ListUTXOs, feePerByte: BigNumberish): 
     return BigNumberEthers.from(feePerByte).mul(size).toNumber();
 }
 
+function shiftBy(amount: BigNumberish, byPowerOfTen: number): string {
+    let amountString;
+    if (typeof amount === "number") {
+        amountString = `${amount}`;
+        logger.info("amountString is number: ", amount, amountString)
+    } else if (typeof amount === 'string') {
+        amountString = amount;
+        logger.info("amountString is string: ", amountString)
+    } else {
+        amountString = BigNumberEthers.from(amount).toString();
+        logger.info("amountString is other: ", typeof amount, " => ", amountString)
+    }
+
+    const indexOfExponent = amountString.indexOf('e');
+    if (indexOfExponent !== -1) {
+        // very small or large number with lots of decimals with an exponent
+        // we want to adjust the exponent
+        const exponentString = amountString.substring(indexOfExponent + 1, amountString.length);
+        // exponentString = '-10', '+10' etc
+        const exponent = parseInt(exponentString);
+        const shiftedExponent = exponent + byPowerOfTen;
+        amountString = amountString.substring(0, indexOfExponent);
+        byPowerOfTen = shiftedExponent;
+    }
+    const a = byPowerOfTen === 0 ? amountString : `${amountString}e${byPowerOfTen < 0 ? '':'+'}${byPowerOfTen}`;
+    logger.info("shiftBy: ", amount, " => ", amountString, " => ", a);
+    return a;
+}
+
+function satoshiToQtum(inSatoshi?: BigNumberish): string {
+    return shiftBy(inSatoshi || 0, -8);
+    /*
+    const a = BigNumberEthers.from(inSatoshi).div(BigNumberEthers.from('100000000')).toString();
+    logger.info("satoshiToQtum: ", inSatoshi, " => ", a);
+    return a;
+    */
+}
+
+function qtumToSatoshi(inQtum?: BigNumberish): string {
+    return shiftBy(inQtum || 0, 8);
+    /*
+    const a = BigNumberEthers.from(inQtum).mul(BigNumberEthers.from('100000000')).toString();
+    logger.info("qtumToSatoshi: ", inQtum, " => ", a);
+    return a;
+    */
+}
+
 function checkLostPrecisionInGasPrice(gasPrice: number) {
-    const roundedGasPrice = new BigNumber(new BigNumber(gasPrice + `e-8`).toFixed(8)).toNumber();
-    const originalGasPrice = new BigNumber(new BigNumber(gasPrice + `e-8`).toFixed()).toNumber();
+    const roundedGasPrice = new BigNumber(new BigNumber(satoshiToQtum(gasPrice)).toFixed(8)).toNumber();
+    const originalGasPrice = new BigNumber(new BigNumber(satoshiToQtum(gasPrice)).toFixed()).toNumber();
     if (roundedGasPrice != originalGasPrice) {
         throw new Error("Precision lost in gasPrice: " + (originalGasPrice - roundedGasPrice))
     }
@@ -607,19 +657,26 @@ export function computeAddressFromPublicKey(publicKey: string): string {
 
 export function checkTransactionType(tx: TransactionRequest): CheckTransactionType {
     if (!!tx.to === false && (!!tx.value === false || BigNumberEthers.from(tx.value).toNumber() === 0) && !!tx.data === true) {
-        const needed = new BigNumber(BigNumberEthers.from(tx.gasPrice).toString() + `e-8`).times(BigNumberEthers.from(tx.gasLimit).toNumber()).toFixed(8).toString()
+        const needed = new BigNumber(satoshiToQtum(tx.gasPrice)).times(BigNumberEthers.from(tx.gasLimit).toNumber()).toFixed(8).toString()
         return { transactionType: GLOBAL_VARS.CONTRACT_CREATION, neededAmount: needed }
     }
     else if (!!tx.to === false && BigNumberEthers.from(tx.value).toNumber() > 0 && !!tx.data === true) {
         return { transactionType: GLOBAL_VARS.DEPLOY_ERROR, neededAmount: "0" }
     }
     else if (!!tx.to === true && !!tx.data === true) {
-        const needed = !!tx.value === true ? new BigNumber(new BigNumber(BigNumberEthers.from(tx.gasPrice).toString() + `e-8`).toFixed(8)).times(BigNumberEthers.from(tx.gasLimit).toNumber()).plus(BigNumberEthers.from(tx.value).toString() + `e-8`).toFixed(8) : new BigNumber(new BigNumber(BigNumberEthers.from(tx.gasPrice).toString() + `e-8`).toFixed(8)).times(BigNumberEthers.from(tx.gasLimit).toNumber()).toFixed(8)
+        const needed = !!tx.value === true ? 
+            new BigNumber(
+                new BigNumber(satoshiToQtum(tx.gasPrice)).toFixed(8))
+                    .times(BigNumberEthers.from(tx.gasLimit).toNumber())
+                    .plus(satoshiToQtum(tx.value)).toFixed(8) :
+            new BigNumber(new BigNumber(satoshiToQtum(tx.gasPrice)).toFixed(8))
+                .times(BigNumberEthers.from(tx.gasLimit).toNumber()).toFixed(8)
         return { transactionType: GLOBAL_VARS.CONTRACT_CALL, neededAmount: needed }
     }
     else {
-        const gas = new BigNumber(BigNumberEthers.from(tx.gasPrice).toString() + `e-8`).times(BigNumberEthers.from(tx.gasLimit).toNumber());
-        const needed = new BigNumber(BigNumberEthers.from(tx.value).toString() + `e-8`).plus(gas).toFixed(8);
+        const gas = new BigNumber(satoshiToQtum(tx.gasPrice)).times(BigNumberEthers.from(tx.gasLimit).toNumber());
+        const needed = new BigNumber(satoshiToQtum(tx.value)).plus(gas).toFixed(8);
+        logger.info("tx.value: ", tx.value, " => ", gas.toString(), " => ", needed)
         return { transactionType: GLOBAL_VARS.P2PKH, neededAmount: needed }
     }
 }
@@ -631,18 +688,12 @@ export async function serializeTransaction(utxos: Array<any>, fetchUtxos: Functi
     return await serializeTransactionWith(utxos, fetchUtxos, neededAmount, tx, transactionType, signer, publicKey, filterDust);
 }
 
-function dropPrecisionLessThanOneSatoshi(wei: string): string {
-    const inWei = BigNumberEthers.from(wei).toNumber();
-    const inSatoshiString = new BigNumber(inWei + `e-8`).toFixed(8);
-    const inWeiStringDroppedPrecision = new BigNumber(inSatoshiString + `e+8`).toString();
-    return inWeiStringDroppedPrecision;
-}
-
 export async function serializeTransactionWith(utxos: Array<any>, fetchUtxos: Function, neededAmount: string, tx: TransactionRequest, transactionType: number, signer: Function, publicKey: string, filterDust: boolean): Promise<string> {
     // Building the QTUM tx that will eventually be serialized.
     let qtumTx: Tx = { version: 2, locktime: 0, vins: [], vouts: [] };
     // reduce precision in gasPrice to 1 satoshi
-    tx.gasPrice = dropPrecisionLessThanOneSatoshi(BigNumberEthers.from(tx.gasPrice).toString());
+    tx.gasPrice = tx.gasPrice;
+    // tx.gasPrice = dropPrecisionLessThanOneSatoshi(BigNumberEthers.from(tx.gasPrice).toString());
     // in ethereum, the way to send your entire balance is to solve a simple equation:
     // amount to send in wei = entire balance in wei - (gas limit * gas price)
     // in order to properly be able to spend all UTXOs we need compute
@@ -652,9 +703,12 @@ export async function serializeTransactionWith(utxos: Array<any>, fetchUtxos: Fu
     // 40 satoshi gasPrice => 400 satoshi/byte which is the minimum relay fee
     const satoshiPerByte = BigNumberEthers.from(tx.gasPrice).mul(10);
 
-    const gas = BigNumberEthers.from(new BigNumber(tx.gasPrice).times(BigNumberEthers.from(tx.gasLimit).toNumber()).toString());
+    const gas = BigNumberEthers.from(BigNumberEthers.from(tx.gasPrice).mul(BigNumberEthers.from(tx.gasLimit).toNumber()).toString());
     const nonContractTx = transactionType === GLOBAL_VARS.P2PKH;
-    let neededAmountBN = BigNumberEthers.from(new BigNumber(neededAmount + `e+8`).toString());
+    const a = new BigNumber(neededAmount + `e+8`).toString();
+    const b = new BigNumber(neededAmount + `e+8`).toNumber();
+    logger.info("aaaaaaaaaaaa", a, 'bbbbbbbbbbbbb', b)
+    let neededAmountBN = BigNumberEthers.from(a);
     const neededAmountMinusGasBN = nonContractTx ? neededAmountBN.sub(gas) : neededAmountBN;
     const spendableUtxos = filterUtxos(utxos, satoshiPerByte, filterDust);
 
@@ -674,7 +728,7 @@ export async function serializeTransactionWith(utxos: Array<any>, fetchUtxos: Fu
         qtumTx.vouts.push(contractCreateVout);
     } else if (transactionType === GLOBAL_VARS.CONTRACT_CALL) {
         const contractVoutValue = !!tx.value === true ?
-            new BigNumber(BigNumberEthers.from(tx.value).toNumber() + `e-8`).toNumber() :
+            new BigNumber(satoshiToQtum(tx.value)).toNumber() :
             new BigNumber(BigNumberEthers.from("0x0").toNumber() + `e-8`).toFixed(8);
         const contractCallVout = getContractVout(
             BigNumberEthers.from(tx.gasPrice).toNumber(),
@@ -687,7 +741,6 @@ export async function serializeTransactionWith(utxos: Array<any>, fetchUtxos: Fu
         vouts.push(contractCallVout);
         qtumTx.vouts.push(contractCallVout);
     } else if (transactionType === GLOBAL_VARS.P2PKH) {
-        vouts.push('p2pkh')
         // need to correct neededAmount
         // check if sending all
         let inputsAmount = BigNumberEthers.from(0);
@@ -697,14 +750,20 @@ export async function serializeTransactionWith(utxos: Array<any>, fetchUtxos: Fu
             // investigate issue where amount has no decimal point as calculation panics
             // @ts-ignore
             const amount = spendableUtxo.amountNumber;
-            const utxoValue = parseFloat(amount + `e+8`);
+            const utxoValue = parseFloat(shiftBy(amount, 8));
             inputsAmount = inputsAmount.add(utxoValue);
         }
 
         needChange = !inputsAmount.eq(neededAmountBN);
         if (needChange) {
             neededAmountBN = neededAmountMinusGasBN;
-            neededAmount = new BigNumber(neededAmountBN.toString() + `e-8`).toString();
+            const a = neededAmount;
+            neededAmount = satoshiToQtum(neededAmountBN);
+            logger.info("neededAmount:::::", a, " => ", neededAmount);
+        }
+        if (!neededAmountBN.eq(BigNumberEthers.from(0))) {
+            // no need to generate an empty UTXO and clog the blockchain
+            vouts.push('p2pkh')
         }
     } else if (transactionType === GLOBAL_VARS.DEPLOY_ERROR) {
         // user requested sending QTUM with OP_CREATE which will result in the QTUM being lost
@@ -717,7 +776,7 @@ export async function serializeTransactionWith(utxos: Array<any>, fetchUtxos: Fu
     const hash160PubKey = tx.from.split("0x")[1];
 
     // @ts-ignore
-    let vins, amounts, availableAmount, fee, changeAmount, changeType; 
+    let vins, amounts, availableAmount, fee, changeAmount, changeType;
     try {
         // @ts-ignore
         [vins, amounts, availableAmount, fee, changeAmount, changeType] = await addVins(
@@ -735,7 +794,7 @@ export async function serializeTransactionWith(utxos: Array<any>, fetchUtxos: Fu
         // needs more satoshi, provide more inputs
         // we probably need to filter dust here since the above non-filtered dust failed, there should be more inputs here
         const allSpendableUtxos = filterUtxos(await fetchUtxos(), satoshiPerByte, filterDust);
-        const neededAmountMinusGas = new BigNumber(neededAmountMinusGasBN.toString() + `e-8`).toString();
+        const neededAmountMinusGas = satoshiToQtum(neededAmountMinusGasBN);
         // @ts-ignore
         [vins, amounts, availableAmount, fee, changeAmount, changeType] = await addVins(
             vouts,
@@ -764,11 +823,13 @@ export async function serializeTransactionWith(utxos: Array<any>, fetchUtxos: Fu
             value = new BigNumber(availableAmount).toNumber();
         }
 
-        const p2pkhVout = {
-            script: p2pkhScript(Buffer.from(hash160Address, "hex")),
-            value: value
-        };
-        qtumTx.vouts.push(p2pkhVout);
+        if (value != 0) {
+            const p2pkhVout = {
+                script: p2pkhScript(Buffer.from(hash160Address, "hex")),
+                value: value
+            };
+            qtumTx.vouts.push(p2pkhVout);
+        }
     }
 
     // add change if needed
@@ -805,7 +866,10 @@ function filterUtxos(utxos: Array<any>, satoshiPerByte: BigNumberish, filterDust
             // @ts-ignore
             const utxoValue = parseFloat(utxo.amountNumber + `e+8`);
             const minimumValueToNotBeDust = getMinNonDustValue(utxo, satoshiPerByte);
+            logger.info("filterDust?", utxo.amountNumber, " => ", utxoValue, " => ", minimumValueToNotBeDust, " => ", utxoValue >= minimumValueToNotBeDust)
             return utxoValue >= minimumValueToNotBeDust;
+        } else {
+            logger.info("not filtering dust")
         }
         return true;
     });
